@@ -1,0 +1,12 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["fastapi[standard] (>=0.141.1,<0.142.0)"]
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.16.6,<0.17.0)"
+]
