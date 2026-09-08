@@ -1,8 +1,8 @@
 from datetime import datetime
 from enum import Enum as PyEnum
-from typing import List
+from typing import List, Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.assigned_task import AssignedTask
@@ -23,20 +23,22 @@ class User(Base):
     tenant_id: Mapped[int] = mapped_column(
         ForeignKey("tenant.id"), nullable=False, index=True
     )
+
     role: Mapped[TenantRole] = mapped_column(
         Enum(TenantRole), default=TenantRole.CLIENT
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
+    # Добавить для расчёта стоимости
+    hourly_rate: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True
+    )  # в копейках/центах
+
     tenant: Mapped["Tenant"] = relationship(back_populates="users")
-    created_tasks: Mapped[List["Task"]] = relationship(
-        back_populates="created_by_user", foreign_keys="Task.created_by"
-    )
     assigned_tasks: Mapped[list["AssignedTask"]] = relationship(
         back_populates="user",
-        foreign_keys=[AssignedTask.user_id],
         cascade="all, delete-orphan",
     )
