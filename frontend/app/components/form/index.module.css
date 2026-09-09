@@ -1,0 +1,20 @@
+.form {
+	background: var(--foreground);
+	color: var(--background);
+	padding: 16px;
+	border-radius: 5px;
+	min-width: 25%;
+	max-width: 500px;
+}
+
+.form__title {
+	margin: 0 auto;
+}
+
+.form__button-submit {
+	cursor: pointer;
+	background: #0891B2;
+	color: white;
+	display: inline-block;
+	padding: 8px;
+}
