@@ -6,8 +6,8 @@ import { getFormErrorMessage } from "../shared/utils/getFormErrorMessage";
 import LoginFormData from "./login_form.interface";
 import { useState } from "react";
 import cn from "classnames";
-import EyeIcon from "./icons/Eye.svg";
-import EyeSlashIcon from "./icons/EyeSlash.svg";
+import getUserReq from "./api/get_user.req";
+import { showToast } from "nextjs-toast-notify";
 
 export default function LoginPage() {
   const {
@@ -18,8 +18,21 @@ export default function LoginPage() {
     getValues,
   } = useForm<LoginFormData>();
   const [isPasswordVisible, setPasswordVisible] = useState<boolean>(false);
+
   const onSubmit: SubmitHandler<LoginFormData> = (data) => {
-    console.log("Form data:", data);
+    return getUserReq(data.email, data.password)
+      .then(() => {})
+      .catch((message) => {
+        showToast.error(
+          message,
+          {
+            duration: 5000,
+            progress: true,
+            position: "top-right",
+            transition: "bounceIn",
+          },
+        );
+      });
   };
 
   return (
