@@ -1,98 +1,131 @@
 "use client";
-import Form from "../components/form/form";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import styles from "./index.module.css";
 import { getFormErrorMessage } from "../shared/utils/getFormErrorMessage";
 import LoginFormData from "./login_form.interface";
 import { useState } from "react";
-import cn from "classnames";
 import getUserReq from "./api/get_user.req";
 import { showToast } from "nextjs-toast-notify";
+import {
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import TitledForm from '../components/form/form';
 
 export default function LoginPage() {
   const {
-    register,
     handleSubmit,
-    formState: { errors },
-    setValue,
-    getValues,
-  } = useForm<LoginFormData>();
+    control
+  } = useForm<LoginFormData>({
+    defaultValues: {
+    email: "",
+    password: "",
+  },
+  });
   const [isPasswordVisible, setPasswordVisible] = useState<boolean>(false);
+  const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
   const onSubmit: SubmitHandler<LoginFormData> = (data) => {
+    setSubmitting(true);
     return getUserReq(data.email, data.password)
       .then(() => {})
       .catch((message) => {
-        showToast.error(
-          message,
-          {
-            duration: 5000,
-            progress: true,
-            position: "top-right",
-            transition: "bounceIn",
-          },
-        );
+        showToast.error(message, {
+          duration: 5000,
+          progress: true,
+          position: "top-right",
+          transition: "bounceIn",
+        });
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   };
 
   return (
-    <Form
-      onSubmit={handleSubmit(onSubmit)}
-      title={"Вход в систему"}
-      submitText={"Войти"}
-      className={styles["form"]}
-    >
-      <div className={styles["form__row"]}>
-        <label htmlFor="email">Email</label>
-        <input
-          className={styles["input"]}
-          id="email"
-          {...register("email", {
+    <div className={styles["form-container"]}>
+      <TitledForm
+        onSubmit={handleSubmit(onSubmit)}
+        title={"Вход в систему"}
+        className={styles["form"]}
+        
+      >
+        <Controller
+          name="email"
+          control={control}
+          rules={{
             required: "Email обязателен",
             pattern: {
               value: /\S+@\S+\.\S+/,
               message: "Введите корректный email",
             },
-          })}
-        />
-        {errors.email && <p>{getFormErrorMessage(errors.email)}</p>}
-      </div>
-
-      <div className={styles["form__row"]}>
-        <label htmlFor="password">Пароль</label>
-        <div className={styles["password-wrapper"]}>
-          <input
-            className={cn(styles["input"], styles["password_input"])}
-            id="password"
-            type={isPasswordVisible ? "text" : "password"}
-            {...register("password", {
-              required: "Пароль обязателен",
-              minLength: {
-                value: 6,
-                message: "Минимум 6 символов",
-              },
-            })}
-          />
-          <button
-            className={styles["password-toggle"]}
-            type="button"
-            onClick={() =>
-              setPasswordVisible((isPasswordVisible) => !isPasswordVisible)
-            }
-            aria-label={isPasswordVisible ? "Скрыть пароль" : "Показать пароль"}
-          >
-            <img
-              className={styles["eye__toggle__btn"]}
-              src={isPasswordVisible ? "EyeSlash.svg" : "Eye.svg"}
-              alt={isPasswordVisible ? "Скрыть пароль" : "Показать пароль"}
-              width={24}
-              height={24}
+          }}
+          render={({ field, fieldState: { error } }) => (
+            <TextField
+              {...field}
+              fullWidth
+              required
+              variant="outlined"
+              type="email"
+              label="email"
+              error={!!error}
+              helperText={error ? getFormErrorMessage(error) : " "}
             />
-          </button>
-        </div>
+          )}
+        />
+        <Controller
+          name="password"
+          control={control}
+          rules={{
+            required: "Пароль обязателен",
+            minLength: { value: 6, message: "Минимум 6 символов" },
+          }}
+          render={({ field, fieldState: { error } }) => (
+            <TextField
+              {...field}
+              required
+              fullWidth
+              variant="outlined"
+              label="Пароль"
+              type={isPasswordVisible ? "text" : "password"}
+              error={!!error}
+              helperText={error ? getFormErrorMessage(error) : " "}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={
+                          isPasswordVisible
+                            ? "Спрятать пароль"
+                            : "Отобразить пароль"
+                        }
+                        onClick={() => setPasswordVisible((prev) => !prev)}
+                        edge="end"
+                      >
+                        {isPasswordVisible ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+          )}
+        />
 
-        {errors.password && <p>{getFormErrorMessage(errors.password)}</p>}
-      </div>
-    </Form>
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Вход..." : "Войти"}
+        </Button>
+      </TitledForm>
+    </div>
   );
 }
