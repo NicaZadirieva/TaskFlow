@@ -25,10 +25,14 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import GroupIcon from '@mui/icons-material/Group';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import PieChartIcon from '@mui/icons-material/PieChart';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import TuneIcon from '@mui/icons-material/Tune';
-import SecurityIcon from '@mui/icons-material/Security';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import ListIcon from '@mui/icons-material/List';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import LogoutIcon from '@mui/icons-material/Logout'
+import { Button, Paper } from '@mui/material';
 
 const DRAWER_WIDTH = 240;
 
@@ -39,30 +43,49 @@ type NavItem = {
   href?: string;
   children?: { id: string; label: string; href: string; icon?: React.ReactNode }[];
 };
-
+// TODO: добавить tenant_id в пути
 const NAV_ITEMS: NavItem[] = [
   {
-    id: 'dashboard',
-    label: 'Дашборд',
-    href: '/dashboard',
+    id: 'project',
+    label: 'Проекты',
+    href: '/projects',
     icon: <DashboardIcon />,
+    children: [
+      { id: 'projects-list', label: 'Просмотр', href: '/projects', icon: <ListAltIcon/> },
+      { id: 'projects-add', label: 'Добавить', href: '/projects/new', icon: <AddIcon/> },
+      { id: 'projects-edit', label: 'Редактировать', href: '/projects/edit', icon: <EditIcon/> },
+    ],
   },
   {
     id: 'users',
     label: 'Пользователи',
     icon: <PeopleIcon />,
     children: [
-      { id: 'users-list', label: 'Список', href: '/users', icon: <GroupIcon /> },
+      { id: 'users-list', label: 'Просмотр', href: '/users', icon: <GroupIcon /> },
       { id: 'users-add', label: 'Добавить', href: '/users/new', icon: <PersonAddIcon /> },
+      { id: 'users-edit', label: 'Редактировать', href: '/users/edit', icon: <EditIcon /> },
     ],
   },
   {
-    id: 'reports',
-    label: 'Отчёты',
+    id: 'tasks',
+    label: 'Задачи',
+    icon: <AssignmentIcon/>,
+    children: [
+      {
+        id: 'tasks-list', label: 'Просмотр', href:'/tasks', icon: <ListAltIcon/>
+      },
+      {
+        id: 'task-add', label: 'Добавить задачу', href:'/task/new', icon: <AddIcon/>
+      }
+    ]
+
+  },
+  {
+    id: 'statistics',
+    label: 'Статистика',
     icon: <AssessmentIcon />,
     children: [
-      { id: 'reports-bar', label: 'Продажи', href: '/reports/sales', icon: <BarChartIcon /> },
-      { id: 'reports-pie', label: 'Трафик', href: '/reports/traffic', icon: <PieChartIcon /> },
+      { id: 'statistics-dead-tasks', label: 'Просроченные задачи', href: '/statistics/deadtasks', icon: <ListIcon /> },
     ],
   },
   {
@@ -70,8 +93,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Настройки',
     icon: <SettingsIcon />,
     children: [
-      { id: 'settings-general', label: 'Общие', href: '/settings', icon: <TuneIcon /> },
-      { id: 'settings-security', label: 'Безопасность', href: '/settings/security', icon: <SecurityIcon /> },
+      { id: 'settings-general', label: 'Смена пароля', href: '/settings', icon: <TuneIcon /> }
     ],
   },
 ];
@@ -104,7 +126,7 @@ export default function SideMenu() {
     <>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          My App
+          TaskFlow
         </Typography>
       </Toolbar>
       <Divider />
@@ -174,6 +196,34 @@ export default function SideMenu() {
           );
         })}
       </List>
+<Box sx={{ p: 2 }}>
+  <Paper
+    variant="outlined"
+    sx={{
+      p: 1.5,
+      borderRadius: 2,
+      bgcolor: 'action.hover',
+    }}
+  >
+    <Typography variant="caption" color="text.secondary">
+      Компания
+    </Typography>
+    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }} noWrap>
+      Моя компания
+    </Typography>
+    <Button
+      size="small"
+      variant="contained"
+      color="primary"
+      fullWidth
+      startIcon={<LogoutIcon />}
+    >
+      Выход
+    </Button>
+  </Paper>
+</Box>
+    
+      
     </>
   );
 
@@ -199,7 +249,7 @@ export default function SideMenu() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            My App
+            TaskFlow
           </Typography>
         </Toolbar>
       </AppBar>
@@ -240,8 +290,11 @@ export default function SideMenu() {
           }}
         >
           {drawerContent}
+
         </Drawer>
+        
       </Box>
+     
     </Box>
   );
 }
@@ -250,5 +303,5 @@ export default function SideMenu() {
 function isActive(pathname: string | null, href: string) {
   if (!pathname) return false;
   if (href === '/') return pathname === '/';
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return pathname === href;
 }
