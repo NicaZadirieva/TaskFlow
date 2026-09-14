@@ -1,9 +1,11 @@
 from datetime import datetime
+from enum import Enum as PyEnum
+
 from sqlalchemy import (
+    Boolean,
+    DateTime,
     Enum,
     ForeignKey,
-    DateTime,
-    Boolean,
     Index,
     UniqueConstraint,
     func,
@@ -11,9 +13,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.base import Base
-from app.db.entities.task import Task
-from app.db.entities.user import User
-from enum import Enum as PyEnum
 
 
 class TaskRole(PyEnum):
@@ -42,5 +41,5 @@ class AssignedTask(Base):
     assigned_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    user: Mapped["User"] = relationship(back_populates="assigned_tasks")
-    task: Mapped["Task"] = relationship(back_populates="assignees")
+    user: Mapped["User"] = relationship(back_populates="assigned_tasks")  # type: ignore  # noqa: F821
+    task: Mapped["Task"] = relationship(back_populates="assignees")  # type: ignore  # noqa: F821

@@ -1,14 +1,9 @@
-from datetime import datetime
 from enum import Enum as PyEnum
-from typing import List, Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.entities.assigned_task import AssignedTask
 from app.db.entities.base import Base
-from app.db.entities.task import Task
-from app.db.entities.tenant import Tenant
 
 
 class TenantRole(PyEnum):
@@ -33,12 +28,12 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Добавить для расчёта стоимости
-    hourly_rate: Mapped[Optional[int]] = mapped_column(
+    hourly_rate: Mapped[int | None] = mapped_column(
         Integer, nullable=True
     )  # в копейках/центах
 
-    tenant: Mapped["Tenant"] = relationship(back_populates="users")
-    assigned_tasks: Mapped[list["AssignedTask"]] = relationship(
+    tenant: Mapped["Tenant"] = relationship(back_populates="users")  # type: ignore  # noqa: F821
+    assigned_tasks: Mapped[list["AssignedTask"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="user",
         cascade="all, delete-orphan",
     )

@@ -1,12 +1,9 @@
 from datetime import datetime
-from typing import List
+
 from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.base import Base
-from app.db.entities.project import Project
-from app.db.entities.task import Task
-from app.db.entities.user import User
 
 
 class Tenant(Base):
@@ -21,10 +18,10 @@ class Tenant(Base):
     )  # блокировка тенанта для клиента (например, за неуплату)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
-    users: Mapped[List["User"]] = relationship(
+    users: Mapped[list["User"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="tenant", cascade="all, delete-orphan"
     )
-    projects: Mapped[List["Project"]] = relationship(
+    projects: Mapped[list["Project"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="tenant", cascade="all, delete-orphan"
     )
-    tasks: Mapped[list["Task"]] = relationship(back_populates="tenant")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="tenant")  # type: ignore  # noqa: F821

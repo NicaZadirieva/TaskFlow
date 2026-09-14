@@ -1,0 +1,21 @@
+.form-container {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+
+.form {
+	background: var(--foreground);
+	color: var(--background);
+	border-radius: 8px;
+	width: 100%;
+	max-width: 480px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	height: auto;
+	max-height: 300px;
+	align-self: center;
+}
+

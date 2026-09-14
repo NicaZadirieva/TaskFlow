@@ -1,11 +1,9 @@
 from datetime import datetime
-from typing import List, Optional
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String
+
+from sqlalchemy import DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.entities.base import Base
-from app.db.entities.task import Status, Task
-from app.db.entities.tenant import Tenant
 
 
 class Project(Base):
@@ -16,13 +14,13 @@ class Project(Base):
     )
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    budget_hours: Mapped[Optional[float]] = mapped_column(
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    budget_hours: Mapped[float | None] = mapped_column(
         Numeric(10, 2), nullable=True
     )  # бюджет в часах
-    deadline: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    tenant: Mapped["Tenant"] = relationship(back_populates="projects")
-    tasks: Mapped[List["Task"]] = relationship(
+    tenant: Mapped["Tenant"] = relationship(back_populates="projects")  # type: ignore  # noqa: F821
+    tasks: Mapped[list["Task"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="project", cascade="all, delete-orphan"
     )
