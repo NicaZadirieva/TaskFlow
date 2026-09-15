@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 
-import "./globals.css";
+import "../globals.css";
+import SideMenu from "../components/menu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +26,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="grid min-h-full"><AntdRegistry>{children}</AntdRegistry></body>
+      <body className="grid min-h-full">
+        <AntdRegistry>
+          <SideMenu>{children}</SideMenu>
+        </AntdRegistry>
+      </body>
     </html>
   );
 }
