@@ -5,28 +5,22 @@ import { getFormErrorMessage } from "../shared/utils/getFormErrorMessage";
 import LoginFormData from "./login_form.interface";
 import { useState } from "react";
 import getUserReq from "./api/get_user.req";
-import { showToast } from "nextjs-toast-notify";
+import { notification } from 'antd';
+import { Button, Form, Input } from "antd";
 import {
-  Button,
-  IconButton,
-  InputAdornment,
-  TextField,
-} from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import TitledForm from '../components/form/form';
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+} from "@ant-design/icons";
+import TitledForm from "../components/form/form";
 
 export default function LoginPage() {
-  const {
-    handleSubmit,
-    control
-  } = useForm<LoginFormData>({
+  const [api, contextHolder] = notification.useNotification();
+  const { handleSubmit, control } = useForm<LoginFormData>({
     defaultValues: {
-    email: "",
-    password: "",
-  },
+      email: "",
+      password: "",
+    },
   });
-  const [isPasswordVisible, setPasswordVisible] = useState<boolean>(false);
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
   const onSubmit: SubmitHandler<LoginFormData> = (data) => {
@@ -34,12 +28,9 @@ export default function LoginPage() {
     return getUserReq(data.email, data.password)
       .then(() => {})
       .catch((message) => {
-        showToast.error(message, {
-          duration: 5000,
-          progress: true,
-          position: "top-right",
-          transition: "bounceIn",
-        });
+        api.error({
+          description: message
+      });
       })
       .finally(() => {
         setSubmitting(false);
@@ -47,12 +38,13 @@ export default function LoginPage() {
   };
 
   return (
+    <>
+    {contextHolder}
     <div className={styles["form-container"]}>
       <TitledForm
         onSubmit={handleSubmit(onSubmit)}
         title={"Вход в систему"}
         className={styles["form"]}
-        
       >
         <Controller
           name="email"
@@ -65,16 +57,18 @@ export default function LoginPage() {
             },
           }}
           render={({ field, fieldState: { error } }) => (
-            <TextField
-              {...field}
-              fullWidth
+            <Form.Item
+              validateStatus={error ? "error" : ""}
+              help={error ? getFormErrorMessage(error) : " "}
               required
-              variant="outlined"
-              type="email"
-              label="email"
-              error={!!error}
-              helperText={error ? getFormErrorMessage(error) : " "}
-            />
+            >
+              <Input
+                {...field}
+                type="email"
+                placeholder="email"
+                size="large"
+              />
+            </Form.Item>
           )}
         />
         <Controller
@@ -85,47 +79,35 @@ export default function LoginPage() {
             minLength: { value: 6, message: "Минимум 6 символов" },
           }}
           render={({ field, fieldState: { error } }) => (
-            <TextField
-              {...field}
+            <Form.Item
+              validateStatus={error ? "error" : ""}
+              help={error ? getFormErrorMessage(error) : " "}
               required
-              fullWidth
-              variant="outlined"
-              label="Пароль"
-              type={isPasswordVisible ? "text" : "password"}
-              error={!!error}
-              helperText={error ? getFormErrorMessage(error) : " "}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label={
-                          isPasswordVisible
-                            ? "Спрятать пароль"
-                            : "Отобразить пароль"
-                        }
-                        onClick={() => setPasswordVisible((prev) => !prev)}
-                        edge="end"
-                      >
-                        {isPasswordVisible ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
+            >
+              <Input.Password
+                {...field}
+                placeholder="Пароль"
+                size="large"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+              />
+            </Form.Item>
           )}
         />
 
         <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          disabled={isSubmitting}
+          type="primary"
+          htmlType="submit"
+          block
+          size="large"
+          loading={isSubmitting}
         >
           {isSubmitting ? "Вход..." : "Войти"}
         </Button>
       </TitledForm>
     </div>
+    </>
+    
   );
 }
