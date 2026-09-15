@@ -1,8 +1,23 @@
 "use client";
 
-import { Badge, Table, Card, Tag, Typography } from "antd";
+import { useState } from "react";
+import {
+  Badge,
+  Table,
+  Card,
+  Tag,
+  Typography,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Switch,
+  InputNumber,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { UserRoleEnum } from "../userRoleEnum";
+import { UserRoleEnum } from '@/app/shared/userRoleEnum';
+
 
 const { Text } = Typography;
 
@@ -15,7 +30,7 @@ interface DataType {
   hourly_rate?: number;
 }
 
-const dataSource: DataType[] = [
+const initialDataSource: DataType[] = [
   {
     key: "1",
     name: "Mike",
@@ -49,6 +64,50 @@ const renderActive = (record: DataType) =>
   );
 
 export default function UserTable() {
+  const [dataSource, setDataSource] = useState<DataType[]>(initialDataSource);
+  const [editingRecord, setEditingRecord] = useState<DataType | null>(null);
+  const [form] = Form.useForm<DataType>();
+
+  const openEdit = (record: DataType) => {
+  setEditingRecord(record);
+  // Откладываем установку значений до монтирования содержимого Modal
+  queueMicrotask(() => {
+    form.setFieldsValue({
+      name: record.name,
+      email: record.email,
+      role: record.role,
+      is_active: record.is_active,
+      hourly_rate: record.hourly_rate,
+    });
+  });
+};
+
+  const closeEdit = () => {
+    setEditingRecord(null);
+    form.resetFields();
+  };
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+
+      // Если роль — клиент, сбрасываем стоимость часа
+      const normalized: Partial<DataType> =
+        values.role === UserRoleEnum.CLIENT
+          ? { ...values, hourly_rate: undefined }
+          : values;
+
+      setDataSource((prev) =>
+        prev.map((item) =>
+          item.key === editingRecord?.key ? { ...item, ...normalized } : item,
+        ),
+      );
+      closeEdit();
+    } catch {
+      // Валидация не прошла — ничего не делаем
+    }
+  };
+
   const columns: ColumnsType<DataType> = [
     { title: "Имя", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
@@ -68,6 +127,15 @@ export default function UserTable() {
         ) : (
           <>{record.hourly_rate ?? "—"}</>
         ),
+    },
+    {
+      title: "Редактировать",
+      key: "edit",
+      render: (_, record) => (
+        <Button type="link" onClick={() => openEdit(record)}>
+          Изменить
+        </Button>
+      ),
     },
   ];
 
@@ -141,10 +209,97 @@ export default function UserTable() {
                     : `${item.hourly_rate ?? "—"} ₽/ч`}
                 </Text>
               </div>
+
+              <Button
+                type="link"
+                style={{ padding: 0, alignSelf: "flex-start", marginTop: 4 }}
+                onClick={() => openEdit(item)}
+              >
+                Редактировать
+              </Button>
             </div>
           </Card>
         ))}
       </div>
+
+      {/* Модальное окно редактирования 
+	  TODO: доступно только OWNER*/}
+      <Modal
+        title="Редактирование пользователя"
+        open={!!editingRecord}
+        onOk={handleSave}
+        onCancel={closeEdit}
+        okText="Сохранить"
+        cancelText="Отмена"
+        destroyOnHidden
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          preserve={false}
+          // key заставляет форму пересоздаваться при смене редактируемой записи,
+          // чтобы initialValues гарантированно применились
+          key={String(editingRecord?.key ?? "new")}
+          initialValues={
+            editingRecord
+              ? {
+                  name: editingRecord.name,
+                  email: editingRecord.email,
+                  role: editingRecord.role,
+                  is_active: editingRecord.is_active,
+                  hourly_rate: editingRecord.hourly_rate,
+                }
+              : undefined
+          }
+        >
+          <Form.Item
+            label="Имя"
+            name="name"
+            rules={[{ required: true, message: "Введите имя" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "Введите email" },
+              { type: "email", message: "Некорректный email" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Роль"
+            name="role"
+            rules={[{ required: true, message: "Выберите роль" }]}
+          >
+            <Select
+              options={[
+                { value: UserRoleEnum.CLIENT, label: UserRoleEnum.CLIENT },
+                { value: UserRoleEnum.OWNER, label: UserRoleEnum.OWNER },
+                { value: UserRoleEnum.TEAM, label: UserRoleEnum.TEAM },
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item noStyle shouldUpdate>
+            {({ getFieldValue }) =>
+              getFieldValue("role") !== UserRoleEnum.CLIENT ? (
+                <Form.Item label="Стоимость в час ₽/ч" name="hourly_rate">
+                  <InputNumber min={0} style={{ width: "100%" }} />
+                </Form.Item>
+              ) : null
+            }
+          </Form.Item>
+
+          <Form.Item label="Активен" name="is_active" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }
