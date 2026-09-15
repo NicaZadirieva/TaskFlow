@@ -31,8 +31,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AppRouterCacheProvider>
-          <SideMenu />
-          {children}
+          <SideMenu>
+{children}
+          </SideMenu>
+          
         </AppRouterCacheProvider>
       </body>
     </html>

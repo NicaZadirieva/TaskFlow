@@ -1,13 +1,13 @@
-import { Button, Checkbox } from "@mui/material";
+import { Box, Button, Checkbox } from "@mui/material";
 import LoadingIconButton from "./loading_icon_button";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Checkboxes from './checkboxes';
 import AddUserForm from './add_user_form';
-import SideMenu from '../components/menu';
+import SetDoneButton from './set_done_btn';
 
 export default function TestMui() {
   return (
-    <div>
+    <>
       <Button
         variant="contained"
         endIcon={<LogoutIcon />}
@@ -17,9 +17,9 @@ export default function TestMui() {
       </Button>
       <LoadingIconButton></LoadingIconButton>
 	  <Checkboxes/>
-	  <SideMenu/>
-
-	  <AddUserForm></AddUserForm>
-    </div>
+    <SetDoneButton/>
+    <AddUserForm/>
+   
+    </>
   );
 }
