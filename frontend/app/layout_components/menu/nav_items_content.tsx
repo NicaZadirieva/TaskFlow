@@ -58,26 +58,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: "users",
     label: "Пользователи",
     icon: <TeamOutlined />,
-    children: [
-      {
-        id: "users-list",
-        label: "Просмотр",
-        href: "/users",
-        icon: <UsergroupAddOutlined />,
-      },
-      {
-        id: "users-add",
-        label: "Добавить",
-        href: "/users/new",
-        icon: <UserAddOutlined />,
-      },
-      {
-        id: "users-edit",
-        label: "Редактировать",
-        href: "/users/edit",
-        icon: <EditOutlined />,
-      },
-    ],
+    href: "/users"
   },
   {
     id: "tasks",
