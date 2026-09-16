@@ -9,7 +9,7 @@ import changeUserReq from "../api/change_user/change_user.req";
 import { toNewUserSchema, toUserSchema } from "../../api/to_schema/to_user";
 import { Button, message, Space } from "antd";
 import { useRouter } from "next/navigation";
-import UserAdditor from "./components/shared/UserAdditor";
+import UserAdditor from "../new/components/UserAdditor";
 import createUserReq from "../api/create_user/create_user.req";
 
 export default function UserTable({ users }: { users: IUser[] }) {
@@ -37,22 +37,7 @@ export default function UserTable({ users }: { users: IUser[] }) {
     }
   };
 
-  const onCreate = async (user: Omit<IUser, "id">) => {
-    const normalized =
-      user.role === TenantRole.CLIENT
-        ? { ...user, hourly_rate: undefined }
-        : user;
-
-    try {
-      await createUserReq(toNewUserSchema(normalized));
-      setIsAdding(false);
-      router.refresh();
-      message.success("Обновление данных прошло успешно");
-    } catch (e) {
-      console.error("Ошибка создания", e);
-      message.error("Ошибка создания пользователя");
-    }
-  };
+  
 
   const onReset = () => setEditingRecord(null);
 
@@ -66,14 +51,6 @@ export default function UserTable({ users }: { users: IUser[] }) {
           .user-table-mobile { display: none; }
         }
       `}</style>
-
-      <Button className="mb-4" onClick={() => setIsAdding(true)}>Добавить</Button>
-
-      <UserAdditor
-        isOpen={isAdding}
-        onCreate={onCreate}
-        onReset={() => setIsAdding(false)}
-      />
 
       <DesktopUserTable onEdit={onEdit} dataSource={users} />
 
