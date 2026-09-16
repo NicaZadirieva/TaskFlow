@@ -1,5 +1,7 @@
 import { IUser } from "@/app/shared/interface/user.interface";
 import { Form, Input, message, Modal } from "antd";
+import changePasswordReq from "../../../api/change_password.req";
+import { toUserSchema } from "@/app/(other_pages)/api/to_schema/to_user";
 
 interface PasswordFormValues {
   password: string;
@@ -8,29 +10,33 @@ interface PasswordFormValues {
 export default function ChangePasswordModel({
   selectedUser,
   hideModal,
-  isOpen = false
+  isOpen = false,
 }: {
   selectedUser: IUser | null;
-  hideModal: () => void,
-  isOpen: boolean
+  hideModal: () => void;
+  isOpen: boolean;
 }) {
   const [form] = Form.useForm<PasswordFormValues>();
 
   const closePasswordModal = () => {
-	form.resetFields();
+    form.resetFields();
     hideModal();
   };
 
   const handleChangePassword = async () => {
     try {
-      const values = await form.validateFields();
-      // TODO: изменить пароль через API
-      // await api.changePassword(selectedUser.email, values.password);
-      console.log("Смена пароля для", selectedUser?.email, values.password);
-      message.success(`Пароль для «${selectedUser?.name}» изменён`);
-      closePasswordModal();
-    } catch {
-      // Ошибки валидации уже подсвечены под полями
+      if (selectedUser) {
+        const values = await form.validateFields();
+        await changePasswordReq(toUserSchema(selectedUser), values.password);
+        message.success(`Пароль для «${selectedUser?.name}» изменён`);
+        closePasswordModal();
+      } else {
+        console.error("Пользователь для смены пароля не выбран");
+        message.error("Пользователь не выбран");
+      }
+    } catch (e) {
+      console.error("Ошибка обновления", e);
+      message.error("Ошибка обновления");
     }
   };
 
