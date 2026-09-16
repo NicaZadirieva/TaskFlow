@@ -8,12 +8,12 @@ export enum TenantRole {
 
 export interface User {
   id: number;
-  tenantId: number;          // tenant_id → camelCase
+  tenant_id: number;          // tenant_id → camelCase
   role: TenantRole;
   name: string;
   email: string;
-  isActive: boolean;         // is_active → camelCase
-  hourlyRate?: number;       // nullable: hourly_rate может отсутствовать
+  is_active: boolean;         // is_active → camelCase
+  hourly_rate?: number;       // nullable: hourly_rate может отсутствовать
   // поля, которые обычно не отдаются на фронтенд:
   // - password_hash (никогда не передаётся клиенту)
 }

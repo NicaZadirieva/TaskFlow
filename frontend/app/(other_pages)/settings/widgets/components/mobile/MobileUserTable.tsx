@@ -13,10 +13,10 @@ export default function MobileUserTable({
   return (
     <div className="user-table-mobile">
       {dataSource.map((user) => {
-        const isSelected = selectedUser && user.key === selectedUser.key;
+        const isSelected = selectedUser && user.id === selectedUser.id;
         return (
           <Card
-            key={user.key}
+            key={user.id}
             size="small"
             style={{
               marginBottom: 12,

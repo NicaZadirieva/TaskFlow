@@ -1,6 +1,6 @@
 import { IUser } from "@/app/shared/interface/user.interface";
 import { Form, Input, message, Modal } from "antd";
-import { useEffect, useState } from "react";
+
 interface PasswordFormValues {
   password: string;
   confirm: string;
@@ -24,6 +24,7 @@ export default function ChangePasswordModel({
   const handleChangePassword = async () => {
     try {
       const values = await form.validateFields();
+      // TODO: изменить пароль через API
       // await api.changePassword(selectedUser.email, values.password);
       console.log("Смена пароля для", selectedUser?.email, values.password);
       message.success(`Пароль для «${selectedUser?.name}» изменён`);

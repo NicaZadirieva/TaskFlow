@@ -1,8 +1,8 @@
 "use client";
 
 import { Badge, Button, Table } from "antd";
-import { IUser } from "../../../../../shared/interface/user.interface";
-import { UserRoleEnum } from "@/app/shared/userRoleEnum";
+import { IUser, TenantRole } from "@/app/shared/interface/user.interface";
+
 import { renderActive } from '../../../helpers/renderActive';
 
 const { Column } = Table;
@@ -18,7 +18,7 @@ export default function DesktopUserTable({
 }) {
   return (
     <div className="user-table-desktop">
-      <Table<IUser> dataSource={dataSource} rowKey="key">
+      <Table<IUser> dataSource={dataSource} rowKey="id">
         <Column title="Имя" key="name" dataIndex="name" />
         <Column title="Email" key="email" dataIndex="email" />
         <Column title="Роль" key="role" dataIndex="role" />
@@ -31,7 +31,7 @@ export default function DesktopUserTable({
           title="Стоимость в час"
           key="hourly_rate"
           render={(_, record) =>
-            record.role === UserRoleEnum.CLIENT ? (
+            record.role === TenantRole.CLIENT ? (
               <Badge status="warning" text="Клиент не имеет" />
             ) : (
               <>{record.hourly_rate ?? "—"}</>

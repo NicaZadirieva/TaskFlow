@@ -13,7 +13,7 @@ export default function DesktopUserTable({
     <div className="user-table-desktop">
       <Table<IUser>
         dataSource={dataSource}
-        rowKey="key"
+        rowKey="id"
         onRow={(record) => ({
           onClick: () => onChooseRow(record), // setSelectedRow(record.key)
           style: { cursor: "pointer" },

@@ -1,7 +1,7 @@
 import { Button, Card, Tag, Typography } from "antd";
-import { IUser } from "../../../../../shared/interface/user.interface";
+import { IUser, TenantRole } from "@/app/shared/interface/user.interface";
 import { renderActive } from "../../../helpers/renderActive";
-import { UserRoleEnum } from "@/app/shared/userRoleEnum";
+
 
 const { Text } = Typography;
 
@@ -16,7 +16,7 @@ export default function MobileUserTable({
     <div className="user-table-mobile">
       {dataSource.map((item) => (
         <Card
-          key={item.key}
+          key={item.id}
           size="small"
           style={{ marginBottom: 12 }}
           styles={{ body: { padding: 12 } }}
@@ -57,7 +57,7 @@ export default function MobileUserTable({
             >
               <Tag color="blue">{item.role}</Tag>
               <Text type="secondary" style={{ fontSize: 13 }}>
-                {item.role === UserRoleEnum.CLIENT
+                {item.role === TenantRole.CLIENT
                   ? "Клиент не имеет"
                   : `${item.hourly_rate ?? "—"} ₽/ч`}
               </Text>

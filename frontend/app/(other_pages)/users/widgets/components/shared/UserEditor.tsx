@@ -1,7 +1,7 @@
 import { Form, Input, InputNumber, Modal, Select, Switch } from 'antd';
-import { IUser } from '../../../../../shared/interface/user.interface';
+import { IUser, TenantRole } from '@/app/shared/interface/user.interface';
 import { useEffect } from 'react';
-import { UserRoleEnum } from '@/app/shared/userRoleEnum';
+
 
 export default function UserEditor({onSave, onReset, editingRecord = null}: {onSave: (user: IUser) => void, editingRecord: IUser| null, onReset: () => void}) {
   const [form] = Form.useForm<IUser>();
@@ -52,7 +52,7 @@ export default function UserEditor({onSave, onReset, editingRecord = null}: {onS
           preserve={false}
           // key заставляет форму пересоздаваться при смене редактируемой записи,
           // чтобы initialValues гарантированно применились
-          key={String(editingRecord?.key ?? "new")}
+          key={String(editingRecord?.id ?? "new")}
           initialValues={
             editingRecord
               ? {
@@ -91,16 +91,16 @@ export default function UserEditor({onSave, onReset, editingRecord = null}: {onS
           >
             <Select
               options={[
-                { value: UserRoleEnum.CLIENT, label: UserRoleEnum.CLIENT },
-                { value: UserRoleEnum.OWNER, label: UserRoleEnum.OWNER },
-                { value: UserRoleEnum.TEAM, label: UserRoleEnum.TEAM },
+                { value: TenantRole.CLIENT, label: TenantRole.CLIENT },
+                { value: TenantRole.OWNER, label: TenantRole.OWNER },
+                { value: TenantRole.TEAM, label: TenantRole.TEAM },
               ]}
             />
           </Form.Item>
 
           <Form.Item noStyle shouldUpdate>
             {({ getFieldValue }) =>
-              getFieldValue("role") !== UserRoleEnum.CLIENT ? (
+              getFieldValue("role") !== TenantRole.CLIENT ? (
                 <Form.Item label="Стоимость в час ₽/ч" name="hourly_rate">
                   <InputNumber min={0} style={{ width: "100%" }} />
                 </Form.Item>
