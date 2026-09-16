@@ -1,4 +1,4 @@
-import UserTable from './components/UserTable';
+import UserTable from './widgets/ShowUser';
 
 export default function UsersPage() {
 	return (
