@@ -6,15 +6,13 @@ import DesktopUserTable from "./components/desktop/DesktopUserTable";
 import MobileUserTable from "./components/mobile/MobileUserTable";
 import UserEditor from "./components/shared/UserEditor";
 import changeUserReq from "../api/change_user/change_user.req";
-import { toNewUserSchema, toUserSchema } from "../../api/to_schema/to_user";
-import { Button, message, Space } from "antd";
+import { toUserSchema } from "../../api/to_schema/to_user";
+import { message } from "antd";
 import { useRouter } from "next/navigation";
-import UserAdditor from "../new/components/UserAdditor";
-import createUserReq from "../api/create_user/create_user.req";
+
 
 export default function UserTable({ users }: { users: IUser[] }) {
   const [editingRecord, setEditingRecord] = useState<IUser | null>(null);
-  const [isAdding, setIsAdding] = useState(false);
   const router = useRouter();
   const onEdit = (record: IUser) => {
     setEditingRecord(record);

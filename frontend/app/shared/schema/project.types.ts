@@ -3,10 +3,10 @@ import { Tenant } from './tenant.types';
 
 export interface Project {
   id: number;
-  tenantId: number; 
+  tenant_id: number; 
   name: string;
   description?: string;
-  budgetHours?: number;
+  budget_hours?: number;
   deadline?: Date;
   tenant?: Tenant;
   tasks?: Task[];
