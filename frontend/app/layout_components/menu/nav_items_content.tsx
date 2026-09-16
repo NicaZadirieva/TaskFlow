@@ -98,9 +98,15 @@ export const NAV_ITEMS: NavItem[] = [
     icon: <SettingOutlined />,
     children: [
       {
-        id: "settings-general",
+        id: "settings-password",
         label: "Смена пароля",
-        href: "/settings",
+        href: "/settings/change_password",
+        icon: <ToolOutlined />,
+      },
+      {
+        id: "settings-hourly-rate",
+        label: "Смена стоимости",
+        href: "/settings/change_hourly_rate",
         icon: <ToolOutlined />,
       },
     ],

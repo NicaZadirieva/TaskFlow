@@ -1,7 +1,8 @@
 import { IUser } from "@/app/shared/interface/user.interface";
 import { Form, Input, message, Modal } from "antd";
-import changePasswordReq from "../../../api/change_password.req";
+
 import { toUserSchema } from "@/app/(other_pages)/api/to_schema/to_user";
+import changePasswordReq from '@/app/(other_pages)/settings/api/change_password.req';
 
 interface PasswordFormValues {
   password: string;
