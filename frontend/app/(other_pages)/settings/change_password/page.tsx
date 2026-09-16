@@ -1,7 +1,8 @@
-import getUsersReq from "../api/get_users/get_users.req";
-import ChangePasswordTable from "./widgets/ChangePasswordTable";
+import getUsersReq from "../../api/get_users/get_users.req";
+import ChangePasswordTable from './widgets/ChangePasswordTable';
 
-export default async function SettingsPage() {
+
+export default async function ChangePasswordSettingsPage() {
   const users = await getUsersReq();
   if (users) {
     return <ChangePasswordTable users={users} />
