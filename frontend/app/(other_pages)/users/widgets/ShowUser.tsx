@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { IUser } from '../interface/user.interface';
+import { IUser } from '../../../shared/interface/user.interface';
 import { usersMockData } from '../mock-data/users';
 import DesktopUserTable from './components/desktop/DesktopUserTable';
 import MobileUserTable from './components/mobile/MobileUserTable';

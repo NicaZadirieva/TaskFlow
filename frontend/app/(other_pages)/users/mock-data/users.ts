@@ -1,5 +1,5 @@
 import { UserRoleEnum } from '@/app/shared/userRoleEnum';
-import { IUser } from '../interface/user.interface';
+import { IUser } from '../../../shared/interface/user.interface';
 
 export const usersMockData: IUser[] = [
   {

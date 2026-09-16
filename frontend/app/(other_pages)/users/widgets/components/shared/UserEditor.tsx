@@ -1,5 +1,5 @@
 import { Form, Input, InputNumber, Modal, Select, Switch } from 'antd';
-import { IUser } from '../../../interface/user.interface';
+import { IUser } from '../../../../../shared/interface/user.interface';
 import { useEffect } from 'react';
 import { UserRoleEnum } from '@/app/shared/userRoleEnum';
 

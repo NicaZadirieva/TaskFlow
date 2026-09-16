@@ -1,5 +1,5 @@
 import { Button, Card, Tag, Typography } from "antd";
-import { IUser } from "../../../interface/user.interface";
+import { IUser } from "../../../../../shared/interface/user.interface";
 import { renderActive } from "../../../helpers/renderActive";
 import { UserRoleEnum } from "@/app/shared/userRoleEnum";
 

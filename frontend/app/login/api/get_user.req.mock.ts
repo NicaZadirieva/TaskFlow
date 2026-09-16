@@ -1,4 +1,4 @@
-import { TenantRole, User } from "@/app/types/user.types";
+import { TenantRole, User } from "@/app/shared/schema/user.types";
 
 const mockOwner: User = {
   id: 101,
