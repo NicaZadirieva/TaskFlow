@@ -1,34 +1,39 @@
-import { Form, Input, InputNumber, Modal, Select, Switch } from 'antd';
-import { IUser, TenantRole } from '@/app/shared/interface/user.interface';
-import { useEffect } from 'react';
+"use client";
+import { Form, Input, InputNumber, message, Modal, Select, Switch } from "antd";
+import { IUser, TenantRole } from "@/app/shared/interface/user.interface";
+import createUserReq from "../../api/create_user/create_user.req";
+import { toNewUserSchema } from "@/app/(other_pages)/api/to_schema/to_user";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function UserAdditor({
-  onCreate,
-  onReset,
-  isOpen,
-}: {
-  onCreate: (user: Omit<IUser, 'id'>) => void;
-  onReset: () => void;
-  isOpen: boolean;
-}) {
-  const [form] = Form.useForm<Omit<IUser, 'id'>>();
+export default function UserAdditor() {
+  const [form] = Form.useForm<Omit<IUser, "id">>();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
-    if (isOpen) {
-      form.resetFields();
-    }
-  }, [isOpen, form]);
+    setIsOpen(true);
+  }, []);
+  const onCreate = async (user: Omit<IUser, "id">) => {
+    const normalized =
+      user.role === TenantRole.CLIENT
+        ? { ...user, hourly_rate: undefined }
+        : user;
 
-  const closeCreate = () => {
-    onReset();
-    form.resetFields();
+    try {
+      await createUserReq(toNewUserSchema(normalized));
+      router.push("/users");
+      message.success("Обновление данных прошло успешно");
+    } catch (e) {
+      console.error("Ошибка создания", e);
+      message.error("Ошибка создания пользователя");
+    }
   };
 
   const handleSave = async () => {
     try {
       const user = await form.validateFields();
       onCreate(user);
-      closeCreate();
     } catch {
       // Валидация не прошла — ничего не делаем
     }
@@ -39,9 +44,9 @@ export default function UserAdditor({
       title="Создание пользователя"
       open={isOpen}
       onOk={handleSave}
-      onCancel={closeCreate}
       okText="Создать"
       cancelText="Отмена"
+      onCancel={() => router.back()}
       destroyOnHidden
     >
       <Form

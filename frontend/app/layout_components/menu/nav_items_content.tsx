@@ -45,20 +45,28 @@ export const NAV_ITEMS: NavItem[] = [
         label: "Добавить",
         href: "/projects/new",
         icon: <PlusOutlined />,
-      },
-      {
-        id: "projects-edit",
-        label: "Редактировать",
-        href: "/projects/edit",
-        icon: <EditOutlined />,
-      },
+      }
     ],
   },
   {
     id: "users",
     label: "Пользователи",
     icon: <TeamOutlined />,
-    href: "/users"
+    href: "/users",
+    children: [
+      {
+        id: "users-list",
+        label: "Просмотр",
+        href: "/users",
+        icon: <ProfileOutlined />,
+      },
+      {
+        id: "user-add",
+        label: "Добавить",
+        href: '/users/new',
+        icon: <PlusOutlined />,
+      }
+    ]
   },
   {
     id: "tasks",
