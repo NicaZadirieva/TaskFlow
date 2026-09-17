@@ -23,17 +23,62 @@ import {
 import { Assignee } from "../../interface/assignee.interface";
 import TaskShowMetrics from "./TaskShowMetrics";
 import TaskNote from './TaskNote';
-import TaskAssignees from './Assignees';
+import TaskAssignees from './assignee/Assignees';
+import LogHoursModal from './LogHoursModal';
 
 const { Text, Title } = Typography;
 
 const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
   const [editing, setEditing] = useState<Assignee | null>(null);
+   const [logOpen, setLogOpen] = useState(false);
+  const [logTarget, setLogTarget] = useState<Assignee | null>({
+    id: 17,
+    user_id: 17,
+    name: 'Мария С.',
+    role: 'Backend',
+    hours: 18,
+    planned: 10,
+    removed: true,
+    removeReason: 'заболела',
+  });
+
+
+  /** Клик по карточке */
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Игнорируем клики по интерактивным элементам внутри
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('input') ||
+      target.closest('.ant-select') ||
+      target.closest('.ant-dropdown') ||
+      target.closest('[data-stop-card-click]')
+    ) {
+      return;
+    }
+    setLogOpen(true);
+  };
+
+  /** Сохранение часов */
+  const handleSaveHours = async (hours: number, comment?: string) => {
+    if (!logTarget) return;
+    try {
+      // await api.patch(`/tasks/${task.id}/assignees/${logTarget.id}`, { hours, comment });
+      //assigneesRef.current?.setHours(logTarget.id, hours);
+      message.success(`Часы обновлены: ${hours} ч`);
+    } catch {
+      message.error('Не удалось сохранить часы');
+      throw new Error('save failed');
+    }
+  };
   return (
+    <>
     <Card
       hoverable
       style={{ borderRadius: 12 }}
       styles={{ body: { padding: 20 } }}
+      onClick={handleCardClick}
     >
       {/* Header */}
       <div
@@ -126,6 +171,17 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
         />
       </Modal>
     </Card>
+    <LogHoursModal
+        open={logOpen}
+        assignee={logTarget}
+        taskTitle={task.title}
+        onClose={() => {
+          setLogOpen(false);
+          setLogTarget(null);
+        }}
+        onSave={handleSaveHours}
+      />
+      </>
   );
 };
 
