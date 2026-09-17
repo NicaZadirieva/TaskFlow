@@ -1,4 +1,5 @@
-import TaskCard, { Task } from './component/Task';
+import TaskCard from './component/task';
+import { Task } from './interface/task.interface';
 
 const TASKS: Task[] = [
   {
@@ -19,8 +20,6 @@ const TASKS: Task[] = [
         role: 'Frontend',
         hours: 6,
         planned: 8,
-        color: '#dbeafe',
-        textColor: '#2563eb',
       },
     ],
     tags: [
@@ -52,8 +51,6 @@ const TASKS: Task[] = [
         role: 'Backend',
         hours: 18,
         planned: 10,
-        color: '#dbeafe',
-        textColor: '#2563eb',
       },
       {
         id: '3',
@@ -61,8 +58,6 @@ const TASKS: Task[] = [
         role: 'Backend',
         hours: 8,
         planned: 6,
-        color: '#fef3c7',
-        textColor: '#d97706',
       },
     ],
     tags: [
@@ -96,8 +91,6 @@ const TASKS: Task[] = [
         role: 'Tech Lead',
         hours: 2,
         planned: 4,
-        color: '#dbeafe',
-        textColor: '#2563eb',
       },
       {
         id: '5',
@@ -105,8 +98,6 @@ const TASKS: Task[] = [
         role: 'Backend',
         hours: 1.5,
         planned: 3,
-        color: '#dcfce7',
-        textColor: '#16a34a',
       },
       {
         id: '6',
@@ -114,8 +105,6 @@ const TASKS: Task[] = [
         role: 'DevOps',
         hours: 0.5,
         planned: 1,
-        color: '#ede9fe',
-        textColor: '#7c3aed',
       },
     ],
     tags: [

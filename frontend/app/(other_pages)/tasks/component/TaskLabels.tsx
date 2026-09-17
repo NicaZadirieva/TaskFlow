@@ -3,7 +3,7 @@
 import React from 'react';
 import { Space, Tag, Tooltip, Popover } from 'antd';
 import { labelColors } from '../utils/labelColor';
-import { GithubLabel } from './Task';
+import { GithubLabel } from '../interface/githubLabel.interface';
 
 
 interface Props {
