@@ -8,39 +8,29 @@ import {
   Typography,
   Divider,
   message,
-  Modal,
-  Select,
   Badge,
 } from "antd";
 
 import Link from "next/link";
-import { TaskLabels } from "../TaskLabels";
+import { TaskLabels } from "./TaskLabels";
 import {
   PRIORITY_META,
   STATUS_META,
   Task,
-} from "../../interface/task.interface";
-import { Assignee } from "../../interface/assignee.interface";
-import TaskShowMetrics from "./TaskShowMetrics";
-import TaskNote from './TaskNote';
-import TaskAssignees from './assignee/Assignees';
-import LogHoursModal from './LogHoursModal';
+} from "../interface/task.interface";
+import { Assignee } from "../interface/assignee.interface";
+import TaskShowMetrics from "./assignee/TaskShowMetrics";
+import TaskNote from './assignee/TaskNote';
+
+import LogHoursModal from './assignee/LogHoursModal';
+import TaskAssignees from './assignee';
+import { assignee } from './assignee/mock-data/assignee';
 
 const { Text, Title } = Typography;
 
 const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
-  const [editing, setEditing] = useState<Assignee | null>(null);
-   const [logOpen, setLogOpen] = useState(false);
-  const [logTarget, setLogTarget] = useState<Assignee | null>({
-    id: 17,
-    user_id: 17,
-    name: 'Мария С.',
-    role: 'Backend',
-    hours: 18,
-    planned: 10,
-    removed: true,
-    removeReason: 'заболела',
-  });
+  const [logOpen, setLogOpen] = useState(false);
+  const [logTarget, setLogTarget] = useState<Assignee | null>(assignee);
 
 
   /** Клик по карточке */
@@ -116,7 +106,7 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
         <Link href={"/projects/" + task.project_id}>К проекту</Link>
       )}
       {/* GitHub labels */}
-      {task.tags.length > 0 && (
+      {task.tags && task.tags.length > 0 && (
         <div style={{ marginBottom: 14 }}>
           <TaskLabels
             labels={task.tags}
@@ -131,7 +121,7 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
         actualHours={task.hours.fact}
         estimatedBudget={task.budget.planned}
         estimatedHours={task.hours.planned}
-        due_date={task.due_date}
+        due_date={task.due_date.toLocaleDateString('ru-RU')}
         overdueDays={task.overdueDays}
       />
 
@@ -142,34 +132,11 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
 
       <Divider style={{ margin: "16px 0 12px" }} />
 
-      {/* Assignees */}
-      <TaskAssignees initial={task.assignees} setEditing={setEditing}/>
+      <TaskAssignees initial={task.assignees} />
 
       <Divider style={{ margin: "12px 0" }} />
 
-      {/* Modal смены исполнителя */}
-      <Modal
-        open={!!editing}
-        title="Сменить исполнителя"
-        onCancel={() => setEditing(null)}
-        onOk={() => {
-          message.success("Исполнитель обновлён");
-          setEditing(null);
-        }}
-        okText="Сохранить"
-        cancelText="Отмена"
-      >
-        <Select
-          style={{ width: "100%" }}
-          defaultValue={editing?.name}
-          options={[
-            { value: "Алексей К.", label: "Алексей К. — Frontend" },
-            { value: "Мария С.", label: "Мария С. — Backend" },
-            { value: "Иван П.", label: "Иван П. — Backend" },
-            { value: "Дмитрий П.", label: "Дмитрий П. — Tech Lead" },
-          ]}
-        />
-      </Modal>
+      
     </Card>
     <LogHoursModal
         open={logOpen}

@@ -27,6 +27,11 @@ export default function LogHoursModal({
   const [comment, setComment] = useState<string>('');
   const [saving, setSaving] = useState(false);
 
+  
+
+
+ 
+  
   useEffect(() => {
     if (open && assignee) {
       setHours(assignee.hours);
