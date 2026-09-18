@@ -10,7 +10,7 @@ export default function TaskNote({
       style={{
         display: "flex",
         gap: 8,
-        alignItems: "flex-start",
+        alignItems: "center",
         borderRadius: 8,
         padding: "10px 12px",
         marginTop: 12,
@@ -30,7 +30,7 @@ export default function TaskNote({
       <span style={{ fontWeight: 600, whiteSpace: "nowrap" }}>
         {note.label}:
       </span>
-      <span style={{ flex: 1 }}>{note.text}</span>
+      <span style={{ flex: 1, alignSelf: "center" }}>{note.text}</span>
     </div>
   );
 }
