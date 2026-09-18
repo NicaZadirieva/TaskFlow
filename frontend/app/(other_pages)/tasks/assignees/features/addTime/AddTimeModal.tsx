@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { InputNumber, Modal, Space, Typography, Alert, Input } from 'antd';
-import { Assignee } from '../../interface/assignee.interface';
-
+import { useEffect, useState } from "react";
+import { InputNumber, Modal, Space, Typography, Alert, Input } from "antd";
+import { Assignee } from "../../../interface/assignee.interface";
+import styles from "./AddTimeModal.module.css";
 
 const { Text } = Typography;
 
@@ -15,7 +15,7 @@ interface Props {
   onSave: (hours: number, comment?: string) => Promise<void> | void;
 }
 
-export default function AddHoursMinutesModal({
+export default function AddTimeModal({
   open,
   assignee,
   taskTitle,
@@ -24,14 +24,14 @@ export default function AddHoursMinutesModal({
 }: Props) {
   const [hours, setHours] = useState<number>(0);
   const [minutes, setMinutes] = useState<number>(0);
-  const [comment, setComment] = useState<string>('');
+  const [comment, setComment] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open && assignee) {
       setHours(0);
       setMinutes(0);
-      setComment('');
+      setComment("");
     }
   }, [open, assignee]);
 
@@ -55,44 +55,44 @@ export default function AddHoursMinutesModal({
   return (
     <Modal
       open={open}
-      title={`Сколько потратили сегодня на ${taskTitle ? ` — ${taskTitle}` : ''}?`}
+      title={`Сколько потратили сегодня на ${taskTitle ? ` — ${taskTitle}` : ""}?`}
       onCancel={onClose}
       onOk={handleSave}
       okText="Save"
       confirmLoading={saving}
       okButtonProps={{ disabled: hours === 0 && minutes === 0 }}
     >
-      <Space orientation="vertical" style={{ width: '100%' }}>
+      <div className={styles.content}>
         {assignee && (
-          <Text type="secondary">
+          <Text type="secondary" className={styles.assignee}>
             Assignee: {assignee.user_name ?? assignee.id}
           </Text>
         )}
 
-        <Space>
-          <div>
-            <Text>Часы</Text>
+        <div className={styles.timeRow}>
+          <div className={styles.timeField}>
+            <Text className={styles.timeLabel}>Часы</Text>
             <InputNumber
               min={0}
               max={23}
               precision={0}
               value={hours}
               onChange={(v) => setHours(v ?? 0)}
-              style={{ width: 100, display: 'block' }}
+              className={styles.timeInput}
             />
           </div>
-          <div>
-            <Text>Минуты</Text>
+          <div className={styles.timeField}>
+            <Text className={styles.timeLabel}>Минуты</Text>
             <InputNumber
               min={0}
               max={59}
               precision={0}
               value={minutes}
               onChange={(v) => setMinutes(v ?? 0)}
-              style={{ width: 100, display: 'block' }}
+              className={styles.timeInput}
             />
           </div>
-        </Space>
+        </div>
 
         <Input.TextArea
           rows={3}
@@ -105,8 +105,9 @@ export default function AddHoursMinutesModal({
           type="info"
           showIcon
           title={`Итого: ${hours} ч ${minutes} мин`}
+          className={styles.total}
         />
-      </Space>
+      </div>
     </Modal>
   );
 }

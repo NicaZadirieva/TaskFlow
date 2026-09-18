@@ -5,10 +5,11 @@ import { useMemo, useState } from "react";
 
 import { PlusOutlined, DeleteOutlined, UndoOutlined } from "@ant-design/icons";
 import styles from "./TaskAssignees.module.css";
+import { Assignee } from '../../interface/assignee.interface';
+import AddAssigneeModal from '../features/add/AddAssigneeModal';
+import RemoveAssigneeModal from '../features/remove/RemoveAssigneeModal';
 
-import RemoveAssigneeModal from "./components/RemoveAssigneeModal";
-import { Assignee } from '../interface/assignee.interface';
-import AddAssigneeModal from './components/AddAssigneeModal';
+
 
 const { Text } = Typography;
 

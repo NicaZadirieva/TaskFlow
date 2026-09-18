@@ -1,14 +1,10 @@
 "use client";
 
 import { Form, Input, InputNumber, message, Modal, Select, Space } from "antd";
-import { useState } from "react";
-
-import { assignee } from '../assignee/mock-data/assignee';
-import { AssignedTask } from '@/app/shared/schema/assigned-task.types';
-import { toAssigneeSchema } from '@/app/(other_pages)/api/to_schema/to_task';
+import { assignee } from '../../../mock-data/assignee';
 import { PlusOutlined } from '@ant-design/icons';
 import { Assignee } from '../../../interface/assignee.interface';
-
+import styles from './AddAssigneeModal.module.css';
 interface AddFormValues {
   name: string;
   role: string;
@@ -64,6 +60,7 @@ export default function AddAssigneeModal({ save, isOpen, onClose }: { onClose: (
     >
       <Form
         form={form}
+        className={styles.form}
         layout="vertical"
         requiredMark={false}
         initialValues={{ role: "Backend", hours: 0, planned: 1 }}
@@ -106,27 +103,27 @@ export default function AddAssigneeModal({ save, isOpen, onClose }: { onClose: (
           </Form.Item>
         )}
 
-        <Space size={12} style={{ display: "flex" }}>
+        <Space size={12} className={styles.hoursRow}>
           <Form.Item
             name="hours"
             label="Факт, ч"
-            style={{ flex: 1, marginBottom: 0 }}
+            //style={{ flex: 1, marginBottom: 0 }}
             rules={[
               { type: "number", min: 0, message: "Не может быть меньше 0" },
             ]}
           >
-            <InputNumber min={0} step={0.5} style={{ width: "100%" }} placeholder="0" />
+            <InputNumber min={0} step={0.5} /*style={{ width: "100%" }}*/ placeholder="0" />
           </Form.Item>
 
           <Form.Item
             name="planned"
             label="План, ч"
-            style={{ flex: 1, marginBottom: 0 }}
+            //style={{ flex: 1, marginBottom: 0 }}
             rules={[
               { type: "number", min: 0.5, message: "Минимум 0.5 ч" },
             ]}
           >
-            <InputNumber min={0.5} step={0.5} style={{ width: "100%" }} placeholder="1" />
+            <InputNumber min={0.5} step={0.5} /*style={{ width: "100%" }}*/ placeholder="1" />
           </Form.Item>
         </Space>
       </Form>

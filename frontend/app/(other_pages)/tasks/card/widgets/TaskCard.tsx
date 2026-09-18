@@ -16,18 +16,22 @@ import {
 } from "antd";
 import { PictureOutlined, FileTextOutlined } from "@ant-design/icons";
 import Link from "next/link";
-import { TaskLabels } from "../entities/TaskLabels";
-import { PRIORITY_META, STATUS_META, Task } from "../../interface/task.interface";
+import { TaskLabels } from "../entities/taskLabels/TaskLabels";
+import {
+  PRIORITY_META,
+  STATUS_META,
+  Task,
+} from "../../interface/task.interface";
 import { Assignee } from "../../interface/assignee.interface";
-import styles from './index.module.css';
-import TaskShowMetrics from '../feature/TaskShowMetrics';
-import TaskNote from '../entities/TaskNote';
+import styles from "./TaskCard.module.css";
+import ShowMetrics from "../feature/showMetrics/ShowMetrics";
+import TaskNote from "../entities/taskNote/TaskNote";
 
-import AddHoursMinutesModal from '../../assignees/features/AddHoursMinutesModal';
-import { assignee } from '../../mock-data/assignee';
-import TaskAssignees from '../../assignees/widgets/TaskAssignees';
+import AddTimeModal from "../../assignees/features/addTime/AddTimeModal";
+import { assignee } from "../../mock-data/assignee";
+import TaskAssignees from "../../assignees/widgets/TaskAssignees";
 
-const { Text, Title, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
 // Пример данных изображений (в реальном проекте приходит из Task)
 const taskImages: string[] = [
@@ -36,9 +40,7 @@ const taskImages: string[] = [
   "https://picsum.photos/seed/task3/800/600",
 ];
 
-// Порог, после которого показываем кнопку "Открыть описание"
-const DESCRIPTION_CLAMP_LINES = 3;
-
+const DividerWithMargins = () => <Divider style={{ margin: "16px 0 12px" }} />;
 const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
   const [logOpen, setLogOpen] = useState(false);
   const [logTarget, setLogTarget] = useState<Assignee | null>(assignee);
@@ -58,20 +60,13 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
   };
 
   // Грубая эвристика: показывать кнопку, если текст длиннее ~180 символов
-  const isDescriptionLong =
-    !!task.description && task.description.length > 180;
+  const isDescriptionLong = !!task.description && task.description.length > 180;
 
   return (
     <>
       <Card
         hoverable
         className={styles.cardActions}
-        style={{
-          borderRadius: 0,
-          height: 650,
-          display: "flex",
-          flexDirection: "column",
-        }}
         styles={{
           body: {
             padding: 20,
@@ -93,115 +88,73 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
           </Button>,
         ]}
       >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            gap: 12,
-            marginBottom: 16,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              flexWrap: "wrap",
-              gap: 6,
-            }}
-          >
+        <div className={styles["priority-status__wrapper"]}>
+          <div className={styles.priority__wrapper}>
             <Badge
               status={PRIORITY_META[task.priority].color}
               text={PRIORITY_META[task.priority].label}
               style={{ lineHeight: 1 }}
             />
-            <Text
-              type="secondary"
-              style={{
-                fontSize: 12,
-                fontFamily: "monospace",
-                lineHeight: 1,
-              }}
-            >
-              id {task.id}
-            </Text>
           </div>
 
-          <Space size={6} wrap style={{ alignItems: "baseline" }}>
-            <Tag color={STATUS_META[task.status].color} style={{ margin: 0 }}>
-              {STATUS_META[task.status].label}
-            </Tag>
-          </Space>
+          <Tag color={STATUS_META[task.status].color}>
+            {STATUS_META[task.status].label}
+          </Tag>
         </div>
 
         {/* Контентная колонка */}
-        <Space
-          orientation="vertical"
-          style={{
-            width: "100%",
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <Space orientation='horizontal' size="middle" style={{width: "100%", alignItems: "center", height: "50px", "justifyContent": "space-between" }}>
-<Tooltip title={task.title} placement="topLeft">
-            <Text
-              className={styles.header}
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                wordBreak: "break-word"
-              }}
-            >
-              {task.title}
-            </Text>
-          </Tooltip>
-          {task.project_id && (
-            <Link href={"/projects/" + task.project_id}>
-    <Button type="primary">К проекту</Button>
-  </Link>
-          )}
+        <Space orientation="vertical" className={styles.content}>
+          <Space
+            orientation="horizontal"
+            size="middle"
+            className={styles.header}
+          >
+            <Tooltip title={task.title} placement="topLeft">
+              <Text className={styles.header__text}>{task.title}</Text>
+            </Tooltip>
 
+            {task.project_id && (
+              <Link href={"/projects/" + task.project_id}>
+                <Button type="primary">К проекту</Button>
+              </Link>
+            )}
           </Space>
-          <Divider style={{ margin: "16px 0 12px" }} />
-<Space orientation='horizontal' size={"medium"} style={{"justifyContent": "space-between", "width": "100%",}}>
-  {/* Описание задачи */}
-          {task.description && 
-            isDescriptionLong && (
-                <Button
-                  type="link"
-                  size="small"
-                  data-stop-card-click
-                  style={{ padding: 0, marginTop: 4, height: 'auto' }}
-                  onClick={() => setDescriptionModalOpen(true)}
-                >
-                  <FileTextOutlined />
-                  Открыть описание
-                </Button>
-              )}
-              <div className={styles.imagesButtonWrapper}>
-            <Badge count={taskImages.length} size="small" offset={[-2, 2]}>
+          <DividerWithMargins />
+          <Space
+            orientation="horizontal"
+            size={"medium"}
+            className={styles.attachments}
+          >
+            {/* Описание задачи */}
+            {task.description && isDescriptionLong && (
               <Button
-                onClick={() => setImagesModalOpen(true)}
-                disabled={taskImages.length === 0}
+                type="link"
+                size="small"
+                data-stop-card-click
+                className={styles.description__btn}
+                onClick={() => setDescriptionModalOpen(true)}
               >
-                <PictureOutlined />
-                Изображения
+                <FileTextOutlined />
+                Открыть описание
               </Button>
-            </Badge>
-          </div>
-</Space>
-          
-        
-          <Divider style={{ margin: "16px 0 12px" }} />
+            )}
+            <div className={styles.imagesButtonWrapper}>
+              <Badge count={taskImages.length} size="small" offset={[-2, 2]}>
+                <Button
+                  onClick={() => setImagesModalOpen(true)}
+                  disabled={taskImages.length === 0}
+                >
+                  <PictureOutlined />
+                  Изображения
+                </Button>
+              </Badge>
+            </div>
+          </Space>
+
+          <DividerWithMargins />
 
           {task.tags && task.tags.length > 0 && (
-            <div style={{ marginBottom: 14 }}>
+            <div className={styles.labels}>
               <TaskLabels
                 labels={task.tags}
                 max={4}
@@ -210,8 +163,7 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
             </div>
           )}
 
-          
-          <TaskShowMetrics
+          <ShowMetrics
             actualBudget={task.budget.fact}
             actualHours={task.hours.fact}
             estimatedBudget={task.budget.planned}
@@ -223,17 +175,21 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
           {task.note && <TaskNote note={task.note} />}
           {!task.note && (
             <TaskNote
-              note={{ kind: 'info', label: "Замечаний нет", text: "Все хорошо" }}
+              note={{
+                kind: "info",
+                label: "Замечаний нет",
+                text: "Все хорошо",
+              }}
             />
           )}
 
-          <Divider style={{ margin: "16px 0 12px" }} />
+          <DividerWithMargins />
 
           <TaskAssignees initial={task.assignees} />
         </Space>
       </Card>
 
-      <AddHoursMinutesModal
+      <AddTimeModal
         open={logOpen}
         assignee={logTarget}
         taskTitle={task.title}
@@ -250,23 +206,16 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
         open={descriptionModalOpen}
         onCancel={() => setDescriptionModalOpen(false)}
         footer={
-          <Button onClick={() => setDescriptionModalOpen(false)}>Закрыть</Button>
+          <Button onClick={() => setDescriptionModalOpen(false)}>
+            Закрыть
+          </Button>
         }
         width={640}
         centered
         destroyOnHidden
       >
-        <Paragraph
-          style={{
-            margin: 0,
-            fontSize: 14,
-            lineHeight: 1.6,
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-          }}
-        >
-          {task.description}
-        </Paragraph>
+        <Text>{"task id " + task.id}</Text>
+        <Paragraph className={styles.description}>{task.description}</Paragraph>
       </Modal>
 
       {/* Модальное окно с галереей изображений */}

@@ -1,0 +1,51 @@
+.content {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	gap: 12px;
+	padding-top: 4px;
+}
+
+.assignee {
+	font-size: 13px;
+}
+
+.timeRow {
+	display: flex;
+	gap: 2px;
+	align-items: flex-end;
+	flex-wrap: wrap;
+}
+
+.timeField {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 120px;
+}
+
+.timeLabel {
+	font-size: 13px;
+	font-weight: 500;
+	color: #4b5563;
+}
+
+.timeInput {
+	width: 100%;
+}
+
+.total {
+	margin-top: 4px;
+}
+
+@media (max-width: 420px) {
+	.timeRow {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+	}
+
+	.timeField {
+		min-width: 0;
+	}
+}

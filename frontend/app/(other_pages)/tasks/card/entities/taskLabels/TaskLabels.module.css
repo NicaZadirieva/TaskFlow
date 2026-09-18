@@ -1,0 +1,42 @@
+/* Контейнер с тегами (замена Space size={4} wrap) */
+.list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: center;
+}
+
+/* Базовый тег-метка */
+.tag {
+	margin: 0;
+	font-weight: 600;
+	font-size: 11px;
+	line-height: 18px;
+	padding: 0 8px;
+	border-radius: 999px;
+}
+
+/* Кликабельный тег */
+.tagClickable {
+	cursor: pointer;
+}
+
+/* Некликабельный тег */
+.tagStatic {
+	cursor: default;
+}
+
+/* Тег-счётчик "+N" */
+.moreTag {
+	margin: 0;
+	border-radius: 999px;
+	font-size: 11px;
+	cursor: pointer;
+}
+
+/* Содержимое Popover — вертикальный список */
+.popoverContent {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}

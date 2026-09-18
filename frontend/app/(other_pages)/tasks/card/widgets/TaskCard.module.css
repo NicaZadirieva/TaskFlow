@@ -1,8 +1,73 @@
-.header {
+.header__text {
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	word-break: break-word;
+}
+
+
+.cardActions {
+	border-radius: 0;
+	height: 650px;
+	display: flex;
+	flex-direction: column
+}
+
+.priority-status__wrapper {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.priority__wrapper {
+	display: flex;
+	align-items: flex-end;
+	flex-wrap: wrap;
+	gap: 6px
+}
+
+.task-id__text {
+	font-size: 12;
+	font-family: "monospace";
+	line-height: 1;
+}
+
+.content {
+	width: 100%;
+	flex: 1;
+	display: flex;
+	flex-direction: column
+}
+
+.header {
+	width: 100%; 
+	align-items: center; 
+	height: 50px; 
+	justify-content: space-between
+}
+
+.attachments {
+	justify-content: space-between;
+	width:  100%;
+}
+
+.description__btn {
+	padding: 0;
+	margin-top: 4; 
+	height: auto
+}
+
+.labels {
+	margin-bottom: 14px;
+}
+.description {
+	margin: 0;
+	font-size: 14;
+	line-height: 1.6;
+	white-space: pre-wrap;
 	word-break: break-word;
 }
