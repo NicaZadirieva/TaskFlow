@@ -4,7 +4,7 @@ import { GithubLabel } from './githubLabel.interface';
 // TODO: добавить OPEN в backend
 export type Status = 'OPEN' | 'BACKLOG' | 'IN_PROGRESS' | 'DONE';
 
-export type Priority = 'LOW' | 'HIGH' | 'MEDIUM';
+export type Priority = 'LOW' | 'HIGH' | 'MEDIUM' | 'CRITICAL';
 
 export interface Task {
   id: number;
@@ -36,8 +36,9 @@ export const STATUS_META: Record<Status, { color: string; label: string }> = {
   BACKLOG: {color: 'yellow', label: 'backlog'}
 };
 
-export const PRIORITY_META: Record<Priority, {color: 'success' | 'error' | 'default'; label: string}> = {
-	LOW: { color: 'success', label: 'low'},
-	HIGH: {color: 'error', label: 'high'},
-	MEDIUM: {color: 'default', label: 'medium'}
+export const PRIORITY_META: Record<Priority, {color: "success" | "error" | "default" | "warning" | "processing"; label: string}> = {
+	LOW: { color: 'default', label: 'low'},
+  HIGH: { color: 'warning', label: 'high'},
+	CRITICAL: {color: 'error', label: 'high'},
+	MEDIUM: {color: 'processing', label: 'medium'}
 }
