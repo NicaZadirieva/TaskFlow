@@ -11,8 +11,10 @@ import {
   Badge,
   Button,
   Tooltip,
+  Modal,
+   Image,
 } from "antd";
-
+import { PictureOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { TaskLabels } from "./TaskLabels";
 import { PRIORITY_META, STATUS_META, Task } from "../interface/task.interface";
@@ -26,10 +28,16 @@ import AddHoursMinutesModal from "./assignee/add_hours_minutes/AddHoursMinutesMo
 import styles from './index.module.css';
 
 const { Text, Title } = Typography;
-
+// Пример данных изображений (в реальном проекте приходит из Task)
+const taskImages: string[] = [
+  "https://picsum.photos/seed/task1/800/600",
+  "https://picsum.photos/seed/task2/800/600",
+  "https://picsum.photos/seed/task3/800/600",
+];
 const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
   const [logOpen, setLogOpen] = useState(false);
   const [logTarget, setLogTarget] = useState<Assignee | null>(assignee);
+   const [imagesModalOpen, setImagesModalOpen] = useState(false);
 
   /** Сохранение часов */
   const handleSaveHours = async (hours: number, comment?: string) => {
@@ -157,6 +165,18 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
             </div>
           )}
 
+          <div className={styles.imagesButtonWrapper}>
+          <Badge count={taskImages.length} size="small" offset={[-2, 2]}>
+            <Button
+              onClick={() => setImagesModalOpen(true)}
+              disabled={taskImages.length === 0}
+            >
+              <PictureOutlined />
+              Изображения
+            </Button>
+          </Badge>
+        </div>
+
           <TaskShowMetrics
             actualBudget={task.budget.fact}
             actualHours={task.hours.fact}
@@ -191,6 +211,34 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
         }}
         onSave={handleSaveHours}
       />
+      {/* Модальное окно с галереей изображений */}
+      <Modal
+        title="Изображения задачи"
+        open={imagesModalOpen}
+        onCancel={() => setImagesModalOpen(false)}
+        footer={null}
+        width={800}
+        centered
+        destroyOnHidden
+      >
+        {taskImages.length > 0 ? (
+          <Image.PreviewGroup>
+            <div className={styles.imagesGrid}>
+              {taskImages.map((src, idx) => (
+                <Image
+                  key={idx}
+                  src={src}
+                  alt={`Изображение ${idx + 1}`}
+                  className={styles.imageItem}
+                  width="100%"
+                />
+              ))}
+            </div>
+          </Image.PreviewGroup>
+        ) : (
+          <Text type="secondary">Изображений нет</Text>
+        )}
+      </Modal>
     </>
   );
 };
