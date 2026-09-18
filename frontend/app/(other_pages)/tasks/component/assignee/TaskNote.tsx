@@ -18,6 +18,8 @@ export default function TaskNote({
         lineHeight: 1.4,
         background: note.kind === "danger" ? "#fef2f2" : "#eff6ff",
         border: `1px solid ${note.kind === "danger" ? "#fecaca" : "#bfdbfe"}`,
+        height: "70px",
+        overflowY: "auto"
       }}
     >
       {note.kind === "danger" ? (

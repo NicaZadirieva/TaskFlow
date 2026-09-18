@@ -10,6 +10,7 @@ import {
   message,
   Badge,
   Button,
+  Tooltip,
 } from "antd";
 
 import Link from "next/link";
@@ -22,6 +23,7 @@ import TaskNote from "./assignee/TaskNote";
 import TaskAssignees from "./assignee";
 import { assignee } from "./assignee/mock-data/assignee";
 import AddHoursMinutesModal from "./assignee/add_hours_minutes/AddHoursMinutesModal";
+import styles from './index.module.css';
 
 const { Text, Title } = Typography;
 
@@ -34,95 +36,151 @@ const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
     if (!logTarget) return;
     try {
       // await api.patch(`/tasks/${task.id}/assignees/${logTarget.id}`, { hours, comment });
-      //assigneesRef.current?.setHours(logTarget.id, hours);
       message.success(`Часы обновлены: ${hours} ч`);
     } catch {
       message.error("Не удалось сохранить часы");
       throw new Error("save failed");
     }
   };
+
   return (
     <>
       <Card
-        hoverable
-        style={{ borderRadius: 12 }}
-        styles={{ body: { padding: 20 } }}
-      >
-        {/* Header */}
+  hoverable
+  className={styles.cardActions}
+  style={{
+    borderRadius: 0,
+    height: 650,             // вся карточка = 650
+    display: "flex",
+    flexDirection: "column",
+  }}
+  styles={{
+    body: {
+      padding: 20,
+      flex: 1,               // ← занимает всё, кроме actions
+      minHeight: 0,          // важно для скролла/переполнения внутри
+      display: "flex",
+      flexDirection: "column",
+      overflow: "auto",      // если контента много — скролл внутри body
+    },
+  }}
+  actions={[
+    <Button
+      key="log"
+      type="link"
+      data-stop-card-click
+      onClick={() => setLogOpen(true)}
+    >
+      Изменить свои часы
+    </Button>,
+  ]}
+>
+        {/* Header: baseline для левой и правой части */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
+            alignItems: "baseline",
             gap: 12,
             marginBottom: 16,
           }}
         >
-          <div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              flexWrap: "wrap",
+              gap: 6,
+            }}
+          >
             <Badge
               status={PRIORITY_META[task.priority].color}
               text={PRIORITY_META[task.priority].label}
+              style={{ lineHeight: 1 }}
             />
             <Text
               type="secondary"
               style={{
                 fontSize: 12,
                 fontFamily: "monospace",
-                marginLeft: "8px",
+                lineHeight: 1,
               }}
             >
               {task.id}
             </Text>
-            <Title level={5} style={{ margin: "2px 0 0", fontSize: 16 }}>
-              {task.title}
-            </Title>
           </div>
 
-          <Space size={6} wrap>
-            <Tag color={STATUS_META[task.status].color}>
+          <Space size={6} wrap style={{ alignItems: "baseline" }}>
+            <Tag color={STATUS_META[task.status].color} style={{ margin: 0 }}>
               {STATUS_META[task.status].label}
             </Tag>
           </Space>
         </div>
-        {task.project_id && (
-          <Link href={"/projects/" + task.project_id}>К проекту</Link>
-        )}
-        {/* GitHub labels */}
-        {task.tags && task.tags.length > 0 && (
-          <div style={{ marginBottom: 14 }}>
-            <TaskLabels
-              labels={task.tags}
-              max={4}
-              onSelect={(l) => message.info(`Фильтр по метке: ${l.name}`)}
-            />
-          </div>
-        )}
-        {/* Metrics */}
-        <TaskShowMetrics
-          actualBudget={task.budget.fact}
-          actualHours={task.hours.fact}
-          estimatedBudget={task.budget.planned}
-          estimatedHours={task.hours.planned}
-          due_date={task.due_date.toLocaleDateString("ru-RU")}
-          overdueDays={task.overdueDays}
-        />
 
-        {/* Note */}
-        {task.note && <TaskNote note={task.note} />}
-
-        <Divider style={{ margin: "16px 0 12px" }} />
-
-        <TaskAssignees initial={task.assignees} />
-
-        <Divider style={{ margin: "12px 0" }} />
-        <Button
-          type="link"
-          data-stop-card-click
-          onClick={() => setLogOpen(true)}
+        {/* 2) Контентная колонка: растягивается, кнопка уходит вниз */}
+        <Space
+          orientation="vertical"
+          style={{
+            width: "100%",
+            flex: 1,               // занимает всё свободное место
+            display: "flex",        // Space и так flex, но фиксируем
+            flexDirection: "column",
+          }}
         >
-          Изменить свои часы
-        </Button>
+          <Tooltip title={task.title} placement="topLeft">
+            <Text
+              className={styles.header}
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                wordBreak: "break-word",
+              }}
+            >
+              {task.title}
+            </Text>
+          </Tooltip>
+
+          {task.project_id && (
+            <Link href={"/projects/" + task.project_id}>К проекту</Link>
+          )}
+
+          {task.tags && task.tags.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <TaskLabels
+                labels={task.tags}
+                max={4}
+                onSelect={(l) => message.info(`Фильтр по метке: ${l.name}`)}
+              />
+            </div>
+          )}
+
+          <TaskShowMetrics
+            actualBudget={task.budget.fact}
+            actualHours={task.hours.fact}
+            estimatedBudget={task.budget.planned}
+            estimatedHours={task.hours.planned}
+            due_date={task.due_date.toLocaleDateString("ru-RU")}
+            overdueDays={task.overdueDays}
+          />
+
+          {task.note && <TaskNote note={task.note} />}
+          {!task.note && (
+            <TaskNote
+              note={{ kind: 'info', label: "Замечаний нет", text: "Все хорошо" }}
+            />
+          )}
+
+          <Divider style={{ margin: "16px 0 12px" }} />
+
+          <TaskAssignees initial={task.assignees} />
+
+
+        </Space>
       </Card>
+
       <AddHoursMinutesModal
         open={logOpen}
         assignee={logTarget}

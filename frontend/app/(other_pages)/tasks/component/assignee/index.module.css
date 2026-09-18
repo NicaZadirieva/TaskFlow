@@ -15,3 +15,24 @@
 .assignee-row--removed .assignee-actions {
 	opacity: 1;
 }
+
+.scrollArea {
+	max-height: 200px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 4px;
+}
+
+/* аккуратный скроллбар (опционально) */
+.scrollArea::-webkit-scrollbar {
+	width: 6px;
+}
+
+.scrollArea::-webkit-scrollbar-thumb {
+	background: #d9d9d9;
+	border-radius: 3px;
+}
+
+.scrollArea::-webkit-scrollbar-thumb:hover {
+	background: #bfbfbf;
+}
