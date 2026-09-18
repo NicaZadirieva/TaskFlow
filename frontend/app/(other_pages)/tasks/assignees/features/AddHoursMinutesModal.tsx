@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { InputNumber, Modal, Space, Typography, Alert, Input } from 'antd';
-import { Assignee } from '../../../interface/assignee.interface';
+import { Assignee } from '../../interface/assignee.interface';
+
 
 const { Text } = Typography;
 

@@ -1,7 +1,8 @@
 import { message, Modal, Select, Typography } from 'antd';
 import { useState } from 'react';
-import { Assignee } from '../../../interface/assignee.interface';
+
 import TextArea from 'antd/es/input/TextArea';
+import { Assignee } from '../../interface/assignee.interface';
 
 const { Text } = Typography;
 const REMOVE_REASONS = [

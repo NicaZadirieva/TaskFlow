@@ -3,7 +3,7 @@
 import { Form, Input, InputNumber, message, Modal, Select, Space } from "antd";
 import { useState } from "react";
 
-import { assignee } from '../mock-data/assignee';
+import { assignee } from '../assignee/mock-data/assignee';
 import { AssignedTask } from '@/app/shared/schema/assigned-task.types';
 import { toAssigneeSchema } from '@/app/(other_pages)/api/to_schema/to_task';
 import { PlusOutlined } from '@ant-design/icons';

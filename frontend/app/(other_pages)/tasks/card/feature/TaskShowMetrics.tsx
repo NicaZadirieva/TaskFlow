@@ -1,6 +1,6 @@
 'use client';
 import { Progress, Typography } from 'antd';
-import { FactRow } from './FactRow';
+import { FactRow } from '../entities/FactRow';
 
 const { Text } = Typography;
 

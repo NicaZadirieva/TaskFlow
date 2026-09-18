@@ -1,4 +1,4 @@
-import TaskCard from './component';
+import TaskCard from './card/widgets/TaskCard';
 import { Task } from './interface/task.interface';
 
 const TASKS: Task[] = [

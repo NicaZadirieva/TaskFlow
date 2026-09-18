@@ -16,16 +16,16 @@ import {
 } from "antd";
 import { PictureOutlined, FileTextOutlined } from "@ant-design/icons";
 import Link from "next/link";
-import { TaskLabels } from "./TaskLabels";
-import { PRIORITY_META, STATUS_META, Task } from "../interface/task.interface";
-import { Assignee } from "../interface/assignee.interface";
-import TaskShowMetrics from "./assignee/TaskShowMetrics";
-import TaskNote from "./assignee/TaskNote";
-
-import TaskAssignees from "./assignee";
-import { assignee } from "./assignee/mock-data/assignee";
-import AddHoursMinutesModal from "./assignee/add_hours_minutes/AddHoursMinutesModal";
+import { TaskLabels } from "../entities/TaskLabels";
+import { PRIORITY_META, STATUS_META, Task } from "../../interface/task.interface";
+import { Assignee } from "../../interface/assignee.interface";
 import styles from './index.module.css';
+import TaskShowMetrics from '../feature/TaskShowMetrics';
+import TaskNote from '../entities/TaskNote';
+
+import AddHoursMinutesModal from '../../assignees/features/AddHoursMinutesModal';
+import { assignee } from '../../mock-data/assignee';
+import TaskAssignees from '../../assignees/widgets/TaskAssignees';
 
 const { Text, Title, Paragraph } = Typography;
 
