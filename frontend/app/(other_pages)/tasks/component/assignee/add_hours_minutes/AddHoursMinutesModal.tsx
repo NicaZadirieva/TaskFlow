@@ -54,7 +54,7 @@ export default function AddHoursMinutesModal({
   return (
     <Modal
       open={open}
-      title={`Сколько потратили на ${taskTitle ? ` — ${taskTitle}` : ''}?`}
+      title={`Сколько потратили сегодня на ${taskTitle ? ` — ${taskTitle}` : ''}?`}
       onCancel={onClose}
       onOk={handleSave}
       okText="Save"
