@@ -1,0 +1,17 @@
+.assignee-actions {
+	opacity: 0;
+	transition: opacity .15s ease;
+}
+
+.assignee-row:hover {
+	background: #f9fafb;
+}
+
+.assignee-row:hover .assignee-actions {
+	opacity: 1;
+}
+
+/* удалённая строка — кнопки всегда видимы, чтобы можно было вернуть */
+.assignee-row--removed .assignee-actions {
+	opacity: 1;
+}

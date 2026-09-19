@@ -1,0 +1,22 @@
+.row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 12px;
+	padding: 6px 0;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.label {
+	color: #6b7280;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	white-space: nowrap;
+}
+
+.value {
+	font-weight: 600;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}

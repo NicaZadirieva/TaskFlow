@@ -10,7 +10,7 @@ import {
   Input,
   message,
 } from "antd";
-import styles from "./AddTimeModal.module.css";
+import styles from "./index.module.css";
 import { Assignee } from "../../../interfaces/assignee.interface";
 
 const { Text } = Typography;

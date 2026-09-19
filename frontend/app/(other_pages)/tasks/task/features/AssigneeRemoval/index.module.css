@@ -1,0 +1,46 @@
+/* Корневая обёртка содержимого */
+.content {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding-top: 4px;
+}
+
+/* Строка с именем и ролью исполнителя */
+.assigneeInfo {
+	font-size: 12px;
+	color: #6b7280;
+}
+
+/* Блок «Причина удаления» */
+.field {
+	display: flex;
+	flex-direction: column;
+}
+
+/* Подпись над Select — капсом, приглушённая */
+.fieldLabel {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	color: #6b7280;
+	font-weight: 500;
+}
+
+/* Select на всю ширину с небольшим отступом сверху */
+.select {
+	width: 100%;
+	margin-top: 4px;
+}
+
+/* TextArea для своей причины */
+.customReason {
+	resize: vertical;
+}
+
+/* На узких экранах немного уменьшаем вертикальные отступы */
+@media (max-width: 420px) {
+	.content {
+		gap: 10px;
+	}
+}
