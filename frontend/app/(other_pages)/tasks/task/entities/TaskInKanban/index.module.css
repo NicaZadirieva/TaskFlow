@@ -1,0 +1,32 @@
+.cardActions {
+	border-radius: 0;
+	height: 650px;
+	display: flex;
+	flex-direction: column
+}
+
+.priority-status__wrapper {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.priority__wrapper {
+	display: flex;
+	align-items: flex-end;
+	flex-wrap: wrap;
+	gap: 6px
+}
+
+.attachments {
+	justify-content: space-between;
+	width: 100%;
+}
+
+.description__btn {
+	padding: 0;
+	margin-top: 4;
+	height: auto
+}
