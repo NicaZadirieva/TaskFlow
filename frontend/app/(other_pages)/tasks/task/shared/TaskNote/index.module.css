@@ -1,0 +1,55 @@
+.note {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	border-radius: 8px;
+	padding: 10px 12px;
+	margin-top: 12px;
+	font-size: 12px;
+	line-height: 1.4;
+	height: 70px;
+	overflow-y: auto;
+
+}
+
+/* Вариант "danger" — красный */
+.noteDanger {
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+}
+
+/* Вариант "info" — синий */
+.noteInfo {
+	background: #eff6ff;
+	border: 1px solid #bfdbfe;
+}
+
+/* Иконка */
+.icon {
+	margin-top: 2px;
+	flex-shrink: 0;
+}
+
+.iconDanger {
+	color: #dc2626;
+}
+
+.iconInfo {
+	color: #2563eb;
+}
+
+/* Лейбл ("Причина:", "Timebox:" и т.п.) */
+.label {
+	font-weight: 600;
+	whiteSpace: nowrap;
+	flex-shrink: 0;
+}
+
+/* Текст заметки — занимает оставшееся место */
+.text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}

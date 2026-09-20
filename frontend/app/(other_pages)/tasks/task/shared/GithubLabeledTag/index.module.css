@@ -1,0 +1,14 @@
+/* Базовый тег-метка */
+.tag {
+	margin: 0;
+	font-weight: 600;
+	font-size: 11px;
+	line-height: 18px;
+	padding: 0 8px;
+	border-radius: 999px;
+}
+
+/* Кликабельный тег */
+.tagClickable {
+	cursor: pointer;
+}

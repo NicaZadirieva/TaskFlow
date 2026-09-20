@@ -1,0 +1,53 @@
+.form {
+	padding-top: 4px;
+}
+
+/* Метки полей: чуть компактнее и контрастнее дефолтных */
+.form :global(.ant-form-item-label)>label {
+	font-size: 13px;
+	font-weight: 500;
+	color: #4b5563;
+	/* нейтральный серый */
+}
+
+.form :global(.ant-form-item) {
+	margin-bottom: 16px;
+}
+
+/* Ряд с часами: одинаковые ширины и выравнивание по нижнему краю */
+.hoursRow {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	width: 100%;
+}
+
+/* Каждый Form.Item внутри ряда — flex: 1, как в inline-стилях компонента */
+.hoursRow :global(.ant-form-item) {
+	flex: 1;
+	margin-bottom: 0;
+}
+
+/* InputNumber: убираем визуальный «разнобой» при фокусе */
+.form :global(.ant-input-number) {
+	width: 100%;
+}
+
+/* Плейсхолдеры — приглушённые, чтобы не спорить с введёнными значениями */
+.form :global(.ant-input::placeholder),
+.form :global(.ant-input-number-input::placeholder) {
+	color: #9ca3af;
+}
+
+/* Небольшая адаптация для узких экранов */
+@media (max-width: 480px) {
+	.hoursRow {
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.hoursRow :global(.ant-form-item) {
+		flex: none;
+		width: 100%;
+	}
+}
