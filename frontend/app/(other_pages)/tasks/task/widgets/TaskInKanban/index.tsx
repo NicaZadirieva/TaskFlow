@@ -101,7 +101,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
             size="middle"
             className={styles.header}
           >
-            <TooltipWithText text={task.title} />
+            <TooltipWithText text={task.title}/>
             {task.project_id && (
               <Link href={"/projects/" + task.project_id}>
                 <Button type="primary">К проекту</Button>
@@ -233,7 +233,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
         <div
           className={styles.scrollArea}
           style={{
-            maxHeight: 100, // подберите под макет
+            height: 120, // подберите под макет
             overflowY: "auto",
             overflowX: "hidden",
             paddingRight: 4, // чтобы контент не прилипал к скроллбару
