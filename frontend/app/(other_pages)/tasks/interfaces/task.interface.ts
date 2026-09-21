@@ -27,6 +27,8 @@ export interface Task {
   // TODO: добавить в интерфейс
   created_by: number;
   created_at: Date;
+  // TODO: добавить в БД
+  task_images?: string[];
 }
 
 

@@ -1,5 +1,7 @@
 import { Task } from './interfaces/task.interface';
 import TaskInKanban from './task/widgets/TaskInKanban';
+import TaskRow from './task/widgets/TaskRow';
+import TasksInRow from './TasksInRow';
 
 
 const TASKS: Task[] = [
@@ -164,25 +166,7 @@ const TASKS: Task[] = [
 export default function ListAllTasksPage() {
   return (
     <div style={{ background: '#f5f6f8', minHeight: '100vh', padding: 32 }}>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-          gap: 20,
-          maxWidth: 1200,
-          margin: '0 auto',
-        }}
-      >
-        {TASKS.map((t) => (
-          <TaskInKanban key={t.id} task={t} />
-        ))}
-      </div>
-
-      <style>{`
-        .assignee-actions { opacity: 0; transition: opacity .15s ease; }
-        .assignee-row:hover { background: #f9fafb; }
-        .assignee-row:hover .assignee-actions { opacity: 1; }
-      `}</style>
+      <TasksInRow tasks={TASKS} />
     </div>
   );
 }

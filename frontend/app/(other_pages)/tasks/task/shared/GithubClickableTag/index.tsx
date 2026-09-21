@@ -4,7 +4,7 @@ import { labelColors } from "./utils/labelColor";
 import cn from "classnames";
 import styles from "./index.module.css";
 
-export default function ColoredClickableTag({
+export default function GithubClickableTag({
   githubLabel,
   onSelect,
 }: {

@@ -1,3 +1,5 @@
+'use client';
+
 import { message, Modal, Select, Typography } from "antd";
 import { useState } from "react";
 
