@@ -127,10 +127,10 @@ export default function TaskInKanban({ task }: { task: Task }) {
               </Button>
             )}
             <div className={styles.imagesButtonWrapper}>
-              <Badge count={taskImages.length} size="small" offset={[-2, 2]}>
+              <Badge count={task.task_images?.length || 0} size="small" offset={[-2, 2]}>
                 <Button
                   onClick={showImagesModal}
-                  disabled={taskImages.length === 0}
+                  disabled={!task.task_images || task.task_images?.length === 0}
                 >
                   <PictureOutlined />
                   Изображения
@@ -255,11 +255,11 @@ export default function TaskInKanban({ task }: { task: Task }) {
         }}
       />
       <ShowDescription task={task} isOpen={showDesc} onClose={hideDescModal} />
-      <ShowImages
+      {task.task_images && <ShowImages
         isOpen={showImages}
         onClose={hideImagesModal}
-        imageUrls={taskImages}
-      />
+        imageUrls={task.task_images}
+      />}
       <AssigneeAdditor
         isOpen={adding}
         onClose={() => setAdding(false)}

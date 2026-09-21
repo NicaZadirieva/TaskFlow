@@ -24,4 +24,6 @@ export interface Task {
 
   createdByUser?: Pick<User, 'id' | 'name'>;
   assignees?: AssignedTask[];
+
+  task_images?: string[];
 }
