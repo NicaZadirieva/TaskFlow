@@ -4,13 +4,14 @@ from typing import Optional
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from sqlalchemy.dialects.postgresql import JSONB
 from app.db.entities.base import Base
+from app.db.entities.github_label import task_github_label
 
 
 # TODO: переходы между статусами лучше контролировать в коде
-# Ex: нельзя из DONE вернуться в BACKLOG без ревью)
 class Status(PyEnum):
+    OPEN = "OPEN"
     BACKLOG = "BACKLOG"
     IN_PROGRESS = "IN_PROGRESS"
     DONE = "DONE"
@@ -39,10 +40,17 @@ class Task(Base):
     priority: Mapped[Priority] = mapped_column(Enum(Priority), default=Priority.MEDIUM)
 
     due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    estimated_budget: Mapped[float | None] = mapped_column(
+        Numeric(12, 2), nullable=True
+    )
+    actual_budget: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+
     estimated_hours: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
-    actual_hours: Mapped[float | None] = mapped_column(
-        Numeric(5, 2), nullable=True
-    )  # без default
+    actual_hours: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
+    note: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # изображения
+    task_images: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
 
     created_by: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
@@ -56,4 +64,9 @@ class Task(Base):
     assignees: Mapped[list["AssignedTask"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="task",
         cascade="all, delete-orphan",
+    )
+    tags: Mapped[list["GithubLabel"]] = relationship(  # type: ignore  # noqa: F821
+        secondary=task_github_label,
+        back_populates="tasks",
+        lazy="selectin",  # чтобы не ловить N+1 при отдаче
     )

@@ -1,9 +1,10 @@
 import { AssignedTask } from './assigned-task.types';
+import GithubLabel from './github-label.types';
+import ITaskNote from './note.types';
 import { User } from './user.types';
 
-export type TaskStatus = 'Backlog' | 'ToDo' | 'InProgress' | 'Review' | 'Done';
+export type TaskStatus = 'BACKLOG' | 'IN_PROGRESS' | 'OPEN' | 'DONE';
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type TaskRole = 'EXECUTOR' | 'REVIEWER';
 
 export interface Task {
   id: number;
@@ -19,6 +20,13 @@ export interface Task {
   estimatedHours?: number;
   actualHours?: number;
 
+  estimatedBudget?: number;
+  actualBudget?: number;
+
+  ratio?: number; // TODO: вычислить в БД
+  overdueDays?: number; // TODO: вычислить в БД
+
+  note?: ITaskNote;
   createdBy: number;
   createdAt: Date;
 
@@ -26,4 +34,5 @@ export interface Task {
   assignees?: AssignedTask[];
 
   task_images?: string[];
+  tags?: GithubLabel[]; 
 }

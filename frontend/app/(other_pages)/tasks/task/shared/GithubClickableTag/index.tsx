@@ -1,8 +1,10 @@
 import { Tag, Tooltip } from "antd";
-import { GithubLabel } from "../../../interfaces/githubLabel.interface";
+import { GithubLabel, GithubLabelDefaultColor } from "../../../interfaces/githubLabel.interface";
 import { labelColors } from "./utils/labelColor";
 import cn from "classnames";
 import styles from "./index.module.css";
+
+const githubThemeColor = labelColors(GithubLabelDefaultColor);
 
 export default function GithubClickableTag({
   githubLabel,
@@ -11,7 +13,7 @@ export default function GithubClickableTag({
   githubLabel: GithubLabel;
   onSelect: (githubLabel: GithubLabel) => void;
 }) {
-  const githubThemeColor = labelColors(githubLabel.color);
+
   return (
     <Tooltip
       key={githubLabel.id ?? githubLabel.name}
