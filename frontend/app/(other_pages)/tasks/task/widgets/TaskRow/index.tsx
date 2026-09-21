@@ -1,27 +1,47 @@
-'use client';
+"use client";
 
-import { Badge, Button, Card, message, Popover, Space, Tag, Typography } from "antd";
-import AddTimeCostsBtn from "../../features/AddTimeCostsBtn";
-import { useMemo, useState } from "react";
-import { Assignee } from "../../../interfaces/assignee.interface";
+import {
+  Badge,
+  Button,
+  Card,
+  message,
+  Popover,
+  Space,
+  Tag,
+  Typography,
+} from "antd";
+import styles from "./index.module.css";
+import {
+  PictureOutlined,
+  FileTextOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { Task } from "../../../interfaces/task.interface";
-import styles from './index.module.css';
-import { assignee } from '../../../mock-data/assignee';
-import PriorityBadge from '../../shared/PriorityBadge';
-import StatusTag from '../../shared/StatusTag';
-import TooltipWithText from '../../shared/TooltipWithText';
-import Link from 'next/link';
-import GithubLabeledTag from '../../shared/GithubLabeledTag';
-import { PictureOutlined, FileTextOutlined, PlusOutlined } from "@ant-design/icons";
-import TaskAssignee from '../../entities/TaskAssignee';
-import TimeCostsEditor from '../../features/TimeCostsEditor';
-import ShowDescription from '../../features/ShowDescription';
-import AssigneeAdditor from '../../features/AssigneeAdditor';
-import ShowImages from '../../features/ShowImages';
-import AssigneeRemoval from '../../features/AssigneeRemoval';
-import cn from 'classnames';
+import { useMemo, useState } from "react";
+import { assignee } from "../../../mock-data/assignee";
+import { Assignee } from "../../../interfaces/assignee.interface";
+import {
+  AddTimeCostsBtn,
+  AssigneeAdditor,
+  AssigneeRemoval,
+  ShowDescription,
+  ShowImages,
+  TimeCostsEditor,
+} from "../../features";
+import {
+  DividerWithMargins,
+  GithubClickableTag,
+  PriorityBadge,
+  StatusTag,
+  TooltipWithText,
+} from "../../shared";
+import Link from "next/link";
+import { TaskAssignee } from "../../entities";
+
+import cn from "classnames";
 
 const { Text } = Typography;
+
 export default function TaskRow({ task }: { task: Task }) {
   const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
   const showTimeCostsEditor = () => setShowTimeEditor(true);
@@ -69,198 +89,215 @@ export default function TaskRow({ task }: { task: Task }) {
       <Card
         hoverable
         className={cn(styles.cardActions)}
-		classNames={{ body: styles['custom-card-body'] }}
+        classNames={{ body: styles["custom-card-body"] }}
         styles={{
           body: {
             padding: 20,
             flex: 1,
             minHeight: 0,
-            
+
             overflow: "auto",
-			gap: 15
+            gap: 15,
           },
-		  
         }}
         actions={[<AddTimeCostsBtn onClick={() => showTimeCostsEditor()} />]}
       >
-		<div className={styles.left}>
-			 <div className={styles["priority-status__wrapper"]}>
-          <div className={styles.priority__wrapper}>
-            <PriorityBadge priority={task.priority} />
+        <div className={styles.left}>
+          {isOver && (
+            <>
+              <Tag color={"error"}>Просрочка</Tag>
+              <DividerWithMargins />
+            </>
+          )}
+          <div className={styles["priority-status__wrapper"]}>
+            <div className={styles.priority__wrapper}>
+              <PriorityBadge priority={task.priority} />
+            </div>
+            <StatusTag status={task.status} />
           </div>
-          <StatusTag status={task.status} />
-        </div>
-        <Space orientation="vertical" className={styles.content}>
-          <Space
-            orientation="horizontal"
-            size="middle"
-            className={styles.header}
-          >
-            <TooltipWithText text={task.title}/>
-            {task.project_id && (
-              <Link href={"/projects/" + task.project_id}>
-                <Button type="primary">К проекту</Button>
-              </Link>
-            )}
+          <Space orientation="vertical" className={styles.content}>
+            <Space
+              orientation="horizontal"
+              size="middle"
+              className={styles.header}
+            >
+              <TooltipWithText text={task.title} />
+              {task.project_id && (
+                <Link href={"/projects/" + task.project_id}>
+                  <Button type="primary">К проекту</Button>
+                </Link>
+              )}
+            </Space>
+            <Space
+              orientation="horizontal"
+              size={"medium"}
+              className={styles.attachments}
+            >
+              {task.description && isDescriptionLong && (
+                <Button
+                  type="link"
+                  size="small"
+                  data-stop-card-click
+                  className={styles.description__btn}
+                  onClick={showDescModal}
+                >
+                  <FileTextOutlined />
+                  Открыть описание
+                </Button>
+              )}
+              <div className={styles.imagesButtonWrapper}>
+                <Badge
+                  count={task.task_images?.length || 0}
+                  size="small"
+                  offset={[-2, 2]}
+                >
+                  <Button
+                    onClick={showImagesModal}
+                    disabled={
+                      !task.task_images || task.task_images?.length === 0
+                    }
+                  >
+                    <PictureOutlined />
+                    Изображения
+                  </Button>
+                </Badge>
+              </div>
+            </Space>
           </Space>
-          <Space
-            orientation="horizontal"
-            size={"medium"}
-            className={styles.attachments}
+          {task.tags && task.tags.length > 0 && (
+            <div className={styles.labels}>
+              {task.tags.slice(0, 4).map((tag) => {
+                return (
+                  <GithubClickableTag
+                    key={tag.name}
+                    githubLabel={tag}
+                    onSelect={() => {
+                      /**TODO: сделать фильтр */
+                    }}
+                  />
+                );
+              })}
+              {task.tags.length >= 4 && (
+                <Popover
+                  trigger="click"
+                  content={
+                    <div className={styles.popoverContent}>
+                      {task.tags.slice(4).map((tag) => (
+                        <GithubClickableTag
+                          key={tag.name}
+                          githubLabel={tag}
+                          onSelect={() => {
+                            /**TODO: сделать фильтр */
+                          }}
+                        />
+                      ))}
+                    </div>
+                  }
+                >
+                  <Tag className={styles.moreTag}>
+                    +{task.tags.slice(4).length}
+                  </Tag>
+                </Popover>
+              )}
+            </div>
+          )}
+        </div>
+        <div className={styles.right}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center", // было center
+              marginBottom: 8,
+              minHeight: 24,
+            }}
           >
-            {task.description && isDescriptionLong && (
+            <Text
+              type="secondary"
+              style={{
+                fontSize: 11,
+                textTransform: "uppercase",
+              }}
+            >
+              Исполнители
+            </Text>
+            <Space size={6} align="center">
+              <Text strong style={{ fontSize: 12 }}>
+                {activeCount}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: "#dc2626",
+                  visibility: removedCount > 0 ? "visible" : "hidden",
+                }}
+              >
+                −{removedCount || 0}
+              </Text>
               <Button
                 type="link"
                 size="small"
-                data-stop-card-click
-                className={styles.description__btn}
-                onClick={showDescModal}
+                onClick={() => setAdding(true)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
               >
-                <FileTextOutlined />
-                Открыть описание
+                <PlusOutlined style={{ fontSize: 12, lineHeight: 1 }} />
+                добавить
               </Button>
-            )}
-            <div className={styles.imagesButtonWrapper}>
-              <Badge count={task.task_images?.length || 0} size="small" offset={[-2, 2]}>
-                <Button
-                  onClick={showImagesModal}
-                  disabled={!task.task_images || task.task_images?.length === 0}
-                >
-                  <PictureOutlined />
-                  Изображения
-                </Button>
-              </Badge>
-            </div>
-          </Space>
-        </Space>
-        {task.tags && task.tags.length > 0 && (
-          <div className={styles.labels}>
-            {task.tags.slice(0, 4).map((tag) => {
-              return (
-                <GithubLabeledTag
-                key={tag.name}
-                  githubLabel={tag}
-                  onSelect={() => {
-                    /**TODO: сделать фильтр */
-                  }}
-                />
-              );
-            })}
-            {task.tags.length >= 4 && (
-              <Popover
-                trigger="click"
-                content={
-                  <div className={styles.popoverContent}>
-                    {task.tags.slice(4).map((tag) => (
-                      <GithubLabeledTag
-                      key={tag.name}
-                        githubLabel={tag}
-                        onSelect={() => {
-                          /**TODO: сделать фильтр */
-                        }}
-                      />
-                    ))}
-                  </div>
-                }
-              >
-                <Tag className={styles.moreTag}>
-                  +{task.tags.slice(4).length}
-                </Tag>
-              </Popover>
-            )}
+            </Space>
           </div>
-        )}
-		</div>
-		<div className={styles.right}>
-			{isOver && <Tag color={"error"}>Просрочка</Tag>}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center", // было center
-            marginBottom: 8,
-            minHeight: 24,
-          }}
-        >
-          <Text
-            type="secondary"
+          <div
+            className={styles.scrollArea}
             style={{
-              fontSize: 11,
-              textTransform: "uppercase",
+              height: 120, // подберите под макет
+              overflowY: "auto",
+              overflowX: "hidden",
+              paddingRight: 4, // чтобы контент не прилипал к скроллбару
             }}
           >
-            Исполнители
-          </Text>
-          <Space size={6} align="center">
-            <Text strong style={{ fontSize: 12 }}>
-              {activeCount}
-            </Text>
-            <Text
-              style={{
-                fontSize: 11,
-                color: "#dc2626",
-                visibility: removedCount > 0 ? "visible" : "hidden",
-              }}
-            >
-              −{removedCount || 0}
-            </Text>
-            <Button
-              type="link"
-              size="small"
-              onClick={() => setAdding(true)}
-              style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-            >
-              <PlusOutlined style={{ fontSize: 12, lineHeight: 1 }} />
-              добавить
-            </Button>
-          </Space>
+            <Space orientation="vertical" size={4} style={{ width: "100%" }}>
+              {task.assignees.map((assignee) => {
+                return (
+                  <TaskAssignee
+                    assignee={assignee}
+                    onChoose={(assignee) => setRemoving(assignee)}
+                    onUndo={(assignee) => undoRemove(assignee.id)}
+                  />
+                );
+              })}
+            </Space>
+          </div>
         </div>
-        <div
-          className={styles.scrollArea}
-          style={{
-            height: 120, // подберите под макет
-            overflowY: "auto",
-            overflowX: "hidden",
-            paddingRight: 4, // чтобы контент не прилипал к скроллбару
-          }}
-        >
-          <Space orientation="vertical" size={4} style={{ width: "100%" }}>
-            {task.assignees.map((assignee) => {
-              return <TaskAssignee assignee={assignee} onChoose={(assignee) => setRemoving(assignee)} onUndo={(assignee) => undoRemove(assignee.id)} />
-            })}
-          </Space>
-        </div>
-	
-    
-		</div>
-	  </Card>
-	  <TimeCostsEditor
-			  open={showTimeEditor}
-			  assignee={currentUser}
-			  taskTitle={task.title}
-			  onClose={() => {
-				hideTimeCostsEditor();
-			  }}
-			/>
-			<ShowDescription task={task} isOpen={showDesc} onClose={hideDescModal} />
-			{task.task_images && <ShowImages
-			  isOpen={showImages}
-			  onClose={hideImagesModal}
-			  imageUrls={task.task_images}
-			/>}
-			<AssigneeAdditor
-			  isOpen={adding}
-			  onClose={() => setAdding(false)}
-			  save={addAssignee} />
-	  
-			{removing && (
-			  <AssigneeRemoval
-				assignee={removing}
-				onClose={() => setRemoving(null)}
-				isOpen={!!removing}
-				onRemove={removeAssignee}
-			  />
-			)}
+      </Card>
+      <TimeCostsEditor
+        open={showTimeEditor}
+        assignee={currentUser}
+        taskTitle={task.title}
+        onClose={() => {
+          hideTimeCostsEditor();
+        }}
+      />
+      <ShowDescription task={task} isOpen={showDesc} onClose={hideDescModal} />
+      {task.task_images && (
+        <ShowImages
+          isOpen={showImages}
+          onClose={hideImagesModal}
+          imageUrls={task.task_images}
+        />
+      )}
+      <AssigneeAdditor
+        isOpen={adding}
+        onClose={() => setAdding(false)}
+        save={addAssignee}
+      />
+
+      {removing && (
+        <AssigneeRemoval
+          assignee={removing}
+          onClose={() => setRemoving(null)}
+          isOpen={!!removing}
+          onRemove={removeAssignee}
+        />
+      )}
     </>
   );
 }

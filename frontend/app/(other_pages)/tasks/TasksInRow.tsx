@@ -1,5 +1,5 @@
 import { Task } from './interfaces/task.interface';
-import TaskRow from './task/widgets/TaskRow';
+import { TaskRow } from './task/widgets';
 
 export default function TasksInRow({ tasks }: { tasks: Task[] }) {
   return (

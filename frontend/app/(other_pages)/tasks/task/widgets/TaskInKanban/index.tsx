@@ -1,33 +1,48 @@
 "use client";
 
-import { Badge, Button, Card, Popover, Space, Tag } from "antd";
+import {
+  Badge,
+  Button,
+  Card,
+  message,
+  Popover,
+  Space,
+  Tag,
+  Typography,
+} from "antd";
 import styles from "./index.module.css";
-import AddTimeCostsBtn from "../../features/AddTimeCostsBtn";
-import TimeCostsEditor from "../../features/TimeCostsEditor";
-import { useState } from "react";
-import { assignee } from "../../../mock-data/assignee";
+import {
+  PictureOutlined,
+  FileTextOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { Task } from "../../../interfaces/task.interface";
-import PriorityBadge from "../../shared/PriorityBadge";
-import StatusTag from "../../shared/StatusTag";
-import TooltipWithText from "../../shared/TooltipWithText";
+import { useMemo, useState } from "react";
+import { assignee } from "../../../mock-data/assignee";
+import { Assignee } from "../../../interfaces/assignee.interface";
+import {
+  AddTimeCostsBtn,
+  AssigneeAdditor,
+  AssigneeRemoval,
+  ShowDescription,
+  ShowImages,
+  ShowMetrics,
+  TimeCostsEditor,
+} from "../../features";
+import {
+  DefaultTaskNote,
+  DividerWithMargins,
+  GithubClickableTag,
+  PriorityBadge,
+  StatusTag,
+  TaskNote,
+  TooltipWithText,
+} from "../../shared";
 import Link from "next/link";
-import DividerWithMargins from "../../shared/DividerWithMargins";
-import ShowDescription from "../../features/ShowDescription";
-import { PictureOutlined, FileTextOutlined } from "@ant-design/icons";
-import ShowImages from "../../features/ShowImages";
-import GithubLabeledTag from "../../shared/GithubLabeledTag";
-import ShowMetrics from '../../features/ShowMetrics';
-import TaskNote, { DefaultTaskNote } from '../../shared/TaskNote';
-import { message, Typography } from "antd";
-import { useMemo } from "react";
-
-import { PlusOutlined } from "@ant-design/icons";
-import TaskAssignee from '../../entities/TaskAssignee';
-import { Assignee } from '../../../interfaces/assignee.interface';
-import AssigneeAdditor from '../../features/AssigneeAdditor';
-import AssigneeRemoval from '../../features/AssigneeRemoval';
+import { TaskAssignee } from "../../entities";
 
 const { Text } = Typography;
+
 export default function TaskInKanban({ task }: { task: Task }) {
   const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
   const showTimeCostsEditor = () => setShowTimeEditor(true);
@@ -95,7 +110,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
             size="middle"
             className={styles.header}
           >
-            <TooltipWithText text={task.title}/>
+            <TooltipWithText text={task.title} />
             {task.project_id && (
               <Link href={"/projects/" + task.project_id}>
                 <Button type="primary">К проекту</Button>
@@ -121,7 +136,11 @@ export default function TaskInKanban({ task }: { task: Task }) {
               </Button>
             )}
             <div className={styles.imagesButtonWrapper}>
-              <Badge count={task.task_images?.length || 0} size="small" offset={[-2, 2]}>
+              <Badge
+                count={task.task_images?.length || 0}
+                size="small"
+                offset={[-2, 2]}
+              >
                 <Button
                   onClick={showImagesModal}
                   disabled={!task.task_images || task.task_images?.length === 0}
@@ -138,8 +157,8 @@ export default function TaskInKanban({ task }: { task: Task }) {
           <div className={styles.labels}>
             {task.tags.slice(0, 4).map((tag) => {
               return (
-                <GithubLabeledTag
-                key={tag.name}
+                <GithubClickableTag
+                  key={tag.name}
                   githubLabel={tag}
                   onSelect={() => {
                     /**TODO: сделать фильтр */
@@ -153,8 +172,8 @@ export default function TaskInKanban({ task }: { task: Task }) {
                 content={
                   <div className={styles.popoverContent}>
                     {task.tags.slice(4).map((tag) => (
-                      <GithubLabeledTag
-                      key={tag.name}
+                      <GithubClickableTag
+                        key={tag.name}
                         githubLabel={tag}
                         onSelect={() => {
                           /**TODO: сделать фильтр */
@@ -235,7 +254,13 @@ export default function TaskInKanban({ task }: { task: Task }) {
         >
           <Space orientation="vertical" size={4} style={{ width: "100%" }}>
             {task.assignees.map((assignee) => {
-              return <TaskAssignee assignee={assignee} onChoose={(assignee) => setRemoving(assignee)} onUndo={(assignee) => undoRemove(assignee.id)} />
+              return (
+                <TaskAssignee
+                  assignee={assignee}
+                  onChoose={(assignee) => setRemoving(assignee)}
+                  onUndo={(assignee) => undoRemove(assignee.id)}
+                />
+              );
             })}
           </Space>
         </div>
@@ -249,15 +274,18 @@ export default function TaskInKanban({ task }: { task: Task }) {
         }}
       />
       <ShowDescription task={task} isOpen={showDesc} onClose={hideDescModal} />
-      {task.task_images && <ShowImages
-        isOpen={showImages}
-        onClose={hideImagesModal}
-        imageUrls={task.task_images}
-      />}
+      {task.task_images && (
+        <ShowImages
+          isOpen={showImages}
+          onClose={hideImagesModal}
+          imageUrls={task.task_images}
+        />
+      )}
       <AssigneeAdditor
         isOpen={adding}
         onClose={() => setAdding(false)}
-        save={addAssignee} />
+        save={addAssignee}
+      />
 
       {removing && (
         <AssigneeRemoval
@@ -268,5 +296,5 @@ export default function TaskInKanban({ task }: { task: Task }) {
         />
       )}
     </>
-  )
+  );
 }
