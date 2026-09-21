@@ -27,12 +27,6 @@ import { Assignee } from '../../../interfaces/assignee.interface';
 import AssigneeAdditor from '../../features/AssigneeAdditor';
 import AssigneeRemoval from '../../features/AssigneeRemoval';
 
-// Пример данных изображений (в реальном проекте приходит из Task)
-const taskImages: string[] = [
-  "https://picsum.photos/seed/task1/800/600",
-  "https://picsum.photos/seed/task2/800/600",
-  "https://picsum.photos/seed/task3/800/600",
-];
 const { Text } = Typography;
 export default function TaskInKanban({ task }: { task: Task }) {
   const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
