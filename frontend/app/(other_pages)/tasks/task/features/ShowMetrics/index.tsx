@@ -80,9 +80,7 @@ export default function ShowMetrics({
             size={['100%', 8]}
           />
         </div>
-      </div>
-
-      {/* Факты */}
+        {/* Факты */}
       <div className={styles.facts}>
         <FactRow label="Дедлайн" value={due_date} />
         <FactRow
@@ -93,6 +91,9 @@ export default function ShowMetrics({
           }
         />
       </div>
+      </div>
+
+      
     </>
   );
 }

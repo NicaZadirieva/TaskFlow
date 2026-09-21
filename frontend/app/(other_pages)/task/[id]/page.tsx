@@ -1,9 +1,16 @@
+
 import { Priority } from '@/app/shared/schema/task.types';
 import { fromTaskSchema } from '../../api/from_schema/fromTaskSchema';
 import { Status } from '../../tasks/interfaces/task.interface';
 import TaskHeader from '../features/TaskHeader';
 import TaskPageParams from './TaskPageParams';
 import EditTaskForm from '../entities/EditTaskForm';
+import styles from './page.module.css';
+import { ShowMetrics } from '../../tasks/task/features';
+import { Card } from 'antd';
+import { TaskAssignee } from '../../tasks/task/entities';
+import { Assignee } from '../../tasks/interfaces/assignee.interface';
+import TaskEditor from '../widgets/TaskEditor';
 
 const TEST_TASK = {
 	id: 3,
@@ -74,8 +81,5 @@ const TEST_TASK = {
 export default async function TaskPage({ params }: TaskPageParams) {
 	const { id } = await params;
 	const mapped = fromTaskSchema(TEST_TASK);
-	return <>
-	<TaskHeader task={mapped}/>
-	<EditTaskForm task={mapped} />
-	</>
+	return <TaskEditor task={mapped}/>
 }
