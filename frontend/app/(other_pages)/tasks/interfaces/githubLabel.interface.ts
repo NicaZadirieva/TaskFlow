@@ -1,8 +1,8 @@
-// GitHub label: color — hex БЕЗ '#'
 export type GithubLabel = {
-  id?: number;
+  id: number;
   name: string;
-  color: string;        // hex без '#'
+  color?: string;        // TODO: не получаю от бэкенда
   description?: string | null;
-  default?: boolean;
 };
+
+export const GithubLabelDefaultColor = "grey";
