@@ -8,7 +8,7 @@ import { GithubClickableTag, StatusTag } from "../../../tasks/task/shared";
 
 export default function TaskHeader({ task }: { task: Task }) {
   return (
-    <Card hoverable classNames={{body: cn(styles.card, styles["task-header"])}}>
+    <Card classNames={{ body: cn(styles.card, styles["task-header"]) }}>
       <div className={styles["task-header__top"]}>
         <StatusTag status={task.status} />
         <div className={styles["task-header__id"]}>id {task.id}</div>
@@ -25,6 +25,7 @@ export default function TaskHeader({ task }: { task: Task }) {
             return (
               <GithubClickableTag
                 githubLabel={tag}
+                key={tag.id}
                 onSelect={() => {
                   /**TODO: добавить фильтр */
                 }}

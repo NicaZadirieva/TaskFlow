@@ -11,7 +11,8 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
 } from "@ant-design/icons";
-import TitledForm from "../components/form/form";
+import TitledForm from '../shared/components/form/form';
+
 
 export default function LoginPage() {
   const [api, contextHolder] = notification.useNotification();

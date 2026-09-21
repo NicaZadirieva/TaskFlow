@@ -3,6 +3,7 @@ import { fromTaskSchema } from '../../api/from_schema/fromTaskSchema';
 import { Status } from '../../tasks/interfaces/task.interface';
 import TaskHeader from '../features/TaskHeader';
 import TaskPageParams from './TaskPageParams';
+import EditTaskForm from '../entities/EditTaskForm';
 
 const TEST_TASK = {
 	id: 3,
@@ -72,5 +73,9 @@ const TEST_TASK = {
   };
 export default async function TaskPage({ params }: TaskPageParams) {
 	const { id } = await params;
-	return <><TaskHeader task={fromTaskSchema(TEST_TASK)}/></>
+	const mapped = fromTaskSchema(TEST_TASK);
+	return <>
+	<TaskHeader task={mapped}/>
+	<EditTaskForm task={mapped} />
+	</>
 }
