@@ -15,17 +15,13 @@ import { TaskAssignee } from "@/app/(other_pages)/tasks/task/entities";
 import { useMemo, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { TaskNote } from '@/app/(other_pages)/tasks/task/shared';
+import Assignees from '../../entities/Assignees';
 
 const { Text } = Typography;
-export default function TaskEditor({ task }: { task: Task }) {
-  const [removing, setRemoving] = useState<Assignee | null>(null);
-  const [adding, setAdding] = useState(false);
 
-  const activeCount = useMemo(
-    () => task.assignees.filter((a) => !a.removed).length,
-    [task.assignees],
-  );
-  const removedCount = task.assignees.length - activeCount;
+export default function TaskEditor({ task }: { task: Task }) {
+   const [removing, setRemoving] = useState<Assignee | null>(null);
+  const [adding, setAdding] = useState(false);
 
   /* ---------- Удаление ---------- */
   const undoRemove = (id: number) => {
@@ -56,71 +52,7 @@ export default function TaskEditor({ task }: { task: Task }) {
             />
           </Card>
           <Card className={styles.card}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center", // было center
-                marginBottom: 8,
-                minHeight: 24,
-              }}
-            >
-              <Text
-                type="secondary"
-                style={{
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                }}
-              >
-                Исполнители
-              </Text>
-              <Space size={6} align="center">
-                <Text strong style={{ fontSize: 12 }}>
-                  {activeCount}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: "#dc2626",
-                    visibility: removedCount > 0 ? "visible" : "hidden",
-                  }}
-                >
-                  −{removedCount || 0}
-                </Text>
-                <Button
-                  type="link"
-                  size="small"
-                  onClick={() => setAdding(true)}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
-                  <PlusOutlined style={{ fontSize: 12, lineHeight: 1 }} />
-                  добавить
-                </Button>
-              </Space>
-            </div>
-            <div
-              style={{
-                overflowY: "auto",
-                overflowX: "hidden",
-                paddingRight: 4, // чтобы контент не прилипал к скроллбару
-              }}
-            >
-              <Space orientation="vertical" size={4} style={{ width: "100%" }}>
-                {task.assignees.map((assignee) => {
-                  return (
-                    <TaskAssignee
-                      assignee={assignee}
-                      onChoose={(assignee) => setRemoving(assignee)}
-                      onUndo={(assignee) => undoRemove(assignee.id)}
-                    />
-                  );
-                })}
-              </Space>
-            </div>
+            <Assignees assignees={task.assignees} undoRemove={(assignee) => undoRemove(assignee.id)} showAssigneeAddModal={() => setAdding(true)} showAssigneeRemoveModal={setRemoving}/>
           </Card>
 		  {task.note && <TaskNote note={task.note}/>}
         </div>

@@ -24,7 +24,6 @@ import styles from "./index.module.css";
 import { Controller, useForm } from "react-hook-form";
 import { getFormErrorMessage } from "@/app/shared/utils/getFormErrorMessage";
 import dayjs from "dayjs";
-import cn from "classnames";
 import { UploadOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
