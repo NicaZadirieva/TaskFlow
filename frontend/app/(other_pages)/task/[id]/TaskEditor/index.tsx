@@ -6,7 +6,7 @@ import { Card, message } from "antd";
 
 import styles from "./index.module.css";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Task } from "@/app/api/models/task.interface";
 import { Assignee } from "@/app/api/models/assignee.interface";
 import { TaskHeader } from "@/app/components/task/edit/features";
@@ -18,6 +18,7 @@ import {
 import { TaskNote } from "@/app/components/task/view/shared";
 import EditTaskForm from '@/app/components/task/edit/entities/EditTaskForm';
 import Assignees from '@/app/components/task/view/entities/Assignees';
+import dayjs from 'dayjs';
 
 export default function TaskEditor({ task }: { task: Task }) {
   const [removing, setRemoving] = useState<Assignee | null>(null);
@@ -25,18 +26,71 @@ export default function TaskEditor({ task }: { task: Task }) {
 
   const [editedTask, updateEditedTask]  = useState<Task>(task);
 
+  /** Последнее удаление — для отката */
+  const [lastRemoved, setLastRemoved] = useState<{
+    assignee: Assignee;
+    index: number;
+  } | null>(null);
+
+  /* ---------- Обновление задачи из формы ---------- */
+  const updateTask = useCallback((patch: Partial<Task>) => {
+    updateEditedTask((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  /* ---------- Просрочка ---------- */
+  const overdueDays = useMemo(() => {
+    if (!editedTask.due_date) return 0;
+    return Math.max(
+      0,
+      dayjs().startOf("day").diff(dayjs(editedTask.due_date).startOf("day"), "day")
+    );
+  }, [editedTask.due_date]);
+
   /* ---------- Удаление ---------- */
-  const undoRemove = (id: number) => {
-    message.info("Удаление отменено");
-  };
-  const removeAssignee = (updated: Assignee) => {
+  const removeAssignee = (removed: Assignee) => {
+    updateEditedTask((prev) => {
+      const index = prev.assignees.findIndex((a) => a.id === removed.id);
+      if (index === -1) return prev;
+
+      setLastRemoved({ assignee: removed, index });
+
+      return {
+        ...prev,
+        assignees: prev.assignees.filter((a) => a.id !== removed.id),
+      };
+    });
+
+    setRemoving(null);
     message.success("Исполнитель удалён");
+  };
+
+  const undoRemove = () => {
+    if (!lastRemoved) return;
+
+    updateEditedTask((prev) => {
+      const next = [...prev.assignees];
+      next.splice(lastRemoved.index, 0, lastRemoved.assignee);
+      return { ...prev, assignees: next };
+    });
+
+    setLastRemoved(null);
+    message.info("Удаление отменено");
   };
 
   /* ---------- Добавление ---------- */
   const addAssignee = (assignee: Assignee) => {
+    // Защита от дубликатов по id
+    updateEditedTask((prev) => {
+      const exists = prev.assignees.some((a) => a.id === assignee.id);
+      if (exists) return prev;
+
+      return { ...prev, assignees: [...prev.assignees, assignee] };
+    });
+
+    setAdding(false);
     message.success("Исполнитель добавлен");
   };
+
   return (
     <>
       <TaskHeader task={editedTask} />
@@ -56,7 +110,7 @@ export default function TaskEditor({ task }: { task: Task }) {
           <Card className={styles.card}>
             <Assignees
               assignees={editedTask.assignees}
-              undoRemove={(assignee) => undoRemove(assignee.id)}
+              undoRemove={(assignee) => undoRemove()}
               showAssigneeAddModal={() => setAdding(true)}
               showAssigneeRemoveModal={setRemoving}
             />
@@ -81,3 +135,4 @@ export default function TaskEditor({ task }: { task: Task }) {
     </>
   );
 }
+
