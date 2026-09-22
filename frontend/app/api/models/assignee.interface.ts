@@ -13,4 +13,5 @@ export interface Assignee {
   removed?: boolean;
   remove_reason?: string;
   reassigned_reason?: string;
+  hourly_rate?: number; // TODO: добавить в интерфейс через БД (связь user <-> AssignedTask)
 }

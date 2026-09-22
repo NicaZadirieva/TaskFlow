@@ -34,6 +34,7 @@ const TEST_TASK = {
 		tenantId: 1,
 		assignedAt: new Date('2026-08-05'),
 		isActive: true,
+		hourly_rate: 4500
 	  },
 	  {
 		id: 5,
@@ -46,6 +47,7 @@ const TEST_TASK = {
 		tenantId: 1,
 		assignedAt: new Date('2026-08-05'),
 		isActive: true,
+		hourly_rate: 2500
 	  },
 	  {
 		id: 6,
@@ -58,6 +60,7 @@ const TEST_TASK = {
 		tenantId: 1,
 		assignedAt: new Date('2026-08-05'),
 		isActive: true,
+		hourly_rate: 1500
 	  },
 	],
 	tags: [

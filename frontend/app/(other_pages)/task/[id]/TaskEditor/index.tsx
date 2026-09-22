@@ -91,13 +91,30 @@ export default function TaskEditor({ task }: { task: Task }) {
     message.success("Исполнитель добавлен");
   };
 
+  const computeActualBudget = (assignee: Assignee) => {
+    return assignee.hourly_rate ? assignee.hourly_rate * assignee.hours: 0;
+  }
+
+  const computeEstimatedBudget = (assignee: Assignee) => {
+    return assignee.hourly_rate ? assignee.hourly_rate * assignee.planned: 0;
+  }
+
+  const computeActualHours = (assignee: Assignee) => {
+    return assignee.hours;
+  }
+
+  const computeEstimatedHours = (assignee: Assignee) => {
+    return assignee.planned;
+  }
+
   return (
     <>
       <TaskHeader task={editedTask} />
       <div className={styles.grid}>
         <EditTaskForm task={editedTask} updateTask={updateEditedTask}/>
         <div className={styles.right}>
-          <Card className={styles.card}>
+          <Card title={"Эталонные значения для планирования"} className={styles.card}>
+            
             <ShowMetrics
               due_date={editedTask.due_date.toLocaleDateString("ru-RU")}
               overdueDays={editedTask.overdueDays /**TODO: посчитать на фронтенде */}
@@ -107,7 +124,15 @@ export default function TaskEditor({ task }: { task: Task }) {
               estimatedHours={editedTask.hours.planned}
             />
           </Card>
-          <Card className={styles.card}>
+          <Card className={styles.card} title={"Запланированные значения"}>
+            <ShowMetrics
+              due_date={editedTask.due_date.toLocaleDateString("ru-RU")}
+              overdueDays={editedTask.overdueDays /**TODO: посчитать на фронтенде */}
+              actualBudget={editedTask.assignees.reduce((prev, cur) => prev + computeActualBudget(cur), 0)}
+              estimatedBudget={editedTask.assignees.reduce((prev, cur) => prev + computeEstimatedBudget(cur), 0)}
+              actualHours={editedTask.assignees.reduce((prev, cur) => prev + computeActualHours(cur), 0)}
+              estimatedHours={editedTask.assignees.reduce((prev, cur) => prev + computeEstimatedHours(cur), 0)}
+            />
             <Assignees
               assignees={editedTask.assignees}
               undoRemove={(assignee) => undoRemove()}

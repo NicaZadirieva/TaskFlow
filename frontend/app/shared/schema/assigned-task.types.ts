@@ -12,4 +12,5 @@ export interface AssignedTask {
   removed?: boolean;
   remove_reason?: string;
   reassigned_reason?: string;
+  hourly_rate?: number;
 }

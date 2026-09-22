@@ -1,8 +1,10 @@
 import { AssignedTask } from '@/app/shared/schema/assigned-task.types';
-import { Priority, Status, Task } from '../../tasks/interfaces/task.interface';
-import { Task as TaskDb } from '@/app/shared/schema/task.types';
-import { Assignee } from '../../tasks/interfaces/assignee.interface';
+
+import { Priority, Task as TaskDb } from '@/app/shared/schema/task.types';
+
 import ITaskNote from '@/app/shared/schema/note.types';
+import { Assignee } from '../../models/assignee.interface';
+import { Status } from '../../models/task.interface';
 export function fromAssignedTaskToAssignee(src: AssignedTask): Assignee {
   return {
     id: src.id,
@@ -17,7 +19,8 @@ export function fromAssignedTaskToAssignee(src: AssignedTask): Assignee {
     planned: src.estimatedHours,
 	reassigned_reason: src.reassigned_reason,
 	remove_reason: src.remove_reason,
-	removed: src.removed
+	removed: src.removed,
+  hourly_rate: src.hourly_rate
     // removed / remove_reason / reassigned_reason в источнике отсутствуют
   };
 }

@@ -212,7 +212,7 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
 
         {/* --- Часы и бюджет --- */}
         <section className={styles.section}>
-          <Text className={styles.sectionTitle}>Часы и бюджет</Text>
+          <Text className={styles.sectionTitle}>Эталонные часы и бюджет</Text>
 
           <div className={styles.grid2}>
             <div className={styles.group}>

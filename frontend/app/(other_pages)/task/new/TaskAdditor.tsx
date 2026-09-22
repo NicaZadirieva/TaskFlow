@@ -102,13 +102,29 @@ export default function TaskAdditor() {
       setAdding(false);
       message.success("Исполнитель добавлен");
     };
+
+     const computeActualBudget = (assignee: Assignee) => {
+    return assignee.hourly_rate ? assignee.hourly_rate * assignee.hours: 0;
+  }
+
+  const computeEstimatedBudget = (assignee: Assignee) => {
+    return assignee.hourly_rate ? assignee.hourly_rate * assignee.planned: 0;
+  }
+
+  const computeActualHours = (assignee: Assignee) => {
+    return assignee.hours;
+  }
+
+  const computeEstimatedHours = (assignee: Assignee) => {
+    return assignee.planned;
+  }
   return (
     <>
       <TaskHeader task={taskToAdd} />
       <div className={styles.grid}>
         <EditTaskForm task={taskToAdd} updateTask={updateTaskToAdd}/>
         <div className={styles.right}>
-          <Card className={styles.card}>
+          <Card title={"Эталонные значения для планирования"} className={styles.card}>
             <ShowMetrics
               due_date={taskToAdd.due_date.toLocaleDateString("ru-RU")}
               overdueDays={taskToAdd.overdueDays /**TODO: посчитать на фронтенде */}
@@ -118,7 +134,15 @@ export default function TaskAdditor() {
               estimatedHours={taskToAdd.hours.planned}
             />
           </Card>
-          <Card className={styles.card}>
+          <Card className={styles.card} title={"Запланированные значения"}>
+            <ShowMetrics
+              due_date={taskToAdd.due_date.toLocaleDateString("ru-RU")}
+              overdueDays={taskToAdd.overdueDays /**TODO: посчитать на фронтенде */}
+              actualBudget={taskToAdd.assignees.reduce((prev, cur) => prev + computeActualBudget(cur), 0)}
+              estimatedBudget={taskToAdd.assignees.reduce((prev, cur) => prev + computeEstimatedBudget(cur), 0)}
+              actualHours={taskToAdd.assignees.reduce((prev, cur) => prev + computeActualHours(cur), 0)}
+              estimatedHours={taskToAdd.assignees.reduce((prev, cur) => prev + computeEstimatedHours(cur), 0)}
+            />
             <Assignees
               assignees={taskToAdd.assignees}
               undoRemove={(assignee: Assignee) => undoRemove()}
