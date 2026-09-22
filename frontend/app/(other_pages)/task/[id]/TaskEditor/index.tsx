@@ -37,14 +37,6 @@ export default function TaskEditor({ task }: { task: Task }) {
     updateEditedTask((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  /* ---------- Просрочка ---------- */
-  const overdueDays = useMemo(() => {
-    if (!editedTask.due_date) return 0;
-    return Math.max(
-      0,
-      dayjs().startOf("day").diff(dayjs(editedTask.due_date).startOf("day"), "day")
-    );
-  }, [editedTask.due_date]);
 
   /* ---------- Удаление ---------- */
   const removeAssignee = (removed: Assignee) => {
@@ -107,6 +99,31 @@ export default function TaskEditor({ task }: { task: Task }) {
     return assignee.planned;
   }
 
+   /* ---------- Просрочка ---------- */
+  /**
+   * Вычисление количества дней просрочки.
+   * Просрочка не считается, если:
+   *  - нет даты дедлайна;
+   *  - задача выполнена (статус DONE / CLOSED — подставьте свои значения).
+   * Возвращает целое число дней просрочки (0, если не просрочено).
+   */
+  const overdueDays = useMemo(() => {
+    if (!editedTask.due_date) return 0;
+
+    // Если задача выполнена — просрочки нет
+    const doneStatuses = ["DONE", "CLOSED", "COMPLETED"];
+    if (doneStatuses.includes(editedTask.status)) return 0;
+
+    const today = dayjs().startOf("day");
+    const dueDate = dayjs(editedTask.due_date).startOf("day");
+
+    // Если дедлайн в будущем или сегодня — просрочки нет
+    if (!dueDate.isBefore(today)) return 0;
+
+    return today.diff(dueDate, "day");
+  }, [editedTask.due_date, editedTask.status]);
+
+
   return (
     <>
       <TaskHeader task={editedTask} />
@@ -116,8 +133,8 @@ export default function TaskEditor({ task }: { task: Task }) {
           <Card title={"Эталонные значения для планирования"} className={styles.card}>
             
             <ShowMetrics
-              due_date={editedTask.due_date.toLocaleDateString("ru-RU")}
-              overdueDays={editedTask.overdueDays /**TODO: посчитать на фронтенде */}
+              due_date={editedTask.due_date?.toLocaleDateString("ru-RU")}
+              overdueDays={overdueDays /**TODO: посчитать на фронтенде */}
               actualBudget={editedTask.budget.fact}
               estimatedBudget={editedTask.budget.planned}
               actualHours={editedTask.hours.fact}
@@ -126,8 +143,8 @@ export default function TaskEditor({ task }: { task: Task }) {
           </Card>
           <Card className={styles.card} title={"Запланированные значения"}>
             <ShowMetrics
-              due_date={editedTask.due_date.toLocaleDateString("ru-RU")}
-              overdueDays={editedTask.overdueDays /**TODO: посчитать на фронтенде */}
+              due_date={editedTask.due_date?.toLocaleDateString("ru-RU")}
+              overdueDays={overdueDays /**TODO: посчитать на фронтенде */}
               actualBudget={editedTask.assignees.reduce((prev, cur) => prev + computeActualBudget(cur), 0)}
               estimatedBudget={editedTask.assignees.reduce((prev, cur) => prev + computeEstimatedBudget(cur), 0)}
               actualHours={editedTask.assignees.reduce((prev, cur) => prev + computeActualHours(cur), 0)}

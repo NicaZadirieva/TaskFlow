@@ -22,7 +22,7 @@ import { getFormErrorMessage } from "@/app/shared/utils/getFormErrorMessage";
 import dayjs from "dayjs";
 import { UploadOutlined } from "@ant-design/icons";
 import { Task } from '@/app/api/models/task.interface';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -54,6 +54,7 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
       task_images: task?.task_images ?? [],
     },
   });
+ 
 
   /** Преобразование данных формы в Task и отдача наверх */
   const toTask = (data: EditTaskFormData): Task => ({
