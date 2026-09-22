@@ -1,0 +1,22 @@
+.grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	margin-top: 16px;
+	gap: 16px;
+}
+
+.card {
+	height: fit-content;
+}
+
+.right {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+@media screen and (max-width: 960px) {
+	.grid {
+		grid-template-columns: 1fr;
+	}
+}

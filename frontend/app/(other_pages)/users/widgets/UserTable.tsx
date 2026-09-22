@@ -1,20 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { IUser, TenantRole } from "../../../shared/interface/user.interface";
 import DesktopUserTable from "./components/desktop/DesktopUserTable";
 import MobileUserTable from "./components/mobile/MobileUserTable";
 import UserEditor from "./components/shared/UserEditor";
-import changeUserReq from "../api/change_user/change_user.req";
-import { toNewUserSchema, toUserSchema } from "../../api/to_schema/to_user";
-import { Button, message, Space } from "antd";
+import { message } from "antd";
 import { useRouter } from "next/navigation";
-import UserAdditor from "../new/components/UserAdditor";
-import createUserReq from "../api/create_user/create_user.req";
+import { IUser, TenantRole } from '@/app/shared/interface/user.interface';
+import { toUserSchema } from '@/app/api/mappers/to_schema/to_user';
+import changeUserReq from '@/app/api/requests/user/change_user/change_user.req';
 
 export default function UserTable({ users }: { users: IUser[] }) {
   const [editingRecord, setEditingRecord] = useState<IUser | null>(null);
-  const [isAdding, setIsAdding] = useState(false);
   const router = useRouter();
   const onEdit = (record: IUser) => {
     setEditingRecord(record);

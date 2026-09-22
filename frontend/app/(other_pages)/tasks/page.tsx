@@ -1,5 +1,5 @@
-import { fromTaskSchema } from '../api/from_schema/fromTaskSchema';
-import getTasksReq from './api/get_tasks/req';
+import { fromTaskSchema } from '../../api/mappers/from_schema/fromTaskSchema';
+import getTasksReq from '../../api/requests/task/get_tasks/req';
 import TasksInKanban from './TasksInKanban';
 import TasksInRow from './TasksInRow';
 

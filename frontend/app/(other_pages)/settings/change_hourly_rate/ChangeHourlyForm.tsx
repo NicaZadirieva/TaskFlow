@@ -2,7 +2,7 @@
 import { IUser } from "@/app/shared/interface/user.interface";
 import { Form, InputNumber, Button, message } from "antd";
 import changeHourlyRateReq from './api/change_hourly_rate.req';
-import { toUserSchema } from '../../api/to_schema/to_user';
+import { toUserSchema } from '../../../api/mappers/to_schema/to_user';
 
 
 interface HourlyRateFormValues {

@@ -1,5 +1,5 @@
-import { Task } from "./interfaces/task.interface";
-import { TaskInKanban } from "./task/widgets";
+import { Task } from '@/app/api/models/task.interface';
+import { TaskInKanban } from '@/app/components/tasks/widgets';
 
 export default function TasksInKanban({ tasks }: { tasks: Task[] }) {
   return (
