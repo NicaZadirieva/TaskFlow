@@ -1,6 +1,6 @@
 import { fromTaskSchema } from '../../../api/mappers/from_schema/fromTaskSchema';
 import TaskPageParams from './TaskPageParams';
-import TaskEditor from '../../../components/task/edit/widgets/TaskEditor';
+import TaskEditor from './TaskEditor';
 import getTaskReq from '../../../api/requests/task/get_task/get_task.req';
 import { notFound } from 'next/navigation';
 

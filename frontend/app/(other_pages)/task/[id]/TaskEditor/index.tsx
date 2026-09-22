@@ -1,12 +1,12 @@
 "use client";
 
-import EditTaskForm from "../../entities/EditTaskForm";
+
+
 import { Card, message } from "antd";
 
 import styles from "./index.module.css";
 
 import { useState } from "react";
-import Assignees from "../../../view/entities/Assignees";
 import { Task } from "@/app/api/models/task.interface";
 import { Assignee } from "@/app/api/models/assignee.interface";
 import { TaskHeader } from "@/app/components/task/edit/features";
@@ -16,6 +16,8 @@ import {
   ShowMetrics,
 } from "@/app/components/task/view/features";
 import { TaskNote } from "@/app/components/task/view/shared";
+import EditTaskForm from '@/app/components/task/edit/entities/EditTaskForm';
+import Assignees from '@/app/components/task/view/entities/Assignees';
 
 export default function TaskEditor({ task }: { task: Task }) {
   const [removing, setRemoving] = useState<Assignee | null>(null);
