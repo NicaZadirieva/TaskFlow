@@ -53,7 +53,7 @@ export default function TaskAdditor() {
     <>
       <TaskHeader task={taskToAdd} />
       <div className={styles.grid}>
-        <EditTaskForm task={taskToAdd} />
+        <EditTaskForm task={taskToAdd} updateTask={updateTaskToAdd}/>
         <div className={styles.right}>
           <Card className={styles.card}>
             <ShowMetrics

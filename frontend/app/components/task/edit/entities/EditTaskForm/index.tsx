@@ -22,6 +22,7 @@ import { getFormErrorMessage } from "@/app/shared/utils/getFormErrorMessage";
 import dayjs from "dayjs";
 import { UploadOutlined } from "@ant-design/icons";
 import { Task } from '@/app/api/models/task.interface';
+import { useEffect } from 'react';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -38,8 +39,8 @@ const PRIORITY_OPTIONS = [
   { value: "HIGH", label: "Высокий" },
 ];
 
-export default function EditTaskForm({ task }: { task?: Task }) {
-  const { handleSubmit, control } = useForm<EditTaskFormData>({
+export default function EditTaskForm({ task, updateTask }: { task?: Task, updateTask: (task: Task) => void; }) {
+  const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
     defaultValues: {
       title: task ? task.title : "",
       status: task ? task.status : "",
@@ -54,8 +55,31 @@ export default function EditTaskForm({ task }: { task?: Task }) {
     },
   });
 
+  /** Преобразование данных формы в Task и отдача наверх */
+  const toTask = (data: EditTaskFormData): Task => ({
+    ...(task ?? ({} as Task)),
+    title: data.title,
+    status: data.status,
+    description: data.description,
+    priority: data.priority,
+    due_date: data.due_date,
+    hours: data.hours,
+    budget: data.budget,
+    note: data.note,
+    tags: data.tags?.map((name) => ({ name })),
+    task_images: data.task_images,
+  });
+
+  /** Слушаем RHF — здесь значения уже актуальные */
+  useEffect(() => {
+    const sub = watch(() => {
+      updateTask(toTask(getValues()));
+    });
+    return () => sub.unsubscribe();
+  }, [watch, getValues, updateTask]);
+
   const onSubmit = (data: EditTaskFormData) => {
-    console.log(data);
+    updateTask(toTask(data));
   };
 
   return (

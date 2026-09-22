@@ -23,6 +23,8 @@ export default function TaskEditor({ task }: { task: Task }) {
   const [removing, setRemoving] = useState<Assignee | null>(null);
   const [adding, setAdding] = useState(false);
 
+  const [editedTask, updateEditedTask]  = useState<Task>(task);
+
   /* ---------- Удаление ---------- */
   const undoRemove = (id: number) => {
     message.info("Удаление отменено");
@@ -37,29 +39,29 @@ export default function TaskEditor({ task }: { task: Task }) {
   };
   return (
     <>
-      <TaskHeader task={task} />
+      <TaskHeader task={editedTask} />
       <div className={styles.grid}>
-        <EditTaskForm task={task} />
+        <EditTaskForm task={editedTask} updateTask={updateEditedTask}/>
         <div className={styles.right}>
           <Card className={styles.card}>
             <ShowMetrics
-              due_date={task.due_date.toLocaleDateString("ru-RU")}
-              overdueDays={task.overdueDays /**TODO: посчитать на фронтенде */}
-              actualBudget={task.budget.fact}
-              estimatedBudget={task.budget.planned}
-              actualHours={task.hours.fact}
-              estimatedHours={task.hours.planned}
+              due_date={editedTask.due_date.toLocaleDateString("ru-RU")}
+              overdueDays={editedTask.overdueDays /**TODO: посчитать на фронтенде */}
+              actualBudget={editedTask.budget.fact}
+              estimatedBudget={editedTask.budget.planned}
+              actualHours={editedTask.hours.fact}
+              estimatedHours={editedTask.hours.planned}
             />
           </Card>
           <Card className={styles.card}>
             <Assignees
-              assignees={task.assignees}
+              assignees={editedTask.assignees}
               undoRemove={(assignee) => undoRemove(assignee.id)}
               showAssigneeAddModal={() => setAdding(true)}
               showAssigneeRemoveModal={setRemoving}
             />
           </Card>
-          {task.note && <TaskNote note={task.note} />}
+          {editedTask.note && <TaskNote note={editedTask.note} />}
         </div>
       </div>
       <AssigneeAdditor

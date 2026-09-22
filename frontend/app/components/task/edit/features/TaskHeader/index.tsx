@@ -5,7 +5,7 @@ import { Card } from "antd";
 import styles from "./index.module.css";
 import cn from "classnames";
 import { Task } from '@/app/api/models/task.interface';
-import { GithubClickableTag, StatusTag } from '../../../view/shared';
+import { GithubClickableTag, PriorityBadge, StatusTag } from '../../../view/shared';
 
 
 export default function TaskHeader({ task }: { task: Task }) {
@@ -14,6 +14,7 @@ export default function TaskHeader({ task }: { task: Task }) {
       <div className={styles["task-header__top"]}>
         <StatusTag status={task.status} />
         <div className={styles["task-header__id"]}>id {task.id}</div>
+        <PriorityBadge priority={task.priority} />
       </div>
       <div className={styles["task-header__content"]}>
         <h1 className={styles["task-header__title"]} data-title={task.title}>
@@ -27,7 +28,7 @@ export default function TaskHeader({ task }: { task: Task }) {
             return (
               <GithubClickableTag
                 githubLabel={tag}
-                key={tag.id}
+                key={tag.name}
                 onSelect={() => {
                   /**TODO: добавить фильтр */
                 }}
