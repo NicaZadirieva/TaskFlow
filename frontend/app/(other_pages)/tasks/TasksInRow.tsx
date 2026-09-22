@@ -1,5 +1,6 @@
-import { Task } from './interfaces/task.interface';
-import { TaskRow } from './task/widgets';
+import { Task } from '@/app/api/models/task.interface';
+import { TaskRow } from '@/app/components/tasks/widgets';
+
 
 export default function TasksInRow({ tasks }: { tasks: Task[] }) {
   return (

@@ -1,4 +1,4 @@
-import getUsersReq from "../../api/get_users/get_users.req";
+import getUsersReq from "../../../api/requests/user/get_users/get_users.req";
 import ChangePasswordTable from './widgets/ChangePasswordTable';
 
 

@@ -1,4 +1,4 @@
-import UserAdditor from './components/UserAdditor';
+import UserAdditor from './UserAdditor';
 
 export default function UserNewPage() {
 	return <UserAdditor/>;

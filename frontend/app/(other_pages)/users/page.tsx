@@ -1,5 +1,6 @@
-import getUsersReq from '../api/get_users/get_users.req';
-import UserTable from "./widgets/UserTable";
+import getUsersReq from '../../api/requests/user/get_users/get_users.req';
+import UserTable from './widgets/UserTable';
+
 
 export default async function UsersPage() {
   const users = await getUsersReq();

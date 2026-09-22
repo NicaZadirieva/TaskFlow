@@ -1,4 +1,5 @@
-import { Assignee } from '../interfaces/assignee.interface';
+import { Assignee } from '@/app/api/models/assignee.interface';
+
 
 export const assignee: Assignee = {
   id: 1,
