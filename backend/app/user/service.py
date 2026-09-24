@@ -48,6 +48,12 @@ class UserService:
         jwt = create_access_token(user.id)
         return jwt
 
+    async def get_users_by_tenant_id(self, tenant_id: int):
+        tenant = await self.tenant_repo.get_by_id_with_users(tenant_id)
+        if tenant is None:
+            return None
+        return tenant.users
+
 
 def get_user_service(user_repo: UserRepoDeps, tenant_repo: TenantRepoDeps):
     return UserService(user_repo, tenant_repo)

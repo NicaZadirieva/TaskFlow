@@ -28,3 +28,17 @@ class UserLoginRequest(BaseModel):
     email: str
     password: str
     model_config = {"extra": "forbid"}
+
+
+class UserDto(BaseModel):
+    id: int
+    tenant_id: int
+    role: TenantRole
+    name: str
+    email: str
+    is_active: bool
+    hourly_rate: int | None
+
+
+class GetUsersResponse(BaseModel):
+    users: list[UserDto]
