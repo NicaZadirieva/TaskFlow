@@ -25,3 +25,7 @@ class Tenant(Base):
         back_populates="tenant", cascade="all, delete-orphan"
     )
     tasks: Mapped[list["Task"]] = relationship(back_populates="tenant")  # type: ignore  # noqa: F821
+
+    def __init__(self, name: str, slug: str):
+        self.name = name
+        self.slug = slug

@@ -6,6 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class CommonAppSettings(BaseModel):
     ENVIRONMENT: str = "development"
+    SECRET: str
+    EXPIRE_MINUTES: int
 
 
 class DatabaseSettings(BaseModel):
@@ -42,6 +44,8 @@ class Settings(BaseSettings):
 
     # Common
     ENVIRONMENT: str = "development"
+    SECRET: str
+    EXPIRE_MINUTES: int
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -59,7 +63,11 @@ class Settings(BaseSettings):
 
     @property
     def common_app(self) -> CommonAppSettings:
-        return CommonAppSettings(ENVIRONMENT=self.ENVIRONMENT)
+        return CommonAppSettings(
+            ENVIRONMENT=self.ENVIRONMENT,
+            SECRET=self.SECRET,
+            EXPIRE_MINUTES=self.EXPIRE_MINUTES,
+        )
 
     @property
     def db(self) -> DatabaseSettings:

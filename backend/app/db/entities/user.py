@@ -37,3 +37,21 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+
+    def __init__(
+        self,
+        tenant_id: int,
+        role: TenantRole,
+        name: str,
+        email: str,
+        password_hash: str,
+        is_active: bool = True,
+        hourly_rate: int | None = None,
+    ):
+        self.tenant_id = tenant_id
+        self.role = role
+        self.name = name
+        self.email = email
+        self.password_hash = password_hash
+        self.is_active = is_active
+        self.hourly_rate = hourly_rate
