@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 from app.db.entities.base import Base
-from app.settings import Settings
+from app.core.settings import Settings
 
 # не удалять этот импорт. без него не загрузятся модели в БД
 import app.db.entities  # noqa: F401

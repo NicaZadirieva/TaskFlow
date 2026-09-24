@@ -11,8 +11,20 @@ settings = Settings()  # type: ignore[call-arg]
 
 engine = create_async_engine(
     settings.db.DATABASE_URL,
-    echo=False,  # вывод sql-команд отключена
+    echo=False,
     pool_pre_ping=True,
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30,  # ждать слот в пуле не более 30с
+    pool_recycle=1800,  # пересоздавать соединения раз в 30 мин
+    connect_args={
+        "timeout": 10,  # таймаут установки соединения (asyncpg)
+        "command_timeout": 30,  # таймаут выполнения команды (asyncpg)
+        "server_settings": {
+            "statement_timeout": "30000",  # 30с на запрос на стороне PG
+            "idle_in_transaction_session_timeout": "60000",
+        },
+    },
 )
 
 async_session_local = async_sessionmaker(

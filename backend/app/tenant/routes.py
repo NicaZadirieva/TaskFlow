@@ -5,7 +5,6 @@ from fastapi import APIRouter, HTTPException
 from app.tenant.schema import (
     CreateTenantRequest,
     CreateTenantResponse,
-    GetTenantRequest,
     GetTenantResponse,
 )
 from app.tenant.service import TenantServiceDeps
@@ -27,14 +26,14 @@ async def create_tenant(data: CreateTenantRequest, service: TenantServiceDeps):
 
 
 @router.get(
-    "/",
+    "/slug",
     response_model=GetTenantResponse,
     status_code=200,
     summary="Получает тенант",
     description="""Получает тенант""",
 )
-async def get_tenant_by_slug(data: GetTenantRequest, service: TenantServiceDeps):
-    tenant = await service.get_tenant(data)
+async def get_tenant_by_slug(slug: str, service: TenantServiceDeps):
+    tenant = await service.get_tenant(slug)
     if tenant is None:
         raise HTTPException(404, "Tenant not found")
     return GetTenantResponse(slug=tenant.slug, name=tenant.name, tenant_id=tenant.id)

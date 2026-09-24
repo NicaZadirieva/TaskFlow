@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException
 
 from app.db.entities.tenant import Tenant
-from app.tenant.schema import CreateTenantRequest, GetTenantRequest
+from app.tenant.schema import CreateTenantRequest
 
 from .repository import TenantRepoDeps, TenantRepository
 
@@ -20,8 +20,8 @@ class TenantService:
         saved_tenant = await self.tenant_repo.save(new_tenant)
         return saved_tenant.id
 
-    async def get_tenant(self, data: GetTenantRequest):
-        tenant = await self.tenant_repo.get_by_slug(data.slug)
+    async def get_tenant(self, slug: str):
+        tenant = await self.tenant_repo.get_by_slug(slug)
         return tenant
 
 
