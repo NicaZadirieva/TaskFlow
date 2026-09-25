@@ -1,12 +1,13 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.assigned_tasks.schema import AssignedTaskFilters, SortOrder
 from app.core.db import DbSessionDeps
 from app.db.entities.assigned_task import AssignedTask
+from app.db.entities.github_label import GithubLabel
 from app.db.entities.task import Task
 
 
@@ -48,6 +49,16 @@ class AssignedTasksRepository:
             stmt = stmt.where(AssignedTask.planned >= filters.planned_min)
         if filters.planned_max is not None:
             stmt = stmt.where(AssignedTask.planned <= filters.planned_max)
+        # --- теги: OR по id ---
+
+        if filters.tag_ids:
+            stmt = stmt.join(Task.tags).where(GithubLabel.id.in_(filters.tag_ids))
+
+        # --- теги: OR по именам ---
+        if filters.tag_names:
+            stmt = stmt.join(Task.tags)
+            name_conds = [GithubLabel.name.ilike(f"%{n}%") for n in filters.tag_names]
+            stmt = stmt.where(or_(*name_conds))
 
         # фильтры по связанной задаче
         if filters.task_title or filters.task_status:
@@ -73,7 +84,7 @@ class AssignedTasksRepository:
             stmt.order_by(order)
             .limit(filters.limit)
             .offset(filters.offset)
-            .options(selectinload(AssignedTask.task))  # чтобы не было N+1 при отдаче
+            .options(selectinload(AssignedTask.task).selectinload(Task.tags))
         )
 
         result = await self.db_session.execute(stmt)
@@ -98,7 +109,7 @@ class AssignedTasksRepository:
             stmt.order_by(order)
             .limit(filters.limit)
             .offset(filters.offset)
-            .options(selectinload(AssignedTask.task))  # чтобы не было N+1 при отдаче
+            .options(selectinload(AssignedTask.task).selectinload(Task.tags))
         )
 
         result = await self.db_session.execute(stmt)
