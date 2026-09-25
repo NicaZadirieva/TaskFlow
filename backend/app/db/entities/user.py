@@ -27,10 +27,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    # Добавить для расчёта стоимости
-    hourly_rate: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )  # в копейках/центах
+    hourly_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")  # type: ignore  # noqa: F821
     assigned_tasks: Mapped[list["AssignedTask"]] = relationship(  # type: ignore  # noqa: F821

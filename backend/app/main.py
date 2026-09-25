@@ -19,6 +19,7 @@ def create_app() -> FastAPI:
         openapi_tags=[
             {"name": "Tenant", "description": "Управление тенантами"},
             {"name": "User", "description": "Авторизация пользователя"},
+            {"name": "Assigned", "description": "Управление назначенными тасками"},
         ],
     )
     new_app.state.settings = settings
