@@ -37,7 +37,7 @@ async def get_only_my_tasks(
 
 
 @router.get(
-    "/my",
+    "/",
     status_code=200,
     response_model=AssignedTasksOut,
     description="Отдает задачи текущего тенанта",
