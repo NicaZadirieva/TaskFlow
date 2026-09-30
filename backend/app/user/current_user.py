@@ -9,7 +9,7 @@ from app.user.service import UserServiceDeps
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/user/login")
 
-
+# TODO: проверка на tenant_id
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)], service: UserServiceDeps
 ) -> User:

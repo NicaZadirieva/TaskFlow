@@ -3,8 +3,9 @@ from enum import Enum as PyEnum
 from typing import Optional
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.entities.base import Base
 from app.db.entities.github_label import task_github_label
 
