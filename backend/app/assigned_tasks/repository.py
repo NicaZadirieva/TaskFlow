@@ -16,9 +16,8 @@ class AssignedTasksRepository:
         self.db_session = db_session
 
     def _apply_filters(
-        self, stmt: Select, user_id: int, filters: AssignedTaskFilters
+        self, stmt: Select, filters: AssignedTaskFilters
     ) -> Select:
-        stmt = stmt.where(AssignedTask.user_id == user_id)
 
         if filters.tenant_id is not None:
             stmt = stmt.where(AssignedTask.tenant_id == filters.tenant_id)
@@ -72,14 +71,20 @@ class AssignedTasksRepository:
         return stmt
 
     async def get_by_user_id(
-        self, user_id: int, filters: AssignedTaskFilters
+        self, user_id: int, tenant_id: int, filters: AssignedTaskFilters
     ) -> list[AssignedTask]:
         sort_col = getattr(AssignedTask, filters.sort_by.value)
         order = (
             sort_col.desc() if filters.sort_order == SortOrder.desc else sort_col.asc()
         )
+        stmt = (
+            select(AssignedTask)
+            # фильтр по пользователю
+            .where(AssignedTask.user_id == user_id)
+            .where(AssignedTask.tenant_id == tenant_id)
+        )
 
-        stmt = self._apply_filters(select(AssignedTask), user_id, filters)
+        stmt = self._apply_filters(stmt, filters)
         stmt = (
             stmt.order_by(order)
             .limit(filters.limit)
@@ -90,10 +95,15 @@ class AssignedTasksRepository:
         result = await self.db_session.execute(stmt)
         return list(result.scalars().unique().all())
 
-    async def count_by_user_id(self, user_id: int, filters: AssignedTaskFilters) -> int:
-        stmt = self._apply_filters(
-            select(func.count()).select_from(AssignedTask), user_id, filters
+    async def count_by_user_id(self, user_id: int, tenant_id: int, filters: AssignedTaskFilters) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(AssignedTask)
+            # фильтр по пользователю
+            .where(AssignedTask.user_id == user_id)
+            .where(AssignedTask.tenant_id == tenant_id)
         )
+        stmt = self._apply_filters(stmt, filters)
         return (await self.db_session.execute(stmt)).scalar_one()
 
     async def get_by_tenant_id(
@@ -103,8 +113,13 @@ class AssignedTasksRepository:
         order = (
             sort_col.desc() if filters.sort_order == SortOrder.desc else sort_col.asc()
         )
+        stmt = (
+            select(AssignedTask)
+            # фильтр по тенанту
+            .where(AssignedTask.tenant_id == tenant_id)
+        )
 
-        stmt = self._apply_filters(select(AssignedTask), tenant_id, filters)
+        stmt = self._apply_filters(stmt, filters)
         stmt = (
             stmt.order_by(order)
             .limit(filters.limit)
@@ -118,9 +133,13 @@ class AssignedTasksRepository:
     async def count_by_tenant_id(
         self, tenant_id: int, filters: AssignedTaskFilters
     ) -> int:
-        stmt = self._apply_filters(
-            select(func.count()).select_from(AssignedTask), tenant_id, filters
+        stmt = (
+            select(func.count())
+            .select_from(AssignedTask)
+            # фильтр по тенанту
+            .where(AssignedTask.tenant_id == tenant_id)
         )
+        stmt = self._apply_filters(stmt, filters)
         return (await self.db_session.execute(stmt)).scalar_one()
 
 

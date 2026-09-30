@@ -27,7 +27,7 @@ async def get_only_my_tasks(
     service: AssignedTasksServiceDeps,
     filters: AssignedTaskFiltersDeps,
 ) -> AssignedTasksOut:
-    assigned_tasks, total = await service.get_my_tasks(current_user.id, filters)
+    assigned_tasks, total = await service.get_my_tasks(current_user.id, current_user.tenant_id, filters)
 
     return AssignedTasksOut(
         items=[AssignedTaskOut.model_validate(a_task) for a_task in assigned_tasks],
