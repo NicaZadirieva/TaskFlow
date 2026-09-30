@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter
 
-from app.assigned_tasks.filters import MustNotBeClientDeps
+from app.assigned_tasks.routes_filters import MustNotBeClientDeps
 from app.assigned_tasks.schema import (
     AssignedTaskFiltersDeps,
     AssignedTaskOut,
