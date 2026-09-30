@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter
 
+from app.assigned_tasks.filters import MustNotBeClientDeps
 from app.assigned_tasks.schema import (
     AssignedTaskFiltersDeps,
     AssignedTaskOut,
@@ -44,14 +45,15 @@ async def get_only_my_tasks(
     summary="Задачи текущего тенанта",
 )
 async def get_all_tasks(
-    current_user: CurrentUserDeps,
+    current_user: MustNotBeClientDeps,
     service: AssignedTasksServiceDeps,
     filters: AssignedTaskFiltersDeps,
 ) -> AssignedTasksOut:
     assigned_tasks, total = await service.get_all_tasks(current_user.tenant_id, filters)
 
     return AssignedTasksOut(
-        items=[AssignedTaskOut.model_validate(a_task) for a_task in assigned_tasks],
+        items=[AssignedTaskOut.model_validate(
+            a_task) for a_task in assigned_tasks],
         total=total,
         limit=filters.limit,
         offset=filters.offset,

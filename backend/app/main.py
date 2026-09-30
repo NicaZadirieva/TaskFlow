@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from app.core.settings import Settings
 from app.tenant.routes import router as tenant_router
 from app.user.routes import router as user_router
+from app.assigned_tasks.routes import router as assigned_router
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ def create_app() -> FastAPI:
 
     new_app.include_router(tenant_router)
     new_app.include_router(user_router)
+    new_app.include_router(assigned_router)
     return new_app
 
 
