@@ -109,7 +109,7 @@ class AssignedTaskSortBy(str, Enum):
 
 class AssignedTaskFilters(BaseModel):
     # --- фильтры по полям самой AssignedTask ---
-    tenant_id: int
+    tenant_id: int | None = None
     task_id: int | None = None
     role_in_task: str | None = None
     is_active: bool | None = None
@@ -141,7 +141,7 @@ class AssignedTaskFilters(BaseModel):
 
 
 async def get_assigned_task_filters(
-    tenant_id: Annotated[int, Query(description="ID тенанта")],
+    tenant_id: Annotated[int | None, Query(description="ID тенанта")] = None,
     task_id: Annotated[int | None, Query(description="ID задачи")] = None,
     role_in_task: Annotated[
         str | None, Query(max_length=15, description="Роль в задаче")
