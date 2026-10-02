@@ -1,4 +1,4 @@
-import isMockEnabled from '@/app/shared/utils/isMockEnabled';
+import isMockEnabled from '@/utils/isMockEnabled';
 import getUserReqMock from './get_user.req.mock';
 import getUserReqReal from './get_user.req.real';
 

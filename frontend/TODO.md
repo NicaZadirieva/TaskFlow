@@ -1,0 +1,1 @@
+1. change_hourly_rate change_password переименовать путь до page.tsx

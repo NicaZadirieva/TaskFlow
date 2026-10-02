@@ -1,17 +1,16 @@
 "use client";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import styles from "./index.module.css";
-import { getFormErrorMessage } from "../shared/utils/getFormErrorMessage";
-import LoginFormData from "./login_form.interface";
-import { useState } from "react";
-import getUserReq from "./api/get_user.req";
-import { notification } from 'antd';
-import { Button, Form, Input } from "antd";
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
+    EyeInvisibleOutlined,
+    EyeTwoTone,
 } from "@ant-design/icons";
-import TitledForm from '../shared/components/form/form';
+import { Button, Form, Input, notification } from 'antd';
+import { useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import TitledForm from '../../components/ui/shared/form/form';
+import { getFormErrorMessage } from "../../utils/getFormErrorMessage";
+import getUserReq from "./api/get_user.req";
+import styles from "./index.module.css";
+import LoginFormData from "./login_form.interface";
 
 
 export default function LoginPage() {

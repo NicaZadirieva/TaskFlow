@@ -1,0 +1,17 @@
+import { fromTaskSchema } from '../../api/mappers/to_entities/fromTaskSchema';
+import getTasksReq from '../../api/requests/task/get_tasks/req';
+import TasksInKanban from '../../components/ui/TasksInKanban/TasksInKanban';
+
+
+export default async function ListAllTasksPage() {
+  const tasks = await getTasksReq();
+  if (tasks) {
+    const mapped = tasks.map(fromTaskSchema);
+    return (
+    <div style={{ background: '#f5f6f8', minHeight: '100vh', padding: 32 }}>
+      <TasksInKanban tasks={mapped} />
+    </div>
+  );
+  }
+  
+}
