@@ -1,6 +1,6 @@
 import { TenantRole } from '@/api/types/user.types';
+import { ChangeHourlyRateForm } from '@/components/ui/settings';
 import { IUser } from '@/entities/user.interface';
-import ChangeHourlyRate from '../../../components/ui/change_hourly_rate/ChangeHourlyForm';
 
 export default function ChangeHourlyRatePage() {
 	const currentUser: IUser = {
@@ -11,5 +11,5 @@ export default function ChangeHourlyRatePage() {
 		is_active: true,
 		hourly_rate: 1500, // ₽
 	}
-	return <ChangeHourlyRate currentUser={currentUser} />
+	return <ChangeHourlyRateForm currentUser={currentUser} />
 }

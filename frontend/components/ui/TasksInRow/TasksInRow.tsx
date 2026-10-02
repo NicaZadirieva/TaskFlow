@@ -1,5 +1,5 @@
 import { Task } from "@/entities/task.interface";
-import TaskRow from "../TaskRow";
+import TaskRow from "./TaskRow";
 
 
 

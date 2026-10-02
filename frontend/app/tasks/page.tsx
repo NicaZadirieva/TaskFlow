@@ -1,6 +1,6 @@
+import { getTasksReq } from '@/api/requests';
+import TasksInKanban from '@/components/ui/TasksInKanban';
 import { fromTaskSchema } from '../../api/mappers/to_entities/fromTaskSchema';
-import getTasksReq from '../../api/requests/task/get_tasks/req';
-import TasksInKanban from '../../components/ui/TasksInKanban/TasksInKanban';
 
 
 export default async function ListAllTasksPage() {

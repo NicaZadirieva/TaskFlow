@@ -1,5 +1,5 @@
-import getUsersReq from "../../../api/requests/user/get_users/get_users.req";
-import ChangePasswordTable from '../../../components/ui/change_password/widgets/ChangePasswordTable';
+import { getUsersReq } from "@/api/requests";
+import { ChangePasswordTable } from '@/components/ui/settings';
 
 
 export default async function ChangePasswordSettingsPage() {

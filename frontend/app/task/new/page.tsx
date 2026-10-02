@@ -1,4 +1,4 @@
-import TaskAdditor from '../../../components/ui/TaskAdditor/TaskAdditor';
+import { TaskAdditor } from '@/components/ui/task';
 
 export default async function AddTaskPage() {
 	return <TaskAdditor/>

@@ -1,5 +1,5 @@
-import getUsersReq from '../../api/requests/user/get_users/get_users.req';
-import UserTable from '../../components/ui/UserTable/UserTable';
+import { getUsersReq } from '@/api/requests';
+import { UserTable } from '@/components/ui/user';
 
 
 export default async function UsersPage() {
