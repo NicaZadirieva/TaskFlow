@@ -1,5 +1,5 @@
-import UserAdditor from "./UserAdditor";
-import UserEditor from "./UserEditor";
-import UserTable from "./UserTable";
+import UserAdditor from "./features/UserAdditor";
+import UserEditor from "./features/UserEditor";
+import UserTable from "./widgets/UserTable";
 export { UserAdditor, UserEditor, UserTable };
 

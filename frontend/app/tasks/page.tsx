@@ -1,5 +1,5 @@
 import { getTasksReq } from '@/api/requests';
-import TasksInKanban from '@/components/ui/TasksInKanban';
+import TasksInKanban from '@/components/ui/task/widgets/TasksInKanban';
 import { fromTaskSchema } from '../../api/mappers/to_entities/fromTaskSchema';
 
 
