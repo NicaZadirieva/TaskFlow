@@ -1,14 +1,14 @@
 "use client";
 import {
-    EyeInvisibleOutlined,
-    EyeTwoTone,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
 } from "@ant-design/icons";
 import { Button, Form, Input, notification } from 'antd';
 import { useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import TitledForm from '../../components/ui/shared/form/form';
 import { getFormErrorMessage } from "../../utils/getFormErrorMessage";
-import getUserReq from "./api/get_user.req";
+import { loginAction } from "./api/actions";
 import styles from "./index.module.css";
 import LoginFormData from "./login_form.interface";
 
@@ -23,18 +23,17 @@ export default function LoginPage() {
   });
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
-  const onSubmit: SubmitHandler<LoginFormData> = (data) => {
+  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setSubmitting(true);
-    return getUserReq(data.email, data.password)
-      .then(() => {})
-      .catch((message) => {
-        api.error({
-          description: message
-      });
+
+    const result = await loginAction(data.email, data.password);
+
+    if (result.error) {
+      api.error({
+        description: result.error
       })
-      .finally(() => {
-        setSubmitting(false);
-      });
+    } 
+    setSubmitting(false);
   };
 
   return (

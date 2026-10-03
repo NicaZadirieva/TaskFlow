@@ -1,8 +1,8 @@
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AntdRegistry } from '@ant-design/nextjs-registry';
 
-import "../globals.css";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "Таск-трекер для фрилансеров",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: LayoutProps<"/login">) {
   return (
     <html
       lang="en"
