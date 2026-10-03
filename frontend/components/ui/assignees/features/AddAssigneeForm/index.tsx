@@ -4,7 +4,7 @@ import { Form, Input, InputNumber, message, Modal, Select, Space } from "antd";
 
 import { PlusOutlined } from "@ant-design/icons";
 
-import { assignee } from "@/app/tasks/mock-data/assignee";
+import { assignee } from "@/app/(other_pages)/tasks/mock-data/assignee";
 import { Assignee } from "@/entities/assignee.interface";
 import styles from "./index.module.css";
 
