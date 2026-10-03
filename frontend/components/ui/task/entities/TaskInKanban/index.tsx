@@ -1,19 +1,19 @@
 "use client";
 
 import {
-  FileTextOutlined,
-  PictureOutlined,
-  PlusOutlined,
+    FileTextOutlined,
+    PictureOutlined,
+    PlusOutlined,
 } from "@ant-design/icons";
 import {
-  Badge,
-  Button,
-  Card,
-  message,
-  Popover,
-  Space,
-  Tag,
-  Typography,
+    Badge,
+    Button,
+    Card,
+    message,
+    Popover,
+    Space,
+    Tag,
+    Typography,
 } from "antd";
 import styles from "./index.module.css";
 
@@ -22,7 +22,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 
-import { assignee } from "@/app/tasks/mock-data/assignee";
+import { assignee } from "@/app/(other_pages)/tasks/mock-data/assignee";
 import { Assignee } from "@/entities/assignee.interface";
 import { Task } from "@/entities/task.interface";
 import TaskAssignee from "../../../assignees/entities/TaskAssignee";
