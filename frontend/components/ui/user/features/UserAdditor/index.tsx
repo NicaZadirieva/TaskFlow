@@ -1,5 +1,5 @@
 "use client";
-import { toNewUserSchema } from "@/api/mappers/from_entities/user";
+import { createNewUserDto } from "@/api/mappers";
 import { IUser, TenantRole } from "@/entities/user.interface";
 import { Form, Input, InputNumber, message, Modal, Select, Switch } from "antd";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ export default function UserAdditor() {
         : user;
 
     try {
-      await createUserReq(toNewUserSchema(normalized));
+      await createUserReq(createNewUserDto(normalized));
       router.push("/users");
       message.success("Обновление данных прошло успешно");
     } catch (e) {

@@ -1,8 +1,8 @@
 'use client';
-import changeHourlyRateReq from "@/api/requests/settings/change_hourly_rate/change_hourly_rate.req";
+import { createUserDto } from '@/api/mappers';
+import { changeHourlyRateReq } from "@/api/requests";
 import { IUser } from "@/entities/user.interface";
 import { Button, Form, InputNumber, message } from "antd";
-import { toUserSchema } from '../../../../../api/mappers/from_entities/user';
 
 
 
@@ -22,7 +22,7 @@ export default function ChangeHourlyRateForm({
       if (!currentUser) return;
 
       const response = await changeHourlyRateReq(
-        toUserSchema(currentUser),
+        createUserDto(currentUser),
         values.hourlyRate,
       );
 

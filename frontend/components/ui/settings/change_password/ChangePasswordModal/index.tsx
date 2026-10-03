@@ -1,7 +1,7 @@
 import { IUser } from "@/entities/user.interface";
 import { Form, Input, message, Modal } from "antd";
 
-import { toUserSchema } from "@/api/mappers/from_entities/user";
+import { createUserDto } from "@/api/mappers";
 import changePasswordReq from "@/api/requests/settings/change_password/change_password.req";
 
 
@@ -29,7 +29,7 @@ export default function ChangePasswordModal({
     try {
       if (selectedUser) {
         const values = await form.validateFields();
-        await changePasswordReq(toUserSchema(selectedUser), values.password);
+        await changePasswordReq(createUserDto(selectedUser), values.password);
         message.success(`Пароль для «${selectedUser?.name}» изменён`);
         closePasswordModal();
       } else {

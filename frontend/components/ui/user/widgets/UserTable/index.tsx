@@ -1,6 +1,6 @@
 "use client";
 
-import { toUserSchema } from '@/api/mappers/from_entities/user';
+import { createUserDto } from '@/api/mappers';
 import changeUserReq from '@/api/requests/user/change_user/change_user.req';
 import { IUser, TenantRole } from '@/entities/user.interface';
 import { message } from "antd";
@@ -24,7 +24,7 @@ export default function UserTable({ users }: { users: IUser[] }) {
         ? { ...user, hourly_rate: undefined }
         : user;
     try {
-      await changeUserReq(normalized.id, toUserSchema(normalized));
+      await changeUserReq(normalized.id, createUserDto(normalized));
       // TODO: заменить на React.Query или похожие средства next.js
       router.refresh();
       message.success("Обновление данных прошло успешно");
