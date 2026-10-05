@@ -3,15 +3,8 @@
 import { Select } from 'antd';
 import { useState } from 'react';
 import ColoredFilterOption from '../../../shared/ColoredFilterOption';
-import type { FilterOptionData } from './MultipleFilterDropdownProps.props';
 import MultipleFilterDropdownProps from './MultipleFilterDropdownProps.props';
 
-const status: FilterOptionData[] = [
-    { label: 'Критический', value: 'CRITICAL', dotHexColor: '#ff4d4f' },
-    { label: 'Высокий', value: 'HIGH', dotHexColor: '#fa8c16' },
-    { label: 'Средний', value: 'MEDIUM', dotHexColor: '#722ed1' },
-    { label: 'Низкий', value: 'LOW', dotHexColor: '#1890ff' },
-];
 
 const badgeStyle: React.CSSProperties = {
     display: 'inline-flex',
