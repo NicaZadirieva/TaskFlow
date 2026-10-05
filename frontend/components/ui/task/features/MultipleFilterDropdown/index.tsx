@@ -36,6 +36,8 @@ const renderLabel = (count: number, filterName: string) => (
     </span>
 );
 
+const ACTIVE_COLOR = '#1890ff';
+
 export default function MultipleFilterDropdown({
     iconSrc,
     storage,
@@ -46,6 +48,12 @@ export default function MultipleFilterDropdown({
     return (
 
         <Select
+            style={{
+                width: `${widthInPx}px`, ...(activeOptions.length > 0 && {
+                    backgroundColor: '#e6f4ff', // светло-синий фон
+                    boxShadow: `0 0 0 1px ${ACTIVE_COLOR} inset`, // цветная рамка
+                })
+            }}
             mode="multiple"
             // Отключаем поиск / автокомплит
             showSearch={false}
@@ -56,26 +64,25 @@ export default function MultipleFilterDropdown({
             // Показывается, когда ничего не выбрано
             placeholder={renderLabel(0, optionsGroupName)}
 
-            style={{ width: `${widthInPx}px` }}
-           
+
             onChange={(values) => updateActiveOptions(values as string[])}
             options={storage}
-                optionRender = {(option) => {
-                    const value = String(option.value ?? '');
-                    const label = String(option.label ?? '');
+            optionRender={(option) => {
+                const value = String(option.value ?? '');
+                const label = String(option.label ?? '');
 
-                    return (
-                        <ColoredFilterOption
-                            key={value}
-                            data={{ label, value, dotHexColor: option.data.dotHexColor }}
-                            isActive={!!activeOptions?.includes(value)}
-                            dotHexColor={option.data.dotHexColor}
-                        />
-                    );
-                }
+                return (
+                    <ColoredFilterOption
+                        key={value}
+                        data={{ label, value, dotHexColor: option.data.dotHexColor }}
+                        isActive={!!activeOptions?.includes(value)}
+                        dotHexColor={option.data.dotHexColor}
+                    />
+                );
+            }
             }
 
-            
+
         />
     );
 }
