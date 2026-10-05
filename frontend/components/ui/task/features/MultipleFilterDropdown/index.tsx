@@ -50,6 +50,7 @@ export default function MultipleFilterDropdown({
 }: MultipleFilterDropdownProps) {
     const [activeOptions, updateActiveOptions] = useState<string[]>(defaultActiveOptions);
     return (
+
         <Select
             mode="multiple"
             // Отключаем поиск / автокомплит
@@ -60,8 +61,10 @@ export default function MultipleFilterDropdown({
             maxTagPlaceholder={(omittedValues) => renderLabel(omittedValues.length)}
             // Показывается, когда ничего не выбрано
             placeholder={renderLabel(0)}
+            // Ширина по контенту, а не фиксированная
+            style={{ width: '150px' }}
+           
             onChange={(values) => updateActiveOptions(values as string[])}
-            style={{ width: 180 }}
             options={status}
                 optionRender = {(option) => {
                     const value = String(option.value ?? '');
