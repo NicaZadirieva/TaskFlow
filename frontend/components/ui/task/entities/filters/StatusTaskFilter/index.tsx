@@ -1,5 +1,5 @@
-import MultipleFilterDropdown from "../../features/MultipleFilterDropdown";
-import { FilterOptionData } from "../../features/MultipleFilterDropdown/MultipleFilterDropdownProps.props";
+import MultipleFilterDropdown from "../../../features/MultipleFilterDropdown";
+import { FilterOptionData } from "../../../features/MultipleFilterDropdown/MultipleFilterDropdownProps.props";
 
 const STORAGE: FilterOptionData[] = [
     { label: 'OPEN', value: 'OPEN', dotHexColor: 'blue' },
