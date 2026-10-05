@@ -2,15 +2,15 @@
 
 import { Select } from 'antd';
 import { useState } from 'react';
+import ColoredFilterOption from '../../../shared/ColoredFilterOption';
 import type { FilterOptionData } from './MultipleFilterDropdownProps.props';
 import MultipleFilterDropdownProps from './MultipleFilterDropdownProps.props';
-import ColoredFilterOption from './ui/ColoredFilterOption';
 
 const status: FilterOptionData[] = [
-    { label: 'Критический', value: 'CRITICAL' },
-    { label: 'Высокий', value: 'HIGH' },
-    { label: 'Средний', value: 'MEDIUM' },
-    { label: 'Низкий', value: 'LOW' },
+    { label: 'Критический', value: 'CRITICAL', dotHexColor: '#ff4d4f' },
+    { label: 'Высокий', value: 'HIGH', dotHexColor: '#fa8c16' },
+    { label: 'Средний', value: 'MEDIUM', dotHexColor: '#722ed1' },
+    { label: 'Низкий', value: 'LOW', dotHexColor: '#1890ff' },
 ];
 
 const badgeStyle: React.CSSProperties = {
@@ -29,7 +29,7 @@ const badgeStyle: React.CSSProperties = {
 };
 
 // Единый рендер «Статус + кружок»
-const renderLabel = (count: number) => (
+const renderLabel = (count: number, filterName: string) => (
     <span
         style={{
             display: 'inline-flex',
@@ -38,17 +38,18 @@ const renderLabel = (count: number) => (
             color: 'rgba(0, 0, 0, 0.88)',
         }}
     >
-        Статус
+        {filterName}
         <span style={badgeStyle}>{count}</span>
     </span>
 );
 
 export default function MultipleFilterDropdown({
     iconSrc,
-    defaultActiveOptions,
+    storage,
     optionsGroupName,
+    widthInPx
 }: MultipleFilterDropdownProps) {
-    const [activeOptions, updateActiveOptions] = useState<string[]>(defaultActiveOptions);
+    const [activeOptions, updateActiveOptions] = useState<string[]>([]);
     return (
 
         <Select
@@ -58,14 +59,14 @@ export default function MultipleFilterDropdown({
             // Скрываем все теги
             maxTagCount={0}
             // Показывается, когда есть выбранные значения
-            maxTagPlaceholder={(omittedValues) => renderLabel(omittedValues.length)}
+            maxTagPlaceholder={(omittedValues) => renderLabel(omittedValues.length, optionsGroupName)}
             // Показывается, когда ничего не выбрано
-            placeholder={renderLabel(0)}
-            // Ширина по контенту, а не фиксированная
-            style={{ width: '150px' }}
+            placeholder={renderLabel(0, optionsGroupName)}
+
+            style={{ width: `${widthInPx}px` }}
            
             onChange={(values) => updateActiveOptions(values as string[])}
-            options={status}
+            options={storage}
                 optionRender = {(option) => {
                     const value = String(option.value ?? '');
                     const label = String(option.label ?? '');
@@ -73,9 +74,9 @@ export default function MultipleFilterDropdown({
                     return (
                         <ColoredFilterOption
                             key={value}
-                            data={{ label, value }}
+                            data={{ label, value, dotHexColor: option.data.dotHexColor }}
                             isActive={!!activeOptions?.includes(value)}
-                            dotHexColor={getColorByStatus(value)}
+                            dotHexColor={option.data.dotHexColor}
                         />
                     );
                 }
@@ -84,14 +85,4 @@ export default function MultipleFilterDropdown({
             
         />
     );
-}
-
-function getColorByStatus(value: string): string | undefined {
-    switch (value) {
-        case 'CRITICAL': return '#ff4d4f';
-        case 'HIGH': return '#fa8c16';
-        case 'MEDIUM': return '#722ed1';
-        case 'LOW': return '#1890ff';
-        default: return undefined;
-    }
 }

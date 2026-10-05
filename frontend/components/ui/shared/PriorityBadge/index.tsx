@@ -1,5 +1,6 @@
+import { Priority } from "@/entities/task.interface";
 import { Badge } from "antd";
-import { Priority } from "../../../interfaces/task.interface";
+
 
 type PriorityBadgeColor =
   | "success"
