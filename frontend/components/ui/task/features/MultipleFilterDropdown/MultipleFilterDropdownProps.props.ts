@@ -8,7 +8,6 @@ export interface FilterOptionData {
 
 export default interface MultipleFilterDropdownProps extends HtmlHTMLAttributes<HTMLSelectElement> {
   iconSrc?: string; 
-  activeOptions?: string[];
   optionsGroupName: string;
   widthInPx: number;
   storage: FilterOptionData[];

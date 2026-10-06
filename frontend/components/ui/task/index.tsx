@@ -1,4 +1,5 @@
 
+import DeadlineFilter from "./entities/filters/DeadlineFilter";
 import PriorityTaskFilter from "./entities/filters/PriorityTaskFilter";
 import StatusTaskFilter from "./entities/filters/StatusTaskFilter";
 import ShowDescription from "./entities/ShowDescription";
@@ -12,5 +13,5 @@ import TaskAdditor from "./widgets/TaskAdditor";
 import TaskEditor from "./widgets/TaskEditor";
 import TasksInKanban from "./widgets/TasksInKanban";
 import TasksInRow from "./widgets/TasksInRow";
-export { EditTaskForm, PriorityTaskFilter, ShowDescription, ShowImages, ShowMetrics, StatusTaskFilter, TaskAdditor, TaskEditor, TaskHeader, TaskInKanban, TaskRow, TasksInKanban, TasksInRow };
+export { DeadlineFilter, EditTaskForm, PriorityTaskFilter, ShowDescription, ShowImages, ShowMetrics, StatusTaskFilter, TaskAdditor, TaskEditor, TaskHeader, TaskInKanban, TaskRow, TasksInKanban, TasksInRow };
 

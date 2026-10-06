@@ -1,7 +1,7 @@
 import { fromTaskDto } from '@/api/mappers';
 import { fromGithubLabelDto } from '@/api/mappers/to_entities/fromGithubLabelDto';
 import { getTasksReq } from '@/api/requests';
-import { PriorityTaskFilter, StatusTaskFilter, TasksInKanban } from '@/components/ui/task';
+import { DeadlineFilter, PriorityTaskFilter, StatusTaskFilter, TasksInKanban } from '@/components/ui/task';
 import MultipleFilterDropdown from '@/components/ui/task/features/MultipleFilterDropdown';
 import { FilterOptionData } from '@/components/ui/task/features/MultipleFilterDropdown/MultipleFilterDropdownProps.props';
 import { GithubLabelDefaultColor } from '@/entities/githubLabel.interface';
@@ -25,6 +25,7 @@ export default async function ListAllTasksPage() {
           <StatusTaskFilter />
           {tagsStorage && <MultipleFilterDropdown storage={tagsStorage} optionsGroupName='Теги' widthInPx={150}/>}
           {assigneesStorage && <MultipleFilterDropdown showSearch={true} storage={assigneesStorage} optionsGroupName='Исполнители' widthInPx={200} />}
+          <DeadlineFilter />
       </div>
         
         <TasksInKanban tasks={mappedTasks} />
