@@ -1,5 +1,5 @@
 export type GithubLabel = {
-  id?: number;
+  id: number;
   name: string;
   color?: string;        // TODO: не получаю от бэкенда
   description?: string | null;

@@ -42,7 +42,8 @@ export default function MultipleFilterDropdown({
     iconSrc,
     storage,
     optionsGroupName,
-    widthInPx
+    widthInPx,
+    showSearch = false
 }: MultipleFilterDropdownProps) {
     const [activeOptions, updateActiveOptions] = useState<string[]>([]);
     return (
@@ -56,7 +57,7 @@ export default function MultipleFilterDropdown({
             }}
             mode="multiple"
             // Отключаем поиск / автокомплит
-            showSearch={false}
+            showSearch={showSearch && { optionFilterProp: 'label'}}
             // Скрываем все теги
             maxTagCount={0}
             // Показывается, когда есть выбранные значения

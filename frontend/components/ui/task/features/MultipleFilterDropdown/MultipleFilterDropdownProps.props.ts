@@ -12,4 +12,5 @@ export default interface MultipleFilterDropdownProps extends HtmlHTMLAttributes<
   optionsGroupName: string;
   widthInPx: number;
   storage: FilterOptionData[];
+  showSearch?: boolean;
 }
