@@ -36,3 +36,13 @@ export interface Task {
   task_images?: string[];
   tags?: GithubLabel[]; 
 }
+
+export interface TasksWithTags {
+  tasks: Task[],
+  allTags?: GithubLabel[],
+  allAssignees?: {
+    userId: number,
+    userName: string,
+    tenantId: number
+  }[]
+}

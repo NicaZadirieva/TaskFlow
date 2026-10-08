@@ -1,3 +1,4 @@
+'use client';
 import { Task } from "@/entities/task.interface";
 import TaskInKanban from "../../entities/TaskInKanban";
 

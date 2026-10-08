@@ -1,5 +1,6 @@
+import { Status } from '@/entities/task.interface';
 import { Tag } from 'antd';
-import { Status } from '../../../interfaces/task.interface';
+
 
 const STATUS_META: Record<Status, { color: string; label: string }> = {
   OPEN: { color: 'blue', label: 'open' },
@@ -12,6 +13,6 @@ export default function StatusTag({ status } : {status: Status}) {
 	return (
 		<Tag color={STATUS_META[status].color}>
             {STATUS_META[status].label}
-          </Tag>
+    </Tag>
 	)
 }
