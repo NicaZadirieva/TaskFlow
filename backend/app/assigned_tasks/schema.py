@@ -21,6 +21,7 @@ class TaskPriority(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+    CRITICAL = "critical"
 
 
 class TagShortOut(BaseModel):
@@ -101,97 +102,76 @@ class SortOrder(str, Enum):
 
 
 class AssignedTaskSortBy(str, Enum):
-    id = "id"
     assigned_at = "assigned_at"
-    hours = "hours"
-    planned = "planned"
 
+class AssignedTaskDeadline(str, Enum):
+    # Просрочено
+    overdue = "overdue"
+    # Остался 1 день
+    today = "today"
+    # Через 2–4 дня
+    this_week = "this_week"
+    # Более чем через неделю
+    next_week = "next_week"
+    # Сдано
+    done = "done"
 
 class AssignedTaskFilters(BaseModel):
-    task_id: int | None = None
-    role_in_task: str | None = None
-    is_active: bool | None = None
-    removed: bool | None = None
-
-    # диапазон по assigned_at
-    assigned_from: datetime | None = None
-    assigned_to: datetime | None = None
-
-    # диапазон по hours / planned
-    hours_min: float | None = None
-    hours_max: float | None = None
-    planned_min: float | None = None
-    planned_max: float | None = None
-
-    # фильтры по связанной задаче (JOIN)
-    task_title: str | None = None  # частичное совпадение
-    task_status: str | None = None
-
     # пагинация + сортировка
     limit: int = 100
     offset: int = 0
-    sort_by: AssignedTaskSortBy = AssignedTaskSortBy.id
-    sort_order: SortOrder = SortOrder.asc
+    sort_by: AssignedTaskSortBy = AssignedTaskSortBy.assigned_at
+    sort_order: SortOrder = SortOrder.desc
 
-    # --- фильтры по тегам ---
-    tag_ids: list[int] | None = None  # задачи, у которых ЕСТЬ любой из этих тегов (OR)
-    tag_names: list[str] | None = None  # по именам (OR, ilike)
-
+    # --- фильтры (OR) ---
+    tag_ids: list[int] | None = None
+    user_ids: list[int] | None = None
+    deadline: list[AssignedTaskDeadline] | None = None
+    priority: list[TaskPriority] | None = None
+    status: list[TaskStatus] | None = None
+    
 
 async def get_assigned_task_filters(
-    task_id: Annotated[int | None, Query(description="ID задачи")] = None,
-    role_in_task: Annotated[
-        str | None, Query(max_length=15, description="Роль в задаче")
-    ] = None,
-    is_active: Annotated[
-        bool | None, Query(description="Только активные назначения")
-    ] = None,
-    removed: Annotated[bool | None, Query(description="Включая удалённые")] = None,
-    assigned_from: Annotated[datetime | None, Query(description="Назначено с")] = None,
-    assigned_to: Annotated[datetime | None, Query(description="Назначено по")] = None,
-    hours_min: Annotated[float | None, Query(ge=0, description="Часы (мин)")] = None,
-    hours_max: Annotated[float | None, Query(ge=0, description="Часы (макс)")] = None,
-    planned_min: Annotated[float | None, Query(ge=0, description="План (мин)")] = None,
-    planned_max: Annotated[float | None, Query(ge=0, description="План (макс)")] = None,
-    task_title: Annotated[
-        str | None,
-        Query(min_length=1, max_length=255, description="Поиск по названию задачи"),
-    ] = None,
-    task_status: Annotated[
-        str | None, Query(max_length=30, description="Статус задачи")
-    ] = None,
-    limit: Annotated[int, Query(ge=1, le=500)] = 100,
-    offset: Annotated[int, Query(ge=0)] = 0,
-    sort_by: Annotated[AssignedTaskSortBy, Query()] = AssignedTaskSortBy.id,
-    sort_order: Annotated[SortOrder, Query()] = SortOrder.asc,
+    limit: Annotated[int, Query(
+        ge=1, le=500, description="Лимит записей")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Смещение")] = 0,
+    sort_by: Annotated[
+        AssignedTaskSortBy, Query(description="Поле сортировки")
+    ] = AssignedTaskSortBy.assigned_at,
+    sort_order: Annotated[SortOrder, Query(
+        description="Порядок сортировки")] = SortOrder.desc,
+    # --- OR-фильтры ---
     tag_ids: Annotated[
         list[int] | None,
-        Query(description="Теги (OR — любой из перечисленных)"),
+        Query(description="ID тегов (OR — любой из перечисленных)"),
     ] = None,
-    tag_names: Annotated[
-        list[str] | None,
-        Query(description="Имена тегов (OR, частичное совпадение)"),
+    user_ids: Annotated[
+        list[int] | None,
+        Query(description="ID пользователей (OR — любой из перечисленных)"),
+    ] = None,
+    deadline: Annotated[
+        list[AssignedTaskDeadline] | None,
+        Query(description="Дедлайн (OR — любое из перечисленных)"),
+    ] = None,
+    priority: Annotated[
+        list[TaskPriority] | None,
+        Query(description="Приоритет (OR — любой из перечисленных)"),
+    ] = None,
+    status: Annotated[
+        list[TaskStatus] | None,
+        Query(description="Статус (OR — любой из перечисленных)"),
     ] = None,
 ) -> AssignedTaskFilters:
     return AssignedTaskFilters(
-        task_id=task_id,
-        role_in_task=role_in_task,
-        is_active=is_active,
-        removed=removed,
-        assigned_from=assigned_from,
-        assigned_to=assigned_to,
-        hours_min=hours_min,
-        hours_max=hours_max,
-        planned_min=planned_min,
-        planned_max=planned_max,
-        task_title=task_title,
-        task_status=task_status,
         limit=limit,
         offset=offset,
         sort_by=sort_by,
         sort_order=sort_order,
         tag_ids=tag_ids,
-        tag_names=tag_names,
+        user_ids=user_ids,
+        deadline=deadline,
+        priority=priority,
+        status=status,
     )
 
 

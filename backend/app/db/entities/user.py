@@ -23,10 +23,12 @@ class User(Base):
         Enum(TenantRole), default=TenantRole.CLIENT
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    # TODO: добавить login в авторизацию и добавление исполнителя (вместо name)
+    login: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-
+    # дефолтное значение для всех ролей текущего юзера и всех задач
     hourly_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")  # type: ignore  # noqa: F821

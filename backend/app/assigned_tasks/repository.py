@@ -1,10 +1,16 @@
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, distinct, func, or_, select
 from sqlalchemy.orm import selectinload
 
-from app.assigned_tasks.schema import AssignedTaskFilters, SortOrder
+from app.assigned_tasks.schema import (
+    AssignedTaskDeadline,
+    AssignedTaskFilters,
+    SortOrder,
+    TaskStatus,
+)
 from app.core.db import DbSessionDeps
 from app.db.entities.assigned_task import AssignedTask
 from app.db.entities.github_label import GithubLabel
@@ -15,116 +21,116 @@ class AssignedTasksRepository:
     def __init__(self, db_session: DbSessionDeps):
         self.db_session = db_session
 
-    def _apply_filters(
-        self, stmt: Select, filters: AssignedTaskFilters
-    ) -> Select:
+    # ---------- helpers ----------
 
-        if filters.tenant_id is not None:
-            stmt = stmt.where(AssignedTask.tenant_id == filters.tenant_id)
+    @staticmethod
+    def _deadline_conditions(deadlines: list[AssignedTaskDeadline]) -> list:
+        """OR-условия по due_date/status связанной задачи."""
+        now = datetime.now(timezone.utc)
+        today_end = now.replace(hour=23, minute=59, second=59, microsecond=0)
+        in_one_day = now + timedelta(days=1)
+        in_four_days = now + timedelta(days=4)
+        in_seven_days = now + timedelta(days=7)
 
-        if filters.task_id is not None:
-            stmt = stmt.where(AssignedTask.task_id == filters.task_id)
+        conds = []
+        for d in deadlines:
+            if d == AssignedTaskDeadline.overdue:
+                conds.append((Task.due_date < now) & (
+                    Task.status != TaskStatus.DONE))
+            elif d == AssignedTaskDeadline.today:
+                conds.append((Task.due_date >= now) &
+                             (Task.due_date <= today_end))
+            elif d == AssignedTaskDeadline.this_week:
+                conds.append((Task.due_date > in_one_day) &
+                             (Task.due_date <= in_four_days))
+            elif d == AssignedTaskDeadline.next_week:
+                conds.append(Task.due_date > in_seven_days)
+            elif d == AssignedTaskDeadline.done:
+                conds.append(Task.status == TaskStatus.DONE)
+        return conds
 
-        if filters.role_in_task is not None:
-            stmt = stmt.where(AssignedTask.role_in_task == filters.role_in_task)
-
-        if filters.is_active is not None:
-            stmt = stmt.where(AssignedTask.is_active.is_(filters.is_active))
-
-        if filters.removed is not None:
-            stmt = stmt.where(AssignedTask.removed.is_(filters.removed))
-
-        if filters.assigned_from is not None:
-            stmt = stmt.where(AssignedTask.assigned_at >= filters.assigned_from)
-        if filters.assigned_to is not None:
-            stmt = stmt.where(AssignedTask.assigned_at <= filters.assigned_to)
-
-        if filters.hours_min is not None:
-            stmt = stmt.where(AssignedTask.hours >= filters.hours_min)
-        if filters.hours_max is not None:
-            stmt = stmt.where(AssignedTask.hours <= filters.hours_max)
-
-        if filters.planned_min is not None:
-            stmt = stmt.where(AssignedTask.planned >= filters.planned_min)
-        if filters.planned_max is not None:
-            stmt = stmt.where(AssignedTask.planned <= filters.planned_max)
-        # --- теги: OR по id ---
-
-        if filters.tag_ids:
-            stmt = stmt.join(Task.tags).where(GithubLabel.id.in_(filters.tag_ids))
-
-        # --- теги: OR по именам ---
-        if filters.tag_names:
-            stmt = stmt.join(Task.tags)
-            name_conds = [GithubLabel.name.ilike(f"%{n}%") for n in filters.tag_names]
-            stmt = stmt.where(or_(*name_conds))
-
-        # фильтры по связанной задаче
-        if filters.task_title or filters.task_status:
+    def _apply_filters(self, stmt: Select, filters: AssignedTaskFilters) -> Select:
+        # JOIN к Task нужен один раз, если хотя бы один из фильтров его требует
+        needs_task_join = bool(
+            filters.tag_ids
+            or filters.priority
+            or filters.status
+            or filters.deadline
+        )
+        if needs_task_join:
             stmt = stmt.join(AssignedTask.task)
 
-            if filters.task_title:
-                stmt = stmt.where(Task.title.ilike(f"%{filters.task_title}%"))
-            if filters.task_status:
-                stmt = stmt.where(Task.status == filters.task_status)
+        # --- теги: OR по id (many-to-many) ---
+        if filters.tag_ids:
+            stmt = stmt.join(Task.tags).where(
+                GithubLabel.id.in_(filters.tag_ids))
+
+        # --- пользователи: OR ---
+        if filters.user_ids:
+            stmt = stmt.where(AssignedTask.user_id.in_(filters.user_ids))
+
+        # --- приоритет: OR ---
+        if filters.priority:
+            stmt = stmt.where(Task.priority.in_(filters.priority))
+
+        # --- статус: OR ---
+        if filters.status:
+            stmt = stmt.where(Task.status.in_(filters.status))
+
+        # --- дедлайн: OR ---
+        if filters.deadline:
+            stmt = stmt.where(
+                or_(*self._deadline_conditions(filters.deadline)))
 
         return stmt
+
+    @staticmethod
+    def _apply_sort_and_pagination(
+        stmt: Select, filters: AssignedTaskFilters
+    ) -> Select:
+        sort_col = getattr(AssignedTask, filters.sort_by.value)
+        order = sort_col.desc() if filters.sort_order == SortOrder.desc else sort_col.asc()
+        return stmt.order_by(order).limit(filters.limit).offset(filters.offset)
+
+    # ---------- по пользователю ----------
 
     async def get_by_user_id(
         self, user_id: int, tenant_id: int, filters: AssignedTaskFilters
     ) -> list[AssignedTask]:
-        sort_col = getattr(AssignedTask, filters.sort_by.value)
-        order = (
-            sort_col.desc() if filters.sort_order == SortOrder.desc else sort_col.asc()
-        )
         stmt = (
             select(AssignedTask)
-            # фильтр по пользователю
             .where(AssignedTask.user_id == user_id)
             .where(AssignedTask.tenant_id == tenant_id)
         )
-
         stmt = self._apply_filters(stmt, filters)
-        stmt = (
-            stmt.order_by(order)
-            .limit(filters.limit)
-            .offset(filters.offset)
-            .options(selectinload(AssignedTask.task).selectinload(Task.tags))
+        stmt = self._apply_sort_and_pagination(stmt, filters).options(
+            selectinload(AssignedTask.task).selectinload(Task.tags)
         )
 
         result = await self.db_session.execute(stmt)
         return list(result.scalars().unique().all())
 
-    async def count_by_user_id(self, user_id: int, tenant_id: int, filters: AssignedTaskFilters) -> int:
+    async def count_by_user_id(
+        self, user_id: int, tenant_id: int, filters: AssignedTaskFilters
+    ) -> int:
         stmt = (
-            select(func.count())
+            select(func.count(distinct(AssignedTask.id)))
             .select_from(AssignedTask)
-            # фильтр по пользователю
             .where(AssignedTask.user_id == user_id)
             .where(AssignedTask.tenant_id == tenant_id)
         )
         stmt = self._apply_filters(stmt, filters)
         return (await self.db_session.execute(stmt)).scalar_one()
 
+    # ---------- по тенанту ----------
+
     async def get_by_tenant_id(
         self, tenant_id: int, filters: AssignedTaskFilters
     ) -> list[AssignedTask]:
-        sort_col = getattr(AssignedTask, filters.sort_by.value)
-        order = (
-            sort_col.desc() if filters.sort_order == SortOrder.desc else sort_col.asc()
-        )
-        stmt = (
-            select(AssignedTask)
-            # фильтр по тенанту
-            .where(AssignedTask.tenant_id == tenant_id)
-        )
-
+        stmt = select(AssignedTask).where(AssignedTask.tenant_id == tenant_id)
         stmt = self._apply_filters(stmt, filters)
-        stmt = (
-            stmt.order_by(order)
-            .limit(filters.limit)
-            .offset(filters.offset)
-            .options(selectinload(AssignedTask.task).selectinload(Task.tags))
+        stmt = self._apply_sort_and_pagination(stmt, filters).options(
+            selectinload(AssignedTask.task).selectinload(Task.tags)
         )
 
         result = await self.db_session.execute(stmt)
@@ -134,9 +140,8 @@ class AssignedTasksRepository:
         self, tenant_id: int, filters: AssignedTaskFilters
     ) -> int:
         stmt = (
-            select(func.count())
+            select(func.count(distinct(AssignedTask.id)))
             .select_from(AssignedTask)
-            # фильтр по тенанту
             .where(AssignedTask.tenant_id == tenant_id)
         )
         stmt = self._apply_filters(stmt, filters)

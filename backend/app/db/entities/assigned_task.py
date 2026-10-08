@@ -5,6 +5,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     Numeric,
     String,
     UniqueConstraint,
@@ -36,9 +37,12 @@ class AssignedTask(Base):
     assigned_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    # учёт часов по конкретному исполнителю/задаче
+    # учёт часов по конкретному исполнителю у задачи
     hours: Mapped[float | None] = mapped_column(Numeric(6, 2), nullable=True)
     planned: Mapped[float | None] = mapped_column(Numeric(6, 2), nullable=True)
+    
+    # значение для роли текущего исполнителя этой задачи
+    hourly_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="assigned_tasks")  # type: ignore  # noqa: F821
     task: Mapped["Task"] = relationship(back_populates="assignees")  # type: ignore  # noqa: F821
