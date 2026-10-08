@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Annotated
 
 from fastapi import Depends, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasPath, BaseModel, ConfigDict, Field
 
 from app.db.entities.assigned_task import AssignedTask
 
@@ -101,7 +101,10 @@ class AssignedTaskOut(BaseModel):
 
     id: int
     tenant_id: int
+    
     user_id: int
+    user_name: str = Field(validation_alias=AliasPath("user", "name"))
+    login: str = Field(validation_alias=AliasPath("user", "login"))
     task_id: int
 
     role_in_task: str
