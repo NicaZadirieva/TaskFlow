@@ -20,6 +20,26 @@ from app.db.entities.task import Task
 class AssignedTasksRepository:
     def __init__(self, db_session: DbSessionDeps):
         self.db_session = db_session
+        
+    async def save(self, assigned: AssignedTask):
+        self.db_session.add(assigned)
+        await self.db_session.commit()
+        await self.db_session.refresh(assigned)
+        return assigned
+
+    async def get_by_task_and_user(
+        self,
+        task_id: int,
+        user_id: int,
+        tenant_id: int,
+    ) -> AssignedTask | None:
+        stmt = select(AssignedTask).where(
+            AssignedTask.task_id == task_id,
+            AssignedTask.user_id == user_id,
+            AssignedTask.tenant_id == tenant_id,
+        )
+        result = await self.db_session.execute(stmt)
+        return result.scalar_one_or_none()
 
     # ---------- helpers ----------
 

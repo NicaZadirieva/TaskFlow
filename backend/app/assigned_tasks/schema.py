@@ -9,7 +9,44 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.db.entities.assigned_task import AssignedTask
 
 
-# ---------- вложенная задача ----------
+# --------- CREATE -----------
+class CreateAssignedTaskRequest(BaseModel):
+    task_id: int
+    user_id: int
+    role_in_task: str
+    assigned_at: datetime
+    hours: int | None = None
+    planned: int | None = None
+    hourly_rate: int | None = None
+    
+class CreateAssignedTaskResponse(BaseModel):
+    id: int
+    
+# -------- Soft Delete User (removed=True) ------------
+class RemoveUserFromTaskRequest(BaseModel):
+    task_id: int
+    user_id: int
+    remove_reason: str | None = None
+
+class RemoveUserFromTaskResponse(BaseModel):
+    id: int
+    task_id: int
+    user_id: int
+     
+# --------- Reassigned User (removed=False) ----------
+class ReassignedUserTaskRequest(BaseModel):
+    task_id: int
+    user_id: int
+    reassigned_reason: str | None = None
+    
+
+class ReassignedUserTaskResponse(BaseModel):
+    id: int
+    task_id: int
+    user_id: int
+
+# ---------- GET -------------
+
 class TaskStatus(str, Enum):
     OPEN = "OPEN"
     BACKLOG = "BACKLOG"

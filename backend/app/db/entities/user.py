@@ -35,6 +35,7 @@ class User(Base):
     assigned_tasks: Mapped[list["AssignedTask"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="user",
         cascade="all, delete-orphan",
+        foreign_keys="AssignedTask.user_id",
     )
 
     def __init__(
