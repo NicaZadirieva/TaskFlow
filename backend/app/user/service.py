@@ -25,6 +25,7 @@ class UserService:
         if tenant is None:
             raise HTTPException(403, "Tenant not exists. Forbidden")
         new_user = User(
+            login=data.login,
             name=data.name,
             email=data.email,
             password_hash=get_hashed_password(data.password),

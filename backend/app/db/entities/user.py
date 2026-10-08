@@ -39,6 +39,7 @@ class User(Base):
 
     def __init__(
         self,
+        login: str,
         tenant_id: int,
         role: TenantRole,
         name: str,
@@ -48,6 +49,7 @@ class User(Base):
         hourly_rate: int | None = None,
     ):
         self.tenant_id = tenant_id
+        self.login = login
         self.role = role
         self.name = name
         self.email = email
