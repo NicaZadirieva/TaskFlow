@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.assigned_tasks.routes_filters import MustNotBeClientDeps
 from app.assigned_tasks.schema import (
@@ -9,6 +9,8 @@ from app.assigned_tasks.schema import (
     AssignedTasksOut,
     CreateAssignedTaskRequest,
     CreateAssignedTaskResponse,
+    ExecutorListOut,
+    ExecutorOut,
     ReassignedUserTaskRequest,
     ReassignedUserTaskResponse,
     RemoveUserFromTaskRequest,
@@ -96,6 +98,22 @@ async def get_only_my_tasks(
         total=total,
         limit=filters.limit,
         offset=filters.offset,
+    )
+    
+
+@router.get(
+    "/executors",
+    response_model=ExecutorListOut,
+    summary="Исполнители, у которых есть задачи",
+)
+async def get_executors(
+    service: AssignedTasksServiceDeps,
+    current_user: CurrentUserDeps,
+    only_active: bool = Query(True),
+) -> ExecutorListOut:
+    users = await service.get_executors(current_user.tenant_id, only_active=only_active)
+    return ExecutorListOut(
+        items=[ExecutorOut.model_validate(u) for u in users],
     )
 
 

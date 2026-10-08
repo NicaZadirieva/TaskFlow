@@ -95,6 +95,11 @@ class AssignedTasksService:
         )
         total = await self.assigned_tasks_repo.count_by_tenant_id(tenant_id, filters)
         return assigned_tasks, total
+    
+    async def get_executors(self, tenant_id: int, only_active=True):
+        executors = await self.assigned_tasks_repo.get_executors(tenant_id, only_active)
+        return executors
+        
 
 
 def get_assigned_tasks_service(assigned_tasks_repo: AssignedTasksRepoDeps):

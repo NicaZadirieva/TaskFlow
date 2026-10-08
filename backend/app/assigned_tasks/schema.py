@@ -47,6 +47,23 @@ class ReassignedUserTaskResponse(BaseModel):
 
 # ---------- GET -------------
 
+# ----------Получение всех исполнителей --------
+
+
+class ExecutorOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    login: str
+
+
+class ExecutorListOut(BaseModel):
+    items: list[ExecutorOut]
+
+
+#----------Получение задач, у которых есть исполнитель (вместе с фильтрами)-------------
+
 class TaskStatus(str, Enum):
     OPEN = "OPEN"
     BACKLOG = "BACKLOG"

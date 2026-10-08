@@ -15,12 +15,13 @@ from app.core.db import DbSessionDeps
 from app.db.entities.assigned_task import AssignedTask
 from app.db.entities.github_label import GithubLabel
 from app.db.entities.task import Task
+from app.db.entities.user import User
 
 
 class AssignedTasksRepository:
     def __init__(self, db_session: DbSessionDeps):
         self.db_session = db_session
-        
+
     async def save(self, assigned: AssignedTask):
         self.db_session.add(assigned)
         await self.db_session.commit()
@@ -166,6 +167,28 @@ class AssignedTasksRepository:
         )
         stmt = self._apply_filters(stmt, filters)
         return (await self.db_session.execute(stmt)).scalar_one()
+    
+    # --------Получение всех исполнителей задач---------
+
+    async def get_executors(
+        self,
+        tenant_id: int,
+        only_active: bool = True,
+    ) -> list[User]:
+        stmt = (
+            select(User)
+            .join(AssignedTask, AssignedTask.user_id == User.id)
+            .where(AssignedTask.tenant_id == tenant_id)
+            .distinct()
+            .order_by(User.name)
+        )
+        if only_active:
+            stmt = stmt.where(
+                AssignedTask.removed.is_(False),
+                AssignedTask.is_active.is_(True),
+            )
+        result = await self.db_session.execute(stmt)
+        return list(result.scalars().all())
 
 
 def get_assigned_tasks_repository(db_session: DbSessionDeps):
