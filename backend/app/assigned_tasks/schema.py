@@ -103,8 +103,6 @@ class AssignedTaskOut(BaseModel):
     tenant_id: int
     
     user_id: int
-    user_name: str = Field(validation_alias=AliasPath("user", "name"))
-    login: str = Field(validation_alias=AliasPath("user", "login"))
     task_id: int
 
     role_in_task: str
