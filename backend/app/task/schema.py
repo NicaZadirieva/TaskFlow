@@ -164,6 +164,8 @@ class ExecutorShortOut(BaseModel):
     planned: float | None = None
     
     hourly_rate: int | None = None
+    remove_reason: str | None = None
+    reassigned_reason: str | None = None
     
 
 
