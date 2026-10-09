@@ -4,6 +4,8 @@ from fastapi import APIRouter, Query
 
 from app.assigned_tasks.routes_filters import MustNotBeClientDeps
 from app.assigned_tasks.schema import (
+    AddHoursToAssignedTaskRequest,
+    AddHoursToAssignedTaskResponse,
     AssignedTaskFiltersDeps,
     AssignedTaskOut,
     AssignedTasksOut,
@@ -22,8 +24,28 @@ from app.user.current_user import CurrentUserDeps
 router = APIRouter(prefix="/v1/assigned", tags=["Assigned"])
 logger = logging.getLogger(__name__)  # noqa: F821
 
+# ---------- ADD HOURS -------
 
+
+@router.put(
+    "/hours/add",
+    response_model=AddHoursToAssignedTaskResponse,
+    status_code=200,
+    summary="Добавить время выполнения задачи (в часах)"
+)
+async def add_hours_to_assigned_task(
+    dto: AddHoursToAssignedTaskRequest,
+    service: AssignedTasksServiceDeps,
+    current_user: CurrentUserDeps
+):
+    assigned_task = await service.add_hours_to_task(current_user.tenant_id, dto)
+    hourly_rate = await service.get_user_hourly_rate(dto.task_id, dto.user_id, current_user.tenant_id)
+    all_hours = await service.get_all_hours(assigned_task.id, tenant_id=current_user.tenant_id)
+    all_planned = await service.get_all_planned_hours(assigned_task.id, tenant_id=current_user.tenant_id)
+    return AddHoursToAssignedTaskResponse(id=assigned_task.id, user_id=assigned_task.user_id, user_hours=assigned_task.hours, user_planned=assigned_task.planned, hourly_rate=hourly_rate, all_hours=all_hours, all_planned=all_planned)
 # --------- CREATE -----------
+
+
 @router.post(
     "/create",
     response_model=CreateAssignedTaskResponse,
@@ -79,6 +101,7 @@ async def reassign_user_to_task(
     )
     return ReassignedUserTaskResponse(id=assigned_task.id, user_id=assigned_task.user_id, task_id=assigned_task.task_id)
 
+
 @router.get(
     "/my",
     status_code=200,
@@ -94,12 +117,13 @@ async def get_only_my_tasks(
     assigned_tasks, total = await service.get_my_tasks(current_user.id, current_user.tenant_id, filters)
 
     return AssignedTasksOut(
-        items=[AssignedTaskOut.model_validate(a_task) for a_task in assigned_tasks],
+        items=[AssignedTaskOut.model_validate(
+            a_task) for a_task in assigned_tasks],
         total=total,
         limit=filters.limit,
         offset=filters.offset,
     )
-    
+
 
 @router.get(
     "/executors",

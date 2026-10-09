@@ -22,6 +22,25 @@ class CreateAssignedTaskRequest(BaseModel):
 class CreateAssignedTaskResponse(BaseModel):
     id: int
     
+# --------- UPDATE -----------
+
+
+class AddHoursToAssignedTaskRequest(BaseModel):
+    id: int
+    task_id: int
+    user_id: int
+    today_hours_to_add: Decimal = Field(ge=0)
+
+
+class AddHoursToAssignedTaskResponse(BaseModel):
+    id: int
+    hourly_rate: int
+    user_id: int
+    user_hours: int
+    user_planned: int
+    all_hours: int
+    all_planned: int
+    
 # -------- Soft Delete User (removed=True) ------------
 class RemoveUserFromTaskRequest(BaseModel):
     task_id: int
@@ -133,6 +152,8 @@ class AssignedTaskOut(BaseModel):
     # Numeric(6, 2) -> Decimal, не float
     hours: Decimal | None = None
     planned: Decimal | None = None
+    
+    hourly_rate: int | None = None
 
     # связанная задача (опционально, зависит от selectinload в репозитории)
     task: TaskShortOut | None = None

@@ -3,13 +3,45 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.assigned_tasks.repository import AssignedTasksRepoDeps
-from app.assigned_tasks.schema import AssignedTaskFiltersDeps, CreateAssignedTaskRequest, ReassignedUserTaskRequest, RemoveUserFromTaskRequest
+from app.assigned_tasks.schema import AddHoursToAssignedTaskRequest, AssignedTaskFiltersDeps, CreateAssignedTaskRequest, ReassignedUserTaskRequest, RemoveUserFromTaskRequest
 from app.db.entities.assigned_task import AssignedTask
+from app.user.repository import UserRepoDeps
 
 
 class AssignedTasksService:
-    def __init__(self, assigned_tasks_repo: AssignedTasksRepoDeps):
+    def __init__(self, assigned_tasks_repo: AssignedTasksRepoDeps, user_repo: UserRepoDeps):
         self.assigned_tasks_repo = assigned_tasks_repo
+        self.user_repo = user_repo
+        
+    async def get_user_hourly_rate(self, task_id: int, user_id: int, tenant_id):
+        existing = await self.assigned_tasks_repo.get_by_task_and_user(
+                            task_id=task_id,
+                            user_id=user_id,
+                            tenant_id=tenant_id,
+                        )
+        if existing is None or existing.removed or existing.hourly_rate is None:
+            return await self.user_repo.get_default_hourly_rate(user_id=user_id, tenant_id=tenant_id)
+        return existing.hourly_rate
+    
+    async def get_all_hours(self, id: int, tenant_id: int):
+        return await self.assigned_tasks_repo.get_hours_by_all_users(id, tenant_id)
+    
+    async def get_all_planned_hours(self, id: int, tenant_id: int):
+            return await self.assigned_tasks_repo.get_planned_by_all_users(id, tenant_id)
+        
+        
+    async def add_hours_to_task(self, tenant_id: int, dto: AddHoursToAssignedTaskRequest):
+        existing = await self.assigned_tasks_repo.get_by_task_and_user(
+                    task_id=dto.task_id,
+                    user_id=dto.user_id,
+                    tenant_id=tenant_id,
+                )
+        if existing is None or existing.removed:
+            raise ValueError("User cannot have rules to update already removed task")
+        existing.hours += dto.today_hours_to_add
+        return await self.assigned_tasks_repo.save(existing)   
+        
+        
     
     async def create_assigned_task(self, user_id: int, tenant_id: int, dto: CreateAssignedTaskRequest):
         existing = await self.assigned_tasks_repo.get_by_task_and_user(
@@ -102,8 +134,8 @@ class AssignedTasksService:
         
 
 
-def get_assigned_tasks_service(assigned_tasks_repo: AssignedTasksRepoDeps):
-    return AssignedTasksService(assigned_tasks_repo)
+def get_assigned_tasks_service(assigned_tasks_repo: AssignedTasksRepoDeps, user_repo: UserRepoDeps):
+    return AssignedTasksService(assigned_tasks_repo, user_repo)
 
 
 AssignedTasksServiceDeps = Annotated[

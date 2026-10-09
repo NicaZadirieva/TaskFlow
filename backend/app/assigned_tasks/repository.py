@@ -43,6 +43,17 @@ class AssignedTasksRepository:
         return result.scalar_one_or_none()
 
     # ---------- helpers ----------
+    
+    async def get_hours_by_all_users(self, id: int, tenant_id: int):
+        stmt = select(func.sum(AssignedTask.hours)).where(AssignedTask.id==id, AssignedTask.tenant_id == tenant_id)
+        res = await self.db_session.execute(stmt)
+        return res.scalar_one_or_none()
+    
+    async def get_planned_by_all_users(self, id: int, tenant_id: int):
+        stmt = select(func.sum(AssignedTask.planned)).where(
+            AssignedTask.id == id, AssignedTask.tenant_id == tenant_id)
+        res = await self.db_session.execute(stmt)
+        return res.scalar_one_or_none()
 
     @staticmethod
     def _deadline_conditions(deadlines: list[AssignedTaskDeadline]) -> list:

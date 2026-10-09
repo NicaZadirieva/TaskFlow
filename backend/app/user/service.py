@@ -16,6 +16,7 @@ class UserService:
     def __init__(self, user_repo: UserRepository, tenant_repo: TenantRepository):
         self.user_repo = user_repo
         self.tenant_repo = tenant_repo
+        
 
     async def create(self, data: CreateUserRequest):
         user = await self.user_repo.get_by_email(data.email)
