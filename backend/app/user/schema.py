@@ -11,6 +11,7 @@ class TenantRole(Enum):
 
 # При создании tenant'а -> создаем OWNER'а
 class CreateUserRequest(BaseModel):
+    login: str
     email: str
     name: str
     password: str

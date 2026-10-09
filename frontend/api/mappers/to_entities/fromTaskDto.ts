@@ -19,7 +19,6 @@ export function fromTaskDto(src: TaskDb) {
             planned: src.estimatedBudget ?? 0,
         },
         estimate: { planned: estimated, fact: actual },
-        ratio: src.ratio ?? null,
         due_date: src.dueDate ?? new Date(0),
         overdueDays: src.overdueDays ?? 0,
         note: src.note ? fromNoteDto(src.note) : undefined,

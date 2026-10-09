@@ -22,6 +22,7 @@ class Priority(PyEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+    CRITICAL = "critical"
 
 
 class Task(Base):
@@ -40,8 +41,6 @@ class Task(Base):
     status: Mapped[Status] = mapped_column(Enum(Status), default=Status.BACKLOG)
     priority: Mapped[Priority] = mapped_column(Enum(Priority), default=Priority.MEDIUM)
 
-    due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-
     estimated_budget: Mapped[float | None] = mapped_column(
         Numeric(12, 2), nullable=True
     )
@@ -54,7 +53,11 @@ class Task(Base):
     task_images: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
 
     created_by: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    due_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+    DateTime(timezone=True), server_default=func.now())
 
     # Связи
     tenant: Mapped["Tenant"] = relationship(back_populates="tasks")  # type: ignore  # noqa: F821
@@ -71,3 +74,33 @@ class Task(Base):
         back_populates="tasks",
         lazy="selectin",  # чтобы не ловить N+1 при отдаче
     )
+    
+    def __init__(self,  tenant_id: int,
+                 created_by: int,
+                 title: str,
+                 project_id: int | None = None,
+                 description: str | None = None,
+                 status: Status = Status.BACKLOG,
+                 priority: Priority = Priority.MEDIUM,
+                 due_date: datetime | None = None,
+                 estimated_budget: float | None = None,
+                 actual_budget: float | None = None,
+                 estimated_hours: float | None = None,
+                 actual_hours: float | None = None,
+                 note: dict | None = None,
+                 task_images: list[str] | None = None,
+                 ) -> None:
+        self.tenant_id = tenant_id
+        self.created_by = created_by
+        self.title = title
+        self.project_id = project_id
+        self.description = description
+        self.status = status
+        self.priority = priority
+        self.due_date = due_date
+        self.estimated_budget = estimated_budget
+        self.actual_budget = actual_budget
+        self.estimated_hours = estimated_hours
+        self.actual_hours = actual_hours
+        self.note = note
+        self.task_images = task_images

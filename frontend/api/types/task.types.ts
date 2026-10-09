@@ -22,8 +22,6 @@ export interface Task {
 
   estimatedBudget?: number;
   actualBudget?: number;
-
-  ratio?: number; // TODO: вычислить в БД
   overdueDays?: number; // TODO: вычислить в БД
 
   note?: ITaskNote;

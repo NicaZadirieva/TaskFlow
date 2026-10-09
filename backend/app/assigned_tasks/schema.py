@@ -4,12 +4,106 @@ from enum import Enum
 from typing import Annotated
 
 from fastapi import Depends, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasPath, BaseModel, ConfigDict, Field
 
 from app.db.entities.assigned_task import AssignedTask
 
 
-# ---------- вложенная задача ----------
+# --------- CREATE -----------
+class CreateAssignedTaskRequest(BaseModel):
+    task_id: int
+    user_id: int
+    role_in_task: str
+    assigned_at: datetime
+    hours: int | None = None
+    planned: int | None = None
+    hourly_rate: int | None = None
+    
+class CreateAssignedTaskResponse(BaseModel):
+    id: int
+    
+# --------- UPDATE -----------
+
+
+class AddHoursToAssignedTaskRequest(BaseModel):
+    id: int
+    task_id: int
+    user_id: int
+    today_hours_to_add: Decimal = Field(ge=0)
+
+
+class AddHoursToAssignedTaskResponse(BaseModel):
+    id: int
+    hourly_rate: int
+    user_id: int
+    user_hours: int
+    user_planned: int
+    all_hours: int
+    all_planned: int
+    
+# -------- Change Assignee Hours ---------
+# TODO: только для админов
+class OwnerChangeAssigneeHoursRequest(BaseModel):
+    id: int
+    hours: int
+    planned: int | None = None
+    task_id: int
+    user_id: int
+    
+    
+    
+class OwnerChangeAssigneeHoursResponse(BaseModel):
+    id: int
+    hourly_rate: int
+    user_id: int
+    user_hours: int
+    user_planned: int
+    all_hours: int
+    all_planned: int
+    
+    
+# -------- Soft Delete User (removed=True) ------------
+class RemoveUserFromTaskRequest(BaseModel):
+    task_id: int
+    user_id: int
+    remove_reason: str | None = None
+
+class RemoveUserFromTaskResponse(BaseModel):
+    id: int
+    task_id: int
+    user_id: int
+     
+# --------- Reassigned User (removed=False) ----------
+class ReassignedUserTaskRequest(BaseModel):
+    task_id: int
+    user_id: int
+    reassigned_reason: str | None = None
+    
+
+class ReassignedUserTaskResponse(BaseModel):
+    id: int
+    task_id: int
+    user_id: int
+
+# ---------- GET -------------
+
+# ----------Получение всех исполнителей --------
+
+
+class ExecutorOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    login: str
+
+
+class ExecutorListOut(BaseModel):
+    items: list[ExecutorOut]
+
+
+#----------Получение задач, у которых есть исполнитель (вместе с фильтрами)-------------
+
 class TaskStatus(str, Enum):
     OPEN = "OPEN"
     BACKLOG = "BACKLOG"
@@ -21,6 +115,7 @@ class TaskPriority(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+    CRITICAL = "critical"
 
 
 class TagShortOut(BaseModel):
@@ -63,6 +158,7 @@ class AssignedTaskOut(BaseModel):
 
     id: int
     tenant_id: int
+    
     user_id: int
     task_id: int
 
@@ -77,6 +173,8 @@ class AssignedTaskOut(BaseModel):
     # Numeric(6, 2) -> Decimal, не float
     hours: Decimal | None = None
     planned: Decimal | None = None
+    
+    hourly_rate: int | None = None
 
     # связанная задача (опционально, зависит от selectinload в репозитории)
     task: TaskShortOut | None = None
@@ -101,97 +199,76 @@ class SortOrder(str, Enum):
 
 
 class AssignedTaskSortBy(str, Enum):
-    id = "id"
     assigned_at = "assigned_at"
-    hours = "hours"
-    planned = "planned"
 
+class AssignedTaskDeadline(str, Enum):
+    # Просрочено
+    overdue = "overdue"
+    # Остался 1 день
+    today = "today"
+    # Через 2–4 дня
+    this_week = "this_week"
+    # Более чем через неделю
+    next_week = "next_week"
+    # Сдано
+    done = "done"
 
 class AssignedTaskFilters(BaseModel):
-    task_id: int | None = None
-    role_in_task: str | None = None
-    is_active: bool | None = None
-    removed: bool | None = None
-
-    # диапазон по assigned_at
-    assigned_from: datetime | None = None
-    assigned_to: datetime | None = None
-
-    # диапазон по hours / planned
-    hours_min: float | None = None
-    hours_max: float | None = None
-    planned_min: float | None = None
-    planned_max: float | None = None
-
-    # фильтры по связанной задаче (JOIN)
-    task_title: str | None = None  # частичное совпадение
-    task_status: str | None = None
-
     # пагинация + сортировка
     limit: int = 100
     offset: int = 0
-    sort_by: AssignedTaskSortBy = AssignedTaskSortBy.id
-    sort_order: SortOrder = SortOrder.asc
+    sort_by: AssignedTaskSortBy = AssignedTaskSortBy.assigned_at
+    sort_order: SortOrder = SortOrder.desc
 
-    # --- фильтры по тегам ---
-    tag_ids: list[int] | None = None  # задачи, у которых ЕСТЬ любой из этих тегов (OR)
-    tag_names: list[str] | None = None  # по именам (OR, ilike)
-
+    # --- фильтры (OR) ---
+    tag_ids: list[int] | None = None
+    user_ids: list[int] | None = None
+    deadline: list[AssignedTaskDeadline] | None = None
+    priority: list[TaskPriority] | None = None
+    status: list[TaskStatus] | None = None
+    
 
 async def get_assigned_task_filters(
-    task_id: Annotated[int | None, Query(description="ID задачи")] = None,
-    role_in_task: Annotated[
-        str | None, Query(max_length=15, description="Роль в задаче")
-    ] = None,
-    is_active: Annotated[
-        bool | None, Query(description="Только активные назначения")
-    ] = None,
-    removed: Annotated[bool | None, Query(description="Включая удалённые")] = None,
-    assigned_from: Annotated[datetime | None, Query(description="Назначено с")] = None,
-    assigned_to: Annotated[datetime | None, Query(description="Назначено по")] = None,
-    hours_min: Annotated[float | None, Query(ge=0, description="Часы (мин)")] = None,
-    hours_max: Annotated[float | None, Query(ge=0, description="Часы (макс)")] = None,
-    planned_min: Annotated[float | None, Query(ge=0, description="План (мин)")] = None,
-    planned_max: Annotated[float | None, Query(ge=0, description="План (макс)")] = None,
-    task_title: Annotated[
-        str | None,
-        Query(min_length=1, max_length=255, description="Поиск по названию задачи"),
-    ] = None,
-    task_status: Annotated[
-        str | None, Query(max_length=30, description="Статус задачи")
-    ] = None,
-    limit: Annotated[int, Query(ge=1, le=500)] = 100,
-    offset: Annotated[int, Query(ge=0)] = 0,
-    sort_by: Annotated[AssignedTaskSortBy, Query()] = AssignedTaskSortBy.id,
-    sort_order: Annotated[SortOrder, Query()] = SortOrder.asc,
+    limit: Annotated[int, Query(
+        ge=1, le=500, description="Лимит записей")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Смещение")] = 0,
+    sort_by: Annotated[
+        AssignedTaskSortBy, Query(description="Поле сортировки")
+    ] = AssignedTaskSortBy.assigned_at,
+    sort_order: Annotated[SortOrder, Query(
+        description="Порядок сортировки")] = SortOrder.desc,
+    # --- OR-фильтры ---
     tag_ids: Annotated[
         list[int] | None,
-        Query(description="Теги (OR — любой из перечисленных)"),
+        Query(description="ID тегов (OR — любой из перечисленных)"),
     ] = None,
-    tag_names: Annotated[
-        list[str] | None,
-        Query(description="Имена тегов (OR, частичное совпадение)"),
+    user_ids: Annotated[
+        list[int] | None,
+        Query(description="ID пользователей (OR — любой из перечисленных)"),
+    ] = None,
+    deadline: Annotated[
+        list[AssignedTaskDeadline] | None,
+        Query(description="Дедлайн (OR — любое из перечисленных)"),
+    ] = None,
+    priority: Annotated[
+        list[TaskPriority] | None,
+        Query(description="Приоритет (OR — любой из перечисленных)"),
+    ] = None,
+    status: Annotated[
+        list[TaskStatus] | None,
+        Query(description="Статус (OR — любой из перечисленных)"),
     ] = None,
 ) -> AssignedTaskFilters:
     return AssignedTaskFilters(
-        task_id=task_id,
-        role_in_task=role_in_task,
-        is_active=is_active,
-        removed=removed,
-        assigned_from=assigned_from,
-        assigned_to=assigned_to,
-        hours_min=hours_min,
-        hours_max=hours_max,
-        planned_min=planned_min,
-        planned_max=planned_max,
-        task_title=task_title,
-        task_status=task_status,
         limit=limit,
         offset=offset,
         sort_by=sort_by,
         sort_order=sort_order,
         tag_ids=tag_ids,
-        tag_names=tag_names,
+        user_ids=user_ids,
+        deadline=deadline,
+        priority=priority,
+        status=status,
     )
 
 
