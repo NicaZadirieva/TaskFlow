@@ -41,6 +41,27 @@ class AddHoursToAssignedTaskResponse(BaseModel):
     all_hours: int
     all_planned: int
     
+# -------- Change Assignee Hours ---------
+# TODO: только для админов
+class OwnerChangeAssigneeHoursRequest(BaseModel):
+    id: int
+    hours: int
+    planned: int | None = None
+    task_id: int
+    user_id: int
+    
+    
+    
+class OwnerChangeAssigneeHoursResponse(BaseModel):
+    id: int
+    hourly_rate: int
+    user_id: int
+    user_hours: int
+    user_planned: int
+    all_hours: int
+    all_planned: int
+    
+    
 # -------- Soft Delete User (removed=True) ------------
 class RemoveUserFromTaskRequest(BaseModel):
     task_id: int

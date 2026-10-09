@@ -13,6 +13,8 @@ from app.assigned_tasks.schema import (
     CreateAssignedTaskResponse,
     ExecutorListOut,
     ExecutorOut,
+    OwnerChangeAssigneeHoursRequest,
+    OwnerChangeAssigneeHoursResponse,
     ReassignedUserTaskRequest,
     ReassignedUserTaskResponse,
     RemoveUserFromTaskRequest,
@@ -43,6 +45,25 @@ async def add_hours_to_assigned_task(
     all_hours = await service.get_all_hours(assigned_task.id, tenant_id=current_user.tenant_id)
     all_planned = await service.get_all_planned_hours(assigned_task.id, tenant_id=current_user.tenant_id)
     return AddHoursToAssignedTaskResponse(id=assigned_task.id, user_id=assigned_task.user_id, user_hours=assigned_task.hours, user_planned=assigned_task.planned, hourly_rate=hourly_rate, all_hours=all_hours, all_planned=all_planned)
+
+
+@router.put(
+    "/admin/hours/change",
+    response_model=OwnerChangeAssigneeHoursResponse,
+    status_code=200,
+    summary="Изменить время выполнения задачи (в часах)"
+)
+async def change_hours_to_assigned_task(
+    dto: OwnerChangeAssigneeHoursRequest,
+    service: AssignedTasksServiceDeps,
+    current_user: CurrentUserDeps
+):
+    assigned_task = await service.change_hours_to_task(current_user.tenant_id, dto)
+    hourly_rate = await service.get_user_hourly_rate(dto.task_id, dto.user_id, current_user.tenant_id)
+    all_hours = await service.get_all_hours(assigned_task.id, tenant_id=current_user.tenant_id)
+    all_planned = await service.get_all_planned_hours(assigned_task.id, tenant_id=current_user.tenant_id)
+    return OwnerChangeAssigneeHoursResponse(id=assigned_task.id, user_id=assigned_task.user_id, user_hours=assigned_task.hours, user_planned=assigned_task.planned, hourly_rate=hourly_rate, all_hours=all_hours, all_planned=all_planned)
+
 # --------- CREATE -----------
 
 
