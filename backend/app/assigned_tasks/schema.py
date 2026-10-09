@@ -1,12 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Annotated
-
-from fastapi import Depends, Query
-from pydantic import AliasPath, BaseModel, ConfigDict, Field
-
-from app.db.entities.assigned_task import AssignedTask
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # --------- CREATE -----------
@@ -180,98 +175,6 @@ class AssignedTaskOut(BaseModel):
     task: TaskShortOut | None = None
 
 
-# ---------- пагинированный ответ ----------
 
 
-class AssignedTasksOut(BaseModel):
-    items: list[AssignedTaskOut]
-    total: int
-    limit: int
-    offset: int
 
-
-# Фильтры для поиска
-
-
-class SortOrder(str, Enum):
-    asc = "asc"
-    desc = "desc"
-
-
-class AssignedTaskSortBy(str, Enum):
-    assigned_at = "assigned_at"
-
-class AssignedTaskDeadline(str, Enum):
-    # Просрочено
-    overdue = "overdue"
-    # Остался 1 день
-    today = "today"
-    # Через 2–4 дня
-    this_week = "this_week"
-    # Более чем через неделю
-    next_week = "next_week"
-    # Сдано
-    done = "done"
-
-class AssignedTaskFilters(BaseModel):
-    # пагинация + сортировка
-    limit: int = 100
-    offset: int = 0
-    sort_by: AssignedTaskSortBy = AssignedTaskSortBy.assigned_at
-    sort_order: SortOrder = SortOrder.desc
-
-    # --- фильтры (OR) ---
-    tag_ids: list[int] | None = None
-    user_ids: list[int] | None = None
-    deadline: list[AssignedTaskDeadline] | None = None
-    priority: list[TaskPriority] | None = None
-    status: list[TaskStatus] | None = None
-    
-
-async def get_assigned_task_filters(
-    limit: Annotated[int, Query(
-        ge=1, le=500, description="Лимит записей")] = 100,
-    offset: Annotated[int, Query(ge=0, description="Смещение")] = 0,
-    sort_by: Annotated[
-        AssignedTaskSortBy, Query(description="Поле сортировки")
-    ] = AssignedTaskSortBy.assigned_at,
-    sort_order: Annotated[SortOrder, Query(
-        description="Порядок сортировки")] = SortOrder.desc,
-    # --- OR-фильтры ---
-    tag_ids: Annotated[
-        list[int] | None,
-        Query(description="ID тегов (OR — любой из перечисленных)"),
-    ] = None,
-    user_ids: Annotated[
-        list[int] | None,
-        Query(description="ID пользователей (OR — любой из перечисленных)"),
-    ] = None,
-    deadline: Annotated[
-        list[AssignedTaskDeadline] | None,
-        Query(description="Дедлайн (OR — любое из перечисленных)"),
-    ] = None,
-    priority: Annotated[
-        list[TaskPriority] | None,
-        Query(description="Приоритет (OR — любой из перечисленных)"),
-    ] = None,
-    status: Annotated[
-        list[TaskStatus] | None,
-        Query(description="Статус (OR — любой из перечисленных)"),
-    ] = None,
-) -> AssignedTaskFilters:
-    return AssignedTaskFilters(
-        limit=limit,
-        offset=offset,
-        sort_by=sort_by,
-        sort_order=sort_order,
-        tag_ids=tag_ids,
-        user_ids=user_ids,
-        deadline=deadline,
-        priority=priority,
-        status=status,
-    )
-
-
-AssignedTaskFiltersDeps = Annotated[
-    AssignedTaskFilters, Depends(get_assigned_task_filters)
-]

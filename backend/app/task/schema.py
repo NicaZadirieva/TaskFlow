@@ -1,8 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from enum import Enum
+from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from fastapi import Depends, Query
+from pydantic import AliasPath, BaseModel, ConfigDict, Field
 
 from app.db.entities.task import Priority, Status
 
@@ -53,3 +55,227 @@ class CreateTaskResponse(BaseModel):
 
     id: int
     tenant_id: int
+
+
+class AdminGetAllTasksResponse(BaseModel):
+    project_id: int | None = None
+
+    title: str = Field(..., min_length=1, max_length=200)
+    description: str | None = None
+
+    status: Status = Status.BACKLOG
+    priority: Priority = Priority.MEDIUM
+
+    due_date: datetime | None = None
+
+    estimated_budget: Decimal | None = Field(
+        default=None,
+        max_digits=12,
+        decimal_places=2,
+        ge=0,
+    )
+    actual_budget: Decimal | None = Field(
+        default=None,
+        max_digits=12,
+        decimal_places=2,
+        ge=0,
+    )
+
+    estimated_hours: Decimal | None = Field(
+        default=None,
+        max_digits=5,
+        decimal_places=2,
+        ge=0,
+    )
+    actual_hours: Decimal | None = Field(
+        default=None,
+        max_digits=5,
+        decimal_places=2,
+        ge=0,
+    )
+
+    note: dict[str, Any] | None = None
+    task_images: list[str] | None = None
+
+
+class TaskDeadline(str, Enum):
+    # Просрочено
+    overdue = "overdue"
+    # Остался 1 день
+    today = "today"
+    # Через 2–4 дня
+    this_week = "this_week"
+    # Более чем через неделю
+    next_week = "next_week"
+    # Сдано
+    done = "done"
+
+
+class TaskSortBy(str, Enum):
+    created_at = "created_at"
+    due_date = "due_date"
+    priority = "priority"
+
+
+class SortOrder(str, Enum):
+    asc = "asc"
+    desc = "desc"
+
+
+class TaskFilters(BaseModel):
+    limit: int = 100
+    offset: int = 0
+    sort_by: TaskSortBy = TaskSortBy.created_at
+    sort_order: SortOrder = SortOrder.desc
+
+    tag_ids: list[int] | None = None
+    priority: list[Priority] | None = None
+    status: list[Status] | None = None
+    deadline: list[TaskDeadline] | None = None
+    
+
+# ---------- вложенные ----------
+
+class TagShortOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    tenant_id: int
+    name: str
+    description: str | None = None
+
+
+class ExecutorShortOut(BaseModel):
+    """Краткая инфа об исполнителе задачи."""
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: int
+    user_id: int
+
+    # name/login — через связанного User
+    name: str = Field(validation_alias=AliasPath("user", "name"))
+    login: str = Field(validation_alias=AliasPath("user", "login"))
+
+    role_in_task: str
+    is_active: bool
+    removed: bool
+    
+    hours: float | None = None
+    planned: float | None = None
+    
+    hourly_rate: int | None = None
+    
+
+
+# ---------- сама задача ----------
+
+class TaskOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    tenant_id: int
+    project_id: int | None = None
+
+    title: str
+    description: str | None = None
+
+    status: Status
+    priority: Priority
+
+    due_date: datetime | None = None
+    created_at: datetime
+    created_by: int
+
+    estimated_budget: Decimal | None = Field(
+        default=None, max_digits=12, decimal_places=2,
+    )
+    actual_budget: Decimal | None = Field(
+        default=None, max_digits=12, decimal_places=2,
+    )
+    estimated_hours: Decimal | None = Field(
+        default=None, max_digits=5, decimal_places=2,
+    )
+    actual_hours: Decimal | None = Field(
+        default=None, max_digits=5, decimal_places=2,
+    )
+
+    note: dict[str, Any] | None = None
+    task_images: list[str] | None = None
+
+    tags: list[TagShortOut] = []
+    executors: list[ExecutorShortOut] = Field(
+        default_factory=list,
+        validation_alias=AliasPath("assignees"),
+    )
+    
+
+class TasksOut(BaseModel):
+    items: list[TaskOut]
+    total: int
+    limit: int
+    offset: int
+    
+# ---------- DI-фабрика ----------
+
+
+async def get_task_filters(
+    limit: Annotated[
+        int,
+        Query(ge=1, le=500, description="Лимит записей"),
+    ] = 100,
+    offset: Annotated[
+        int,
+        Query(ge=0, description="Смещение"),
+    ] = 0,
+    sort_by: Annotated[
+        TaskSortBy,
+        Query(description="Поле сортировки"),
+    ] = TaskSortBy.created_at,
+    sort_order: Annotated[
+        SortOrder,
+        Query(description="Порядок сортировки"),
+    ] = SortOrder.desc,
+
+    # --- OR-фильтры ---
+    tag_ids: Annotated[
+        list[int] | None,
+        Query(
+            description="ID тегов (OR — любой из перечисленных)",
+            explode=False,
+        ),
+    ] = None,
+    priority: Annotated[
+        list[Priority] | None,
+        Query(
+            description="Приоритет (OR — любой из перечисленных)",
+            explode=False,
+        ),
+    ] = None,
+    status: Annotated[
+        list[Status] | None,
+        Query(
+            description="Статус (OR — любой из перечисленных)",
+            explode=False,
+        ),
+    ] = None,
+    deadline: Annotated[
+        list[TaskDeadline] | None,
+        Query(
+            description="Дедлайн (OR — любое из перечисленных)",
+            explode=False,
+        ),
+    ] = None,
+) -> TaskFilters:
+    return TaskFilters(
+        limit=limit,
+        offset=offset,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        tag_ids=tag_ids,
+        priority=priority,
+        status=status,
+        deadline=deadline,
+    )
+
+
+TaskFiltersDeps = Annotated[TaskFilters, Depends(get_task_filters)]

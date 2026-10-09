@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.assigned_tasks.repository import AssignedTasksRepoDeps
-from app.assigned_tasks.schema import AddHoursToAssignedTaskRequest, AssignedTaskFiltersDeps, CreateAssignedTaskRequest, OwnerChangeAssigneeHoursRequest, ReassignedUserTaskRequest, RemoveUserFromTaskRequest
+from app.assigned_tasks.schema import AddHoursToAssignedTaskRequest, CreateAssignedTaskRequest, OwnerChangeAssigneeHoursRequest, ReassignedUserTaskRequest, RemoveUserFromTaskRequest
 from app.db.entities.assigned_task import AssignedTask
 from app.user.repository import UserRepoDeps
 
@@ -131,18 +131,6 @@ class AssignedTasksService:
         assigned_task.removed = False
         assigned_task.reassigned_reason = dto.reassigned_reason
         return await self.assigned_tasks_repo.save(assigned_task)
-
-    async def get_my_tasks(self, user_id: int, tenant_id: int, filters: AssignedTaskFiltersDeps):
-        assigned_tasks = await self.assigned_tasks_repo.get_by_user_id(user_id, tenant_id, filters)
-        total = await self.assigned_tasks_repo.count_by_user_id(user_id, tenant_id, filters)
-        return assigned_tasks, total
-
-    async def get_all_tasks(self, tenant_id: int, filters: AssignedTaskFiltersDeps):
-        assigned_tasks = await self.assigned_tasks_repo.get_by_tenant_id(
-            tenant_id, filters
-        )
-        total = await self.assigned_tasks_repo.count_by_tenant_id(tenant_id, filters)
-        return assigned_tasks, total
     
     async def get_executors(self, tenant_id: int, only_active=True):
         executors = await self.assigned_tasks_repo.get_executors(tenant_id, only_active)

@@ -6,9 +6,6 @@ from app.assigned_tasks.routes_filters import MustNotBeClientDeps
 from app.assigned_tasks.schema import (
     AddHoursToAssignedTaskRequest,
     AddHoursToAssignedTaskResponse,
-    AssignedTaskFiltersDeps,
-    AssignedTaskOut,
-    AssignedTasksOut,
     CreateAssignedTaskRequest,
     CreateAssignedTaskResponse,
     ExecutorListOut,
@@ -124,29 +121,6 @@ async def reassign_user_to_task(
 
 
 @router.get(
-    "/my",
-    status_code=200,
-    response_model=AssignedTasksOut,
-    description="Отдает задачи текущего юзера",
-    summary="Задачи текущего юзера",
-)
-async def get_only_my_tasks(
-    current_user: CurrentUserDeps,
-    service: AssignedTasksServiceDeps,
-    filters: AssignedTaskFiltersDeps,
-) -> AssignedTasksOut:
-    assigned_tasks, total = await service.get_my_tasks(current_user.id, current_user.tenant_id, filters)
-
-    return AssignedTasksOut(
-        items=[AssignedTaskOut.model_validate(
-            a_task) for a_task in assigned_tasks],
-        total=total,
-        limit=filters.limit,
-        offset=filters.offset,
-    )
-
-
-@router.get(
     "/executors",
     response_model=ExecutorListOut,
     summary="Исполнители, у которых есть задачи",
@@ -159,27 +133,4 @@ async def get_executors(
     users = await service.get_executors(current_user.tenant_id, only_active=only_active)
     return ExecutorListOut(
         items=[ExecutorOut.model_validate(u) for u in users],
-    )
-
-
-@router.get(
-    "/",
-    status_code=200,
-    response_model=AssignedTasksOut,
-    description="Отдает задачи текущего тенанта",
-    summary="Задачи текущего тенанта",
-)
-async def get_all_tasks(
-    current_user: MustNotBeClientDeps,
-    service: AssignedTasksServiceDeps,
-    filters: AssignedTaskFiltersDeps,
-) -> AssignedTasksOut:
-    assigned_tasks, total = await service.get_all_tasks(current_user.tenant_id, filters)
-
-    return AssignedTasksOut(
-        items=[AssignedTaskOut.model_validate(
-            a_task) for a_task in assigned_tasks],
-        total=total,
-        limit=filters.limit,
-        offset=filters.offset,
     )
