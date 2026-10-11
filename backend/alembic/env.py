@@ -8,7 +8,7 @@ from app.shared.db import Base
 from app.shared.settings import Settings
 
 # не удалять этот импорт. без него не загрузятся модели в БД
-import app.assigned_task.models  # noqa: F401
+import app.executor.models  # noqa: F401
 import app.github_label.models  # noqa: F401
 import app.project.models  # noqa: F401
 import app.task.models  # noqa: F401

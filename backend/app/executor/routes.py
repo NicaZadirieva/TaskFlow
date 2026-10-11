@@ -18,16 +18,16 @@ logger = logging.getLogger(__name__)  # noqa: F821
     status_code=200,
     summary="Добавить время выполнения задачи (в часах)"
 )
-async def add_hours_to_assigned_task(
+async def add_hours_to_executor(
     dto: AddHoursToExecutorRequest,
     service: ExecutorServiceDeps,
     current_user: CurrentUserDeps
 ):
-    assigned_task = await service.add_hours_to_task(current_user.tenant_id, dto)
+    executor = await service.add_hours_to_task(current_user.tenant_id, dto)
     hourly_rate = await service.get_user_hourly_rate(dto.task_id, dto.user_id, current_user.tenant_id)
-    all_hours = await service.get_all_hours(assigned_task.id, tenant_id=current_user.tenant_id)
-    all_planned = await service.get_all_planned_hours(assigned_task.id, tenant_id=current_user.tenant_id)
-    return AddHoursToExecutorResponse(id=assigned_task.id, user_id=assigned_task.user_id, user_hours=assigned_task.hours, user_planned=assigned_task.planned, hourly_rate=hourly_rate, all_hours=all_hours, all_planned=all_planned)
+    all_hours = await service.get_all_hours(executor.id, tenant_id=current_user.tenant_id)
+    all_planned = await service.get_all_planned_hours(executor.id, tenant_id=current_user.tenant_id)
+    return AddHoursToExecutorResponse(id=executor.id, user_id=executor.user_id, user_hours=executor.hours, user_planned=executor.planned, hourly_rate=hourly_rate, all_hours=all_hours, all_planned=all_planned)
 
 
 @router.put(
@@ -36,16 +36,16 @@ async def add_hours_to_assigned_task(
     status_code=200,
     summary="Изменить время выполнения задачи (в часах)"
 )
-async def change_hours_to_assigned_task(
+async def change_hours_to_executor(
     dto: OwnerChangeAssigneeHoursRequest,
     service: ExecutorServiceDeps,
     current_user: CurrentUserDeps
 ):
-    assigned_task = await service.change_hours_to_task(current_user.tenant_id, dto)
+    executor = await service.change_hours_to_task(current_user.tenant_id, dto)
     hourly_rate = await service.get_user_hourly_rate(dto.task_id, dto.user_id, current_user.tenant_id)
-    all_hours = await service.get_all_hours(assigned_task.id, tenant_id=current_user.tenant_id)
-    all_planned = await service.get_all_planned_hours(assigned_task.id, tenant_id=current_user.tenant_id)
-    return OwnerChangeAssigneeHoursResponse(id=assigned_task.id, user_id=assigned_task.user_id, user_hours=assigned_task.hours, user_planned=assigned_task.planned, hourly_rate=hourly_rate, all_hours=all_hours, all_planned=all_planned)
+    all_hours = await service.get_all_hours(executor.id, tenant_id=current_user.tenant_id)
+    all_planned = await service.get_all_planned_hours(executor.id, tenant_id=current_user.tenant_id)
+    return OwnerChangeAssigneeHoursResponse(id=executor.id, user_id=executor.user_id, user_hours=executor.hours, user_planned=executor.planned, hourly_rate=hourly_rate, all_hours=all_hours, all_planned=all_planned)
 
 # --------- CREATE -----------
 
@@ -56,17 +56,17 @@ async def change_hours_to_assigned_task(
     status_code=201,
     summary="Назначить пользователя на задачу",
 )
-async def create_assigned_task(
+async def create_executor(
     dto: CreateExecutorRequest,
     service: ExecutorServiceDeps,
     current_user: CurrentUserDeps,
 ) -> CreateExecutorResponse:
-    assigned_task_id = await service.create_assigned_task(
+    executor_id = await service.create_executor(
         user_id=current_user.id,
         tenant_id=current_user.tenant_id,
         dto=dto,
     )
-    return CreateExecutorResponse(id=assigned_task_id)
+    return CreateExecutorResponse(id=executor_id)
 
 # -------- Soft Delete User (removed=True) ------------
 
@@ -81,11 +81,11 @@ async def remove_user_from_task(
     service: ExecutorServiceDeps,
     current_user: CurrentUserDeps
 ) -> RemoveUserFromTaskResponse:
-    assigned_task = await service.remove_user_from_task(
+    executor = await service.remove_user_from_task(
         tenant_id=current_user.tenant_id,
         dto=dto,
     )
-    return RemoveUserFromTaskResponse(id=assigned_task.id, user_id=assigned_task.user_id, task_id=assigned_task.task_id)
+    return RemoveUserFromTaskResponse(id=executor.id, user_id=executor.user_id, task_id=executor.task_id)
 
 
 # --------- Reassigned User (removed=False) ----------
@@ -99,11 +99,11 @@ async def reassign_user_to_task(
     service: ExecutorServiceDeps,
     current_user: CurrentUserDeps
 ) -> ReassignedUserTaskResponse:
-    assigned_task = await service.reassign_user_to_task(
+    executor = await service.reassign_user_to_task(
         tenant_id=current_user.tenant_id,
         dto=dto,
     )
-    return ReassignedUserTaskResponse(id=assigned_task.id, user_id=assigned_task.user_id, task_id=assigned_task.task_id)
+    return ReassignedUserTaskResponse(id=executor.id, user_id=executor.user_id, task_id=executor.task_id)
 
 
 @router.get(

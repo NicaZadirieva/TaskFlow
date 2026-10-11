@@ -184,7 +184,7 @@ class TestSchemas:
             note = None
             task_images = None
             tags = [Tag()]
-            assignees = []
+            executors = []
 
         out = TaskOut.model_validate(Task())
         assert out.id == 1

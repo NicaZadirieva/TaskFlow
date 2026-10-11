@@ -88,7 +88,7 @@ def client(mock_service, mock_current_user):
 
 # ---------- Тесты схем ----------
 class TestSchemas:
-    def test_create_assigned_task_request(self):
+    def test_create_executor_request(self):
         data = {
             "task_id": 1,
             "user_id": 2,
@@ -250,15 +250,15 @@ class TestSchemas:
 # ---------- Тесты маршрутов ----------
 class TestRoutes:
     # PUT /v1/executor/hours/add
-    def test_add_hours_to_assigned_task(self, client, mock_service, mock_current_user):
-        mock_assigned_task = _executor(
+    def test_add_hours_to_executor(self, client, mock_service, mock_current_user):
+        mock_executor = _executor(
             id=1,
             user_id=2,
             hours=Decimal("10.0"),
             planned=Decimal("5.0"),
         )
 
-        mock_service.add_hours_to_task.return_value = mock_assigned_task
+        mock_service.add_hours_to_task.return_value = mock_executor
         mock_service.get_user_hourly_rate.return_value = 100
         mock_service.get_all_hours.return_value = 50
         mock_service.get_all_planned_hours.return_value = 40
@@ -293,10 +293,10 @@ class TestRoutes:
             10, 2, mock_current_user.tenant_id
         )
         mock_service.get_all_hours.assert_awaited_once_with(
-            mock_assigned_task.id, tenant_id=mock_current_user.tenant_id
+            mock_executor.id, tenant_id=mock_current_user.tenant_id
         )
         mock_service.get_all_planned_hours.assert_awaited_once_with(
-            mock_assigned_task.id, tenant_id=mock_current_user.tenant_id
+            mock_executor.id, tenant_id=mock_current_user.tenant_id
         )
 
     def test_add_hours_validation_error(self, client):
@@ -311,15 +311,15 @@ class TestRoutes:
         assert response.status_code == 422
 
     # PUT /v1/executor/admin/hours/change
-    def test_change_hours_to_assigned_task(self, client, mock_service, mock_current_user):
-        mock_assigned_task = _executor(
+    def test_change_hours_to_executor(self, client, mock_service, mock_current_user):
+        mock_executor = _executor(
             id=1,
             user_id=2,
             hours=Decimal("8.0"),
             planned=Decimal("4.0"),
         )
 
-        mock_service.change_hours_to_task.return_value = mock_assigned_task
+        mock_service.change_hours_to_task.return_value = mock_executor
         mock_service.get_user_hourly_rate.return_value = 100
         mock_service.get_all_hours.return_value = 40
         mock_service.get_all_planned_hours.return_value = 20
@@ -352,8 +352,8 @@ class TestRoutes:
         assert args[1].planned == 4
 
     # POST /v1/executor/create
-    def test_create_assigned_task(self, client, mock_service, mock_current_user):
-        mock_service.create_assigned_task.return_value = 123
+    def test_create_executor(self, client, mock_service, mock_current_user):
+        mock_service.create_executor.return_value = 123
 
         payload = {
             "task_id": 1,
@@ -369,13 +369,13 @@ class TestRoutes:
         data = response.json()
         assert data == {"id": 123}
 
-        mock_service.create_assigned_task.assert_awaited_once_with(
+        mock_service.create_executor.assert_awaited_once_with(
             user_id=mock_current_user.id,
             tenant_id=mock_current_user.tenant_id,
             dto=CreateExecutorRequest(**payload),
         )
 
-    def test_create_assigned_task_validation(self, client):
+    def test_create_executor_validation(self, client):
         # Отсутствует обязательное поле role_in_task
         payload = {
             "task_id": 1,
@@ -387,8 +387,8 @@ class TestRoutes:
 
     # POST /v1/executor/remove
     def test_remove_user_from_task(self, client, mock_service, mock_current_user):
-        mock_assigned_task = _executor(id=1, user_id=2, task_id=10)
-        mock_service.remove_user_from_task.return_value = mock_assigned_task
+        mock_executor = _executor(id=1, user_id=2, task_id=10)
+        mock_service.remove_user_from_task.return_value = mock_executor
 
         payload = {"task_id": 10, "user_id": 2, "remove_reason": "done"}
         response = client.post("/v1/executor/remove", json=payload)
@@ -403,8 +403,8 @@ class TestRoutes:
 
     # POST /v1/executor/reassign
     def test_reassign_user_to_task(self, client, mock_service, mock_current_user):
-        mock_assigned_task = _executor(id=1, user_id=2, task_id=10)
-        mock_service.reassign_user_to_task.return_value = mock_assigned_task
+        mock_executor = _executor(id=1, user_id=2, task_id=10)
+        mock_service.reassign_user_to_task.return_value = mock_executor
 
         payload = {"task_id": 10, "user_id": 2, "reassigned_reason": "return"}
         response = client.post("/v1/executor/reassign", json=payload)

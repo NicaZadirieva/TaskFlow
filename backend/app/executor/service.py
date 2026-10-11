@@ -60,7 +60,7 @@ class ExecutorService:
         
         
     
-    async def create_assigned_task(self, user_id: int, tenant_id: int, dto: CreateExecutorRequest):
+    async def create_executor(self, user_id: int, tenant_id: int, dto: CreateExecutorRequest):
         existing = await self.executor_repo.get_by_task_and_user(
             task_id=dto.task_id,
             user_id=dto.user_id,
@@ -91,8 +91,8 @@ class ExecutorService:
             removed=False,
             assigned_by=user_id,  # кто назначил — текущий пользователь
         )
-        refreshed_assigned_task = await self.executor_repo.save(executor)
-        return refreshed_assigned_task.id
+        refreshed_executor = await self.executor_repo.save(executor)
+        return refreshed_executor.id
     
      # -------- Soft Delete User (removed=True) ------------
 
