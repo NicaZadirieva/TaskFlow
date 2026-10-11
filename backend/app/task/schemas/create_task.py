@@ -1,10 +1,11 @@
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
-from app.db.entities.task import Priority, Status
+from app.task.models import Priority, Status
 
 
 class CreateTaskRequest(BaseModel):

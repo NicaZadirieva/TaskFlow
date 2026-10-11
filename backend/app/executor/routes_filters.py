@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException
 
-from app.db.entities.user import TenantRole, User
+from app.user.models import TenantRole
 from app.user.current_user import CurrentUserDeps
 
 

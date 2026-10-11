@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException
 
-from app.db.entities.tenant import Tenant
-from app.tenant.schema import CreateTenantRequest
+from app.tenant.models import Tenant
+from app.tenant.schemas import CreateTenantRequest
 
 from .repository import TenantRepoDeps, TenantRepository
 

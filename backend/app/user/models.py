@@ -3,7 +3,7 @@ from enum import Enum as PyEnum
 from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.entities.base import Base
+from app.shared.db import Base
 
 
 class TenantRole(PyEnum):
@@ -24,18 +24,20 @@ class User(Base):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     # TODO: добавить login в авторизацию и добавление исполнителя (вместо name)
-    login: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    login: Mapped[str] = mapped_column(
+        String(100), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # дефолтное значение для всех ролей текущего юзера и всех задач
     hourly_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")  # type: ignore  # noqa: F821
-    assigned_tasks: Mapped[list["AssignedTask"]] = relationship(  # type: ignore  # noqa: F821
+    executors: Mapped[list["Executor"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="user",
         cascade="all, delete-orphan",
-        foreign_keys="AssignedTask.user_id",
+        foreign_keys="executors.user_id",
     )
 
     def __init__(

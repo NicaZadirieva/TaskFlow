@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.entities.base import Base
+from app.shared.db import Base
 
 
 class Tenant(Base):
@@ -16,7 +16,8 @@ class Tenant(Base):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True
     )  # блокировка тенанта для клиента (например, за неуплату)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now)
 
     users: Mapped[list["User"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="tenant", cascade="all, delete-orphan"

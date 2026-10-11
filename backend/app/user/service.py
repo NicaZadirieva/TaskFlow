@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
 
-from app.db.entities.user import TenantRole, User
+from app.user.models import TenantRole, User
 from app.tenant.repository import TenantRepoDeps, TenantRepository
 from app.user.jwt import create_access_token
-from app.user.schema import CreateUserRequest, UserLoginRequest
+from app.user.schemas import CreateUserRequest, UserLoginRequest
 from app.user.security import get_hashed_password, verify_password
 
 from .repository import UserRepoDeps, UserRepository

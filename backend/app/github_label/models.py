@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.entities.base import Base
+from app.shared.db import Base
 
 # M2M: task <-> github_label
 task_github_label = Table(
@@ -35,13 +35,13 @@ task_github_label = Table(
 class GithubLabel(Base):
     __tablename__ = "github_label"
     __table_args__ = (
-        UniqueConstraint("tenant_id", "name", name="uq_github_label_tenant_name"),
-        Index("idx_github_label_tenant", "tenant_id"),
+        UniqueConstraint("tenant_id", "name",
+                         name="uq_github_label_tenant_name"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tenant_id: Mapped[int] = mapped_column(
-        ForeignKey("tenant.id"), nullable=False, index=True
+        ForeignKey("tenant.id"), nullable=False
     )
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -50,7 +50,7 @@ class GithubLabel(Base):
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
     # Связи
