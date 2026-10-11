@@ -34,10 +34,10 @@ class User(Base):
     hourly_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")  # type: ignore  # noqa: F821
-    assigned_tasks: Mapped[list["AssignedTask"]] = relationship(  # type: ignore  # noqa: F821
+    executors: Mapped[list["Executor"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="user",
         cascade="all, delete-orphan",
-        foreign_keys="AssignedTask.user_id",
+        foreign_keys="executors.user_id",
     )
 
     def __init__(

@@ -70,7 +70,7 @@ class Task(Base):
     created_by_user: Mapped["User"] = relationship(  # type: ignore  # noqa: F821
         foreign_keys=[created_by],
     )
-    assignees: Mapped[list["AssignedTask"]] = relationship(  # type: ignore  # noqa: F821
+    executors: Mapped[list["Executor"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="task",
         cascade="all, delete-orphan",
     )
