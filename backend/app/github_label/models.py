@@ -37,12 +37,11 @@ class GithubLabel(Base):
     __table_args__ = (
         UniqueConstraint("tenant_id", "name",
                          name="uq_github_label_tenant_name"),
-        Index("idx_github_label_tenant", "tenant_id"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tenant_id: Mapped[int] = mapped_column(
-        ForeignKey("tenant.id"), nullable=False, index=True
+        ForeignKey("tenant.id"), nullable=False
     )
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -51,7 +50,7 @@ class GithubLabel(Base):
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
     # Связи

@@ -7,6 +7,7 @@ from app.tenant.routes import router as tenant_router
 from app.user.routes import router as user_router
 from app.executor.routes import router as executor_router
 from app.task.routes import router as tasks_router
+from app.github_label.routes import router as github_label_router
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,8 @@ def create_app() -> FastAPI:
             {"name": "Tenant", "description": "Управление тенантами"},
             {"name": "User", "description": "Авторизация пользователя"},
             {"name": "Executors", "description": "Управление назначенными тасками"},
-            {"name": "Tasks", "description": "Управление задачами"}
+            {"name": "Tasks", "description": "Управление задачами"},
+            {"name": "Tags", "description": "Управление тегами"}
         ],
     )
     new_app.state.settings = settings
@@ -31,6 +33,7 @@ def create_app() -> FastAPI:
     new_app.include_router(user_router)
     new_app.include_router(executor_router)
     new_app.include_router(tasks_router)
+    new_app.include_router(github_label_router)
     
     return new_app
 
