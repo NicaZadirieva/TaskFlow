@@ -1,3 +1,4 @@
+from sqlalchemy.orm import DeclarativeBase
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
@@ -44,3 +45,7 @@ async def check_db(session: AsyncSession) -> int:
 
 
 DbSessionDeps = Annotated[AsyncSession, Depends(get_session)]
+
+
+class Base(DeclarativeBase):
+    pass

@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.entities.base import Base
+from app.core.db import Base
 
 # M2M: task <-> github_label
 task_github_label = Table(
@@ -35,7 +35,8 @@ task_github_label = Table(
 class GithubLabel(Base):
     __tablename__ = "github_label"
     __table_args__ = (
-        UniqueConstraint("tenant_id", "name", name="uq_github_label_tenant_name"),
+        UniqueConstraint("tenant_id", "name",
+                         name="uq_github_label_tenant_name"),
         Index("idx_github_label_tenant", "tenant_id"),
     )
 

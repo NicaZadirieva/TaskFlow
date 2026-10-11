@@ -2,9 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.assigned_tasks.repository import AssignedTasksRepoDeps
-from app.assigned_tasks.schema import AddHoursToAssignedTaskRequest, CreateAssignedTaskRequest, OwnerChangeAssigneeHoursRequest, ReassignedUserTaskRequest, RemoveUserFromTaskRequest
-from app.db.entities.assigned_task import AssignedTask
+
+from app.assigned_task.repository import AssignedTasksRepoDeps
+from app.assigned_task.models import AssignedTask
+from app.assigned_task.schema import AddHoursToAssignedTaskRequest, CreateAssignedTaskRequest, OwnerChangeAssigneeHoursRequest, ReassignedUserTaskRequest, RemoveUserFromTaskRequest
 from app.user.repository import UserRepoDeps
 
 

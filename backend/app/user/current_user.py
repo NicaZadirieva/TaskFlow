@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-from app.db.entities.user import User
+from app.user.models import User
 from app.user.jwt import decode_access_token
 from app.user.service import UserServiceDeps
 

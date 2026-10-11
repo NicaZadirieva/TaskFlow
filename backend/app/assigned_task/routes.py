@@ -2,23 +2,9 @@ import logging
 
 from fastapi import APIRouter, Query
 
-from app.assigned_tasks.routes_filters import MustNotBeClientDeps
-from app.assigned_tasks.schema import (
-    AddHoursToAssignedTaskRequest,
-    AddHoursToAssignedTaskResponse,
-    CreateAssignedTaskRequest,
-    CreateAssignedTaskResponse,
-    ExecutorListOut,
-    ExecutorOut,
-    OwnerChangeAssigneeHoursRequest,
-    OwnerChangeAssigneeHoursResponse,
-    ReassignedUserTaskRequest,
-    ReassignedUserTaskResponse,
-    RemoveUserFromTaskRequest,
-    RemoveUserFromTaskResponse,
-)
-from app.assigned_tasks.service import AssignedTasksServiceDeps
+from app.assigned_task.schema import AddHoursToAssignedTaskRequest, AddHoursToAssignedTaskResponse, CreateAssignedTaskRequest, CreateAssignedTaskResponse, ExecutorListOut, ExecutorOut, OwnerChangeAssigneeHoursRequest, OwnerChangeAssigneeHoursResponse, ReassignedUserTaskRequest, ReassignedUserTaskResponse, RemoveUserFromTaskRequest, RemoveUserFromTaskResponse
 from app.user.current_user import CurrentUserDeps
+from app.assigned_task.service import AssignedTasksServiceDeps
 
 router = APIRouter(prefix="/v1/assigned", tags=["Assigned"])
 logger = logging.getLogger(__name__)  # noqa: F821

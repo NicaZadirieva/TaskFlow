@@ -6,7 +6,7 @@ from typing import Annotated, Any
 from fastapi import Depends, Query
 from pydantic import AliasPath, BaseModel, ConfigDict, Field
 
-from app.db.entities.task import Priority, Status
+from app.entities.task import Priority, Status
 
 
 class CreateTaskRequest(BaseModel):

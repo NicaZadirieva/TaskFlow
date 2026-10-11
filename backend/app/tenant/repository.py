@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from app.core.db import DbSessionDeps
 from sqlalchemy.orm import selectinload
-from app.db.entities.tenant import Tenant
+from app.tenant.models import Tenant
 
 logger = logging.getLogger(__name__)
 

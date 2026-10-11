@@ -6,9 +6,9 @@ from sqlalchemy import Select, and_, exists, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.core.db import DbSessionDeps
-from app.db.entities.assigned_task import AssignedTask
-from app.db.entities.github_label import GithubLabel
-from app.db.entities.task import Status, Task
+from app.entities.assigned_task import AssignedTask
+from app.entities.github_label import GithubLabel
+from app.entities.task import Status, Task
 from app.task.schema import SortOrder, TaskDeadline, TaskFilters
 
 

@@ -1,18 +1,13 @@
-from datetime import datetime, timedelta, timezone
+
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import Select, distinct, func, or_, select
+from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.orm import selectinload
 
-from app.assigned_tasks.schema import (
-    TaskStatus,
-)
 from app.core.db import DbSessionDeps
-from app.db.entities.assigned_task import AssignedTask
-from app.db.entities.github_label import GithubLabel
-from app.db.entities.task import Task
-from app.db.entities.user import User
+from app.assigned_task.models import AssignedTask
+from app.user.models import User
 
 
 class AssignedTasksRepository:

@@ -3,7 +3,7 @@ from enum import Enum as PyEnum
 from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.entities.base import Base
+from app.core.db import Base
 
 
 class TenantRole(PyEnum):
@@ -24,8 +24,10 @@ class User(Base):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     # TODO: добавить login в авторизацию и добавление исполнителя (вместо name)
-    login: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    login: Mapped[str] = mapped_column(
+        String(100), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # дефолтное значение для всех ролей текущего юзера и всех задач

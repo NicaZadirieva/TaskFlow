@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.db.entities.task import Task
+from app.entities.task import Task
 from app.task.schema import (
     CreateTaskRequest,
     TaskFilters,

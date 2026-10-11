@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.entities.base import Base
+from app.core.db import Base
 
 
 class AssignedTask(Base):
@@ -34,16 +34,17 @@ class AssignedTask(Base):
     role_in_task: Mapped[str] = mapped_column(  # Не nullable, всегда есть роль
         String(15), nullable=False
     )
-    assigned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    assigned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # учёт часов по конкретному исполнителю у задачи
     hours: Mapped[float | None] = mapped_column(Numeric(6, 2), nullable=True)
     planned: Mapped[float | None] = mapped_column(Numeric(6, 2), nullable=True)
-    
+
     # значение для роли текущего исполнителя этой задачи
     hourly_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    
+
     assigned_by: Mapped[int | None] = mapped_column(
         ForeignKey("user.id"), nullable=True
     )
@@ -55,6 +56,9 @@ class AssignedTask(Base):
     task: Mapped["Task"] = relationship(back_populates="assignees")  # type: ignore  # noqa: F821
 
     # soft-delete / история переназначений
-    removed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    remove_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    reassigned_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    removed: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False)
+    remove_reason: Mapped[str | None] = mapped_column(
+        String(500), nullable=True)
+    reassigned_reason: Mapped[str | None] = mapped_column(
+        String(500), nullable=True)
