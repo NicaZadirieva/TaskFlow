@@ -1,53 +1,87 @@
-
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.assigned_task.routes import router
-from app.assigned_task.schema import (
-    CreateAssignedTaskRequest,
-    CreateAssignedTaskResponse,
-    AddHoursToAssignedTaskRequest,
-    AddHoursToAssignedTaskResponse,
+from app.executor.routes import router
+from app.executor.schema import (
+    CreateExecutorRequest,
+    AddHoursToExecutorRequest,
     OwnerChangeAssigneeHoursRequest,
-    OwnerChangeAssigneeHoursResponse,
     RemoveUserFromTaskRequest,
-    RemoveUserFromTaskResponse,
     ReassignedUserTaskRequest,
-    ReassignedUserTaskResponse,
     ExecutorOut,
-    ExecutorListOut,
     TaskShortOut,
-    AssignedTaskOut,
 )
-from app.assigned_task.service import get_assigned_tasks_service
+from app.executor.service import get_executor_service
 from app.user.current_user import get_current_user
+
+
+# ---------- Хелперы: реальные данные вместо AsyncMock ----------
+def _task(**kw) -> SimpleNamespace:
+    base = dict(
+        id=3,
+        tenant_id=1,
+        project_id=2,
+        title="Task",
+        description="Desc",
+        status="OPEN",
+        priority="high",
+        due_date=None,
+        estimated_hours=Decimal("10.5"),
+        actual_hours=Decimal("5.0"),
+        created_by=1,
+        created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+        tags=[],
+    )
+    base.update(kw)
+    return SimpleNamespace(**base)
+
+
+def _executor(**kw) -> SimpleNamespace:
+    base = dict(
+        id=1,
+        tenant_id=1,
+        user_id=2,
+        task_id=3,
+        role_in_task="executor",
+        assigned_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+        is_active=True,
+        hours=Decimal("10.0"),
+        planned=Decimal("5.0"),
+        hourly_rate=100,
+        assigned_by=1,
+        removed=False,
+        remove_reason=None,
+        reassigned_reason=None,
+        name="Test User",
+        login="test_user",
+        task=_task(),
+    )
+    base.update(kw)
+    return SimpleNamespace(**base)
 
 
 # ---------- Фикстуры ----------
 @pytest.fixture
 def mock_service():
-    service = AsyncMock()
-    return service
+    return AsyncMock()
 
 
 @pytest.fixture
 def mock_current_user():
-    user = AsyncMock()
-    user.tenant_id = 1
-    user.id = 100
-    return user
+    return SimpleNamespace(tenant_id=1, id=100)
 
 
 @pytest.fixture
 def client(mock_service, mock_current_user):
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_assigned_tasks_service] = lambda: mock_service
+    app.dependency_overrides[get_executor_service] = lambda: mock_service
     app.dependency_overrides[get_current_user] = lambda: mock_current_user
     return TestClient(app)
 
@@ -64,7 +98,7 @@ class TestSchemas:
             "planned": 5,
             "hourly_rate": 100,
         }
-        req = CreateAssignedTaskRequest(**data)
+        req = CreateExecutorRequest(**data)
         assert req.task_id == 1
         assert req.user_id == 2
         assert req.role_in_task == "executor"
@@ -73,7 +107,7 @@ class TestSchemas:
         assert req.hourly_rate == 100
 
         # Опциональные поля
-        req2 = CreateAssignedTaskRequest(
+        req2 = CreateExecutorRequest(
             task_id=1,
             user_id=2,
             role_in_task="executor",
@@ -85,14 +119,14 @@ class TestSchemas:
 
     def test_add_hours_request_validation(self):
         # Валидный
-        req = AddHoursToAssignedTaskRequest(
+        req = AddHoursToExecutorRequest(
             id=1, task_id=10, user_id=2, today_hours_to_add=Decimal("2.5")
         )
         assert req.today_hours_to_add == Decimal("2.5")
 
         # Отрицательное значение должно вызвать ошибку
         with pytest.raises(ValueError):
-            AddHoursToAssignedTaskRequest(
+            AddHoursToExecutorRequest(
                 id=1, task_id=10, user_id=2, today_hours_to_add=Decimal("-1")
             )
 
@@ -133,22 +167,6 @@ class TestSchemas:
         req2 = ReassignedUserTaskRequest(task_id=10, user_id=2)
         assert req2.reassigned_reason is None
 
-    def test_executor_out(self):
-        data = {"id": 1, "name": "John", "login": "jdoe"}
-        executor = ExecutorOut(**data)
-        assert executor.id == 1
-        assert executor.name == "John"
-        assert executor.login == "jdoe"
-
-        # from_attributes (ORM mode)
-        class User:
-            id = 1
-            name = "John"
-            login = "jdoe"
-
-        executor_orm = ExecutorOut.model_validate(User())
-        assert executor_orm.id == 1
-
     def test_task_short_out(self):
         data = {
             "id": 1,
@@ -163,7 +181,14 @@ class TestSchemas:
             "actual_hours": 5.0,
             "created_by": 1,
             "created_at": "2023-01-01T00:00:00",
-            "tags": [{"id": 1, "tenant_id": 1, "name": "tag1", "description": "tag desc"}],
+            "tags": [
+                {
+                    "id": 1,
+                    "tenant_id": 1,
+                    "name": "tag1",
+                    "description": "tag desc",
+                }
+            ],
         }
         task = TaskShortOut(**data)
         assert task.id == 1
@@ -173,7 +198,8 @@ class TestSchemas:
         assert task.estimated_hours == Decimal("10.5")
         assert len(task.tags) == 1
 
-    def test_assigned_task_out(self):
+    def test_executor_out(self):
+        # name / login обязательны в ExecutorOut
         data = {
             "id": 1,
             "tenant_id": 1,
@@ -188,6 +214,8 @@ class TestSchemas:
             "hours": 10.0,
             "planned": 5.0,
             "hourly_rate": 100,
+            "name": "John Doe",
+            "login": "jdoe",
             "task": {
                 "id": 3,
                 "tenant_id": 1,
@@ -199,24 +227,36 @@ class TestSchemas:
                 "created_at": "2023-01-01T00:00:00",
             },
         }
-        assigned = AssignedTaskOut(**data)
+        assigned = ExecutorOut(**data)
         assert assigned.id == 1
         assert assigned.user_id == 2
         assert assigned.task_id == 3
         assert assigned.hours == Decimal("10.0")
+        assert assigned.name == "John Doe"
+        assert assigned.login == "jdoe"
         assert assigned.task.id == 3
+
+    def test_executor_out_from_attributes(self):
+        # Проверка ORM-режима через from_attributes
+        executor_orm = ExecutorOut.model_validate(_executor())
+        assert executor_orm.id == 1
+        assert executor_orm.user_id == 2
+        assert executor_orm.role_in_task == "executor"
+        assert executor_orm.name == "Test User"
+        assert executor_orm.login == "test_user"
+        assert executor_orm.task.title == "Task"
 
 
 # ---------- Тесты маршрутов ----------
 class TestRoutes:
-    # PUT /v1/assigned/hours/add
+    # PUT /v1/executor/hours/add
     def test_add_hours_to_assigned_task(self, client, mock_service, mock_current_user):
-        # Мокаем возвращаемое значение assigned_task
-        mock_assigned_task = AsyncMock()
-        mock_assigned_task.id = 1
-        mock_assigned_task.user_id = 2
-        mock_assigned_task.hours = 10
-        mock_assigned_task.planned = 5
+        mock_assigned_task = _executor(
+            id=1,
+            user_id=2,
+            hours=Decimal("10.0"),
+            planned=Decimal("5.0"),
+        )
 
         mock_service.add_hours_to_task.return_value = mock_assigned_task
         mock_service.get_user_hourly_rate.return_value = 100
@@ -229,24 +269,23 @@ class TestRoutes:
             "user_id": 2,
             "today_hours_to_add": "2.5",
         }
-        response = client.put("/v1/assigned/hours/add", json=payload)
+        response = client.put("/v1/executor/hours/add", json=payload)
         assert response.status_code == 200
         data = response.json()
         assert data == {
             "id": 1,
             "hourly_rate": 100,
             "user_id": 2,
-            "user_hours": 10,
-            "user_planned": 5,
+            "user_hours": 10.0,
+            "user_planned": 5.0,
             "all_hours": 50,
             "all_planned": 40,
         }
 
-        # Проверка вызовов сервиса
         mock_service.add_hours_to_task.assert_awaited_once()
         args, kwargs = mock_service.add_hours_to_task.call_args
         assert args[0] == mock_current_user.tenant_id
-        assert isinstance(args[1], AddHoursToAssignedTaskRequest)
+        assert isinstance(args[1], AddHoursToExecutorRequest)
         assert args[1].id == 1
         assert args[1].today_hours_to_add == Decimal("2.5")
 
@@ -268,16 +307,17 @@ class TestRoutes:
             "user_id": 2,
             "today_hours_to_add": "-1",
         }
-        response = client.put("/v1/assigned/hours/add", json=payload)
+        response = client.put("/v1/executor/hours/add", json=payload)
         assert response.status_code == 422
 
-    # PUT /v1/assigned/admin/hours/change
+    # PUT /v1/executor/admin/hours/change
     def test_change_hours_to_assigned_task(self, client, mock_service, mock_current_user):
-        mock_assigned_task = AsyncMock()
-        mock_assigned_task.id = 1
-        mock_assigned_task.user_id = 2
-        mock_assigned_task.hours = 8
-        mock_assigned_task.planned = 4
+        mock_assigned_task = _executor(
+            id=1,
+            user_id=2,
+            hours=Decimal("8.0"),
+            planned=Decimal("4.0"),
+        )
 
         mock_service.change_hours_to_task.return_value = mock_assigned_task
         mock_service.get_user_hourly_rate.return_value = 100
@@ -291,15 +331,15 @@ class TestRoutes:
             "task_id": 10,
             "user_id": 2,
         }
-        response = client.put("/v1/assigned/admin/hours/change", json=payload)
+        response = client.put("/v1/executor/admin/hours/change", json=payload)
         assert response.status_code == 200
         data = response.json()
         assert data == {
             "id": 1,
             "hourly_rate": 100,
             "user_id": 2,
-            "user_hours": 8,
-            "user_planned": 4,
+            "user_hours": 8.0,
+            "user_planned": 4.0,
             "all_hours": 40,
             "all_planned": 20,
         }
@@ -311,7 +351,7 @@ class TestRoutes:
         assert args[1].hours == 8
         assert args[1].planned == 4
 
-    # POST /v1/assigned/create
+    # POST /v1/executor/create
     def test_create_assigned_task(self, client, mock_service, mock_current_user):
         mock_service.create_assigned_task.return_value = 123
 
@@ -324,7 +364,7 @@ class TestRoutes:
             "planned": 5,
             "hourly_rate": 100,
         }
-        response = client.post("/v1/assigned/create", json=payload)
+        response = client.post("/v1/executor/create", json=payload)
         assert response.status_code == 201
         data = response.json()
         assert data == {"id": 123}
@@ -332,7 +372,7 @@ class TestRoutes:
         mock_service.create_assigned_task.assert_awaited_once_with(
             user_id=mock_current_user.id,
             tenant_id=mock_current_user.tenant_id,
-            dto=CreateAssignedTaskRequest(**payload),
+            dto=CreateExecutorRequest(**payload),
         )
 
     def test_create_assigned_task_validation(self, client):
@@ -342,20 +382,16 @@ class TestRoutes:
             "user_id": 2,
             "assigned_at": "2023-01-01T00:00:00",
         }
-        response = client.post("/v1/assigned/create", json=payload)
+        response = client.post("/v1/executor/create", json=payload)
         assert response.status_code == 422
 
-    # POST /v1/assigned/remove
+    # POST /v1/executor/remove
     def test_remove_user_from_task(self, client, mock_service, mock_current_user):
-        mock_assigned_task = AsyncMock()
-        mock_assigned_task.id = 1
-        mock_assigned_task.user_id = 2
-        mock_assigned_task.task_id = 10
-
+        mock_assigned_task = _executor(id=1, user_id=2, task_id=10)
         mock_service.remove_user_from_task.return_value = mock_assigned_task
 
         payload = {"task_id": 10, "user_id": 2, "remove_reason": "done"}
-        response = client.post("/v1/assigned/remove", json=payload)
+        response = client.post("/v1/executor/remove", json=payload)
         assert response.status_code == 200
         data = response.json()
         assert data == {"id": 1, "user_id": 2, "task_id": 10}
@@ -365,17 +401,13 @@ class TestRoutes:
             dto=RemoveUserFromTaskRequest(**payload),
         )
 
-    # POST /v1/assigned/reassign
+    # POST /v1/executor/reassign
     def test_reassign_user_to_task(self, client, mock_service, mock_current_user):
-        mock_assigned_task = AsyncMock()
-        mock_assigned_task.id = 1
-        mock_assigned_task.user_id = 2
-        mock_assigned_task.task_id = 10
-
+        mock_assigned_task = _executor(id=1, user_id=2, task_id=10)
         mock_service.reassign_user_to_task.return_value = mock_assigned_task
 
         payload = {"task_id": 10, "user_id": 2, "reassigned_reason": "return"}
-        response = client.post("/v1/assigned/reassign", json=payload)
+        response = client.post("/v1/executor/reassign", json=payload)
         assert response.status_code == 200
         data = response.json()
         assert data == {"id": 1, "user_id": 2, "task_id": 10}
@@ -385,30 +417,34 @@ class TestRoutes:
             dto=ReassignedUserTaskRequest(**payload),
         )
 
-    # GET /v1/assigned/executors
+    # GET /v1/executor/executors
     def test_get_executors(self, client, mock_service, mock_current_user):
-        # Мокаем список пользователей (ORM-объекты)
-        user1 = AsyncMock()
-        user1.id = 1
-        user1.name = "Alice"
-        user1.login = "alice"
+        mock_service.get_executors.return_value = [
+            _executor(id=1, user_id=1, role_in_task="executor",
+                      name="executor1", login="executor1"),
+            _executor(id=2, user_id=2, role_in_task="reviewer",
+                      name="executor2", login="executor2"),
+        ]
 
-        user2 = AsyncMock()
-        user2.id = 2
-        user2.name = "Bob"
-        user2.login = "bob"
-
-        mock_service.get_executors.return_value = [user1, user2]
-
-        response = client.get("/v1/assigned/executors?only_active=true")
+        response = client.get("/v1/executor/executors?only_active=true")
         assert response.status_code == 200
         data = response.json()
-        assert data == {
-            "items": [
-                {"id": 1, "name": "Alice", "login": "alice"},
-                {"id": 2, "name": "Bob", "login": "bob"},
-            ]
-        }
+
+        assert len(data["items"]) == 2
+
+        assert data["items"][0]["id"] == 1
+        assert data["items"][0]["user_id"] == 1
+        assert data["items"][0]["role_in_task"] == "executor"
+        assert data["items"][0]["name"] == "executor1"
+        assert data["items"][0]["login"] == "executor1"
+        assert data["items"][0]["task"]["title"] == "Task"
+        assert data["items"][0]["task"]["status"] == "OPEN"
+
+        assert data["items"][1]["id"] == 2
+        assert data["items"][1]["user_id"] == 2
+        assert data["items"][1]["role_in_task"] == "reviewer"
+        assert data["items"][1]["name"] == "executor2"
+        assert data["items"][1]["login"] == "executor2"
 
         mock_service.get_executors.assert_awaited_once_with(
             mock_current_user.tenant_id, only_active=True
@@ -416,7 +452,7 @@ class TestRoutes:
 
     def test_get_executors_only_active_false(self, client, mock_service, mock_current_user):
         mock_service.get_executors.return_value = []
-        response = client.get("/v1/assigned/executors?only_active=false")
+        response = client.get("/v1/executor/executors?only_active=false")
         assert response.status_code == 200
         data = response.json()
         assert data == {"items": []}

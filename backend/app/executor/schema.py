@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 # --------- CREATE -----------
-class CreateAssignedTaskRequest(BaseModel):
+class CreateExecutorRequest(BaseModel):
     task_id: int
     user_id: int
     role_in_task: str
@@ -14,20 +14,20 @@ class CreateAssignedTaskRequest(BaseModel):
     planned: int | None = None
     hourly_rate: int | None = None
     
-class CreateAssignedTaskResponse(BaseModel):
+class CreateExecutorResponse(BaseModel):
     id: int
     
 # --------- UPDATE -----------
 
 
-class AddHoursToAssignedTaskRequest(BaseModel):
+class AddHoursToExecutorRequest(BaseModel):
     id: int
     task_id: int
     user_id: int
     today_hours_to_add: Decimal = Field(ge=0)
 
 
-class AddHoursToAssignedTaskResponse(BaseModel):
+class AddHoursToExecutorResponse(BaseModel):
     id: int
     hourly_rate: int
     user_id: int
@@ -82,19 +82,7 @@ class ReassignedUserTaskResponse(BaseModel):
 
 # ---------- GET -------------
 
-# ----------Получение всех исполнителей --------
 
-
-class ExecutorOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    name: str
-    login: str
-
-
-class ExecutorListOut(BaseModel):
-    items: list[ExecutorOut]
 
 
 #----------Получение задач, у которых есть исполнитель (вместе с фильтрами)-------------
@@ -121,7 +109,7 @@ class TagShortOut(BaseModel):
 
 
 class TaskShortOut(BaseModel):
-    """Краткая инфа о задаче для вложения в AssignedTaskOut."""
+    """Краткая инфа о задаче для вложения в ExecutorOut."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -145,15 +133,17 @@ class TaskShortOut(BaseModel):
     tags: list[TagShortOut] = []
 
 
-# ---------- один элемент ----------
+# ----------Получение всех исполнителей --------
 
-
-class AssignedTaskOut(BaseModel):
+class ExecutorOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    login: str
 
     id: int
     tenant_id: int
-    
+
     user_id: int
     task_id: int
 
@@ -164,16 +154,14 @@ class AssignedTaskOut(BaseModel):
 
     remove_reason: str | None = None
     reassigned_reason: str | None = None
-
-    # Numeric(6, 2) -> Decimal, не float
     hours: Decimal | None = None
     planned: Decimal | None = None
-    
     hourly_rate: int | None = None
+    task: TaskShortOut
 
-    # связанная задача (опционально, зависит от selectinload в репозитории)
-    task: TaskShortOut | None = None
 
+class ExecutorListOut(BaseModel):
+    items: list[ExecutorOut]
 
 
 

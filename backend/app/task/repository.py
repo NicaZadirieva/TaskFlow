@@ -6,7 +6,7 @@ from sqlalchemy import Select, and_, exists, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.shared.db import DbSessionDeps
-from app.assigned_task.models import AssignedTask
+from app.executor.models import Executor
 from app.github_label.models import GithubLabel
 from app.task.models import Status, Task
 from app.task.schemas.get_filtered_tasks import SortOrder, TaskDeadline, TaskFilters
@@ -75,10 +75,10 @@ class TaskRepository:
         if user_ids:
             stmt = stmt.where(
                 exists().where(
-                    AssignedTask.task_id == Task.id,
-                    AssignedTask.user_id.in_(user_ids),
-                    AssignedTask.removed.is_(False),
-                    AssignedTask.is_active.is_(True),
+                    Executor.task_id == Task.id,
+                    Executor.user_id.in_(user_ids),
+                    Executor.removed.is_(False),
+                    Executor.is_active.is_(True),
                 )
             )
 
