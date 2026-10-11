@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy import select
 
-from app.core.db import DbSessionDeps
+from app.shared.db import DbSessionDeps
 from sqlalchemy.orm import selectinload
 from app.tenant.models import Tenant
 

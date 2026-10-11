@@ -2,7 +2,7 @@ import logging
 
 from fastapi import FastAPI
 
-from app.core.settings import Settings
+from app.shared.settings import Settings
 from app.tenant.routes import router as tenant_router
 from app.user.routes import router as user_router
 from app.assigned_tasks.routes import router as assigned_router

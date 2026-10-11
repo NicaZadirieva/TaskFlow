@@ -1,3 +1,6 @@
+
+from pydantic import BeforeValidator
+from typing import Annotated
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
@@ -6,7 +9,7 @@ from typing import Annotated, Any
 from fastapi import Depends, Query
 from pydantic import AliasPath, BaseModel, ConfigDict, Field
 
-from app.entities.task import Priority, Status
+from app.task.models import Priority, Status
 
 
 class CreateTaskRequest(BaseModel):
@@ -216,9 +219,30 @@ class TasksOut(BaseModel):
     total: int
     limit: int
     offset: int
-    
+
+
 # ---------- DI-фабрика ----------
 
+
+def _split_csv(v: Any) -> Any:
+    """Принимает None, строку 'a,b,c' или список ['a,b,c'] -> список строк."""
+    if v is None:
+        return None
+    items = v if isinstance(v, list) else [v]
+    result: list[Any] = []
+    for item in items:
+        if isinstance(item, str) and "," in item:
+            result.extend(s.strip() for s in item.split(",") if s.strip())
+        else:
+            result.append(item)
+    return result or None
+
+
+# элементы массива через ","
+CsvIntList = Annotated[list[int],      BeforeValidator(_split_csv)]
+CsvPriority = Annotated[list[Priority], BeforeValidator(_split_csv)]
+CsvStatus = Annotated[list[Status],   BeforeValidator(_split_csv)]
+CsvDeadline = Annotated[list[TaskDeadline], BeforeValidator(_split_csv)]
 
 async def get_task_filters(
     limit: Annotated[
@@ -239,34 +263,10 @@ async def get_task_filters(
     ] = SortOrder.desc,
 
     # --- OR-фильтры ---
-    tag_ids: Annotated[
-        list[int] | None,
-        Query(
-            description="ID тегов (OR — любой из перечисленных)",
-            explode=False,
-        ),
-    ] = None,
-    priority: Annotated[
-        list[Priority] | None,
-        Query(
-            description="Приоритет (OR — любой из перечисленных)",
-            explode=False,
-        ),
-    ] = None,
-    status: Annotated[
-        list[Status] | None,
-        Query(
-            description="Статус (OR — любой из перечисленных)",
-            explode=False,
-        ),
-    ] = None,
-    deadline: Annotated[
-        list[TaskDeadline] | None,
-        Query(
-            description="Дедлайн (OR — любое из перечисленных)",
-            explode=False,
-        ),
-    ] = None,
+    tag_ids:  Annotated[CsvIntList | None, Query(explode=False)] = None,
+    priority: Annotated[CsvPriority | None, Query(explode=False)] = None,
+    status:   Annotated[CsvStatus | None, Query(explode=False)] = None,
+    deadline: Annotated[CsvDeadline | None, Query(explode=False)] = None,
 ) -> TaskFilters:
     return TaskFilters(
         limit=limit,

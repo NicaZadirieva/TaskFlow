@@ -5,7 +5,7 @@ from fastapi import Depends
 from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.orm import selectinload
 
-from app.core.db import DbSessionDeps
+from app.shared.db import DbSessionDeps
 from app.assigned_task.models import AssignedTask
 from app.user.models import User
 

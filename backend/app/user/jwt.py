@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 
-from app.core.settings import Settings
+from app.shared.settings import Settings
 
 settings = Settings()  # type: ignore[call-arg]
 ALGORITHM = "HS256"

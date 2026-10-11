@@ -4,8 +4,8 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from app.core.db import Base
-from app.core.settings import Settings
+from app.shared.db import Base
+from app.shared.settings import Settings
 
 # не удалять этот импорт. без него не загрузятся модели в БД
 import app.assigned_task.models  # noqa: F401

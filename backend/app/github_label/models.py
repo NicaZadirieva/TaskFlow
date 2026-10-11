@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.shared.db import Base
 
 # M2M: task <-> github_label
 task_github_label = Table(

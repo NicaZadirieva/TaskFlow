@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from app.task.schema import (
     CreateTaskRequest,
     CreateTaskResponse,
+    CsvIntList,
     TasksOut,
 )
 from app.task.service import TaskServiceDeps
@@ -60,7 +61,7 @@ async def list_all_tasks(
     service: TaskServiceDeps,
     user: CurrentUserDeps,
     user_ids: Annotated[
-        list[int] | None,
+        CsvIntList | None,
         Query(description="ID исполнителей (OR)", explode=False),
     ] = None,
 ) -> TasksOut:

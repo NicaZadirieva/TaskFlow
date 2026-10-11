@@ -6,7 +6,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.core.settings import Settings
+from app.shared.settings import Settings
 
 settings = Settings()  # type: ignore[call-arg]
 

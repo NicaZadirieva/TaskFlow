@@ -3,7 +3,7 @@ from enum import Enum as PyEnum
 from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.shared.db import Base
 
 
 class TenantRole(PyEnum):

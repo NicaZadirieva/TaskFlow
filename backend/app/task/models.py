@@ -6,7 +6,7 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db import Base
+from app.shared.db import Base
 from app.github_label.models import task_github_label
 
 
