@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from app.tenant.schema import (
+from app.tenant.schemas import (
     CreateTenantRequest,
     CreateTenantResponse,
     GetTenantResponse,

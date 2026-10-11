@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from app.user.current_user import CurrentUserDeps
-from app.user.schema import (
+from app.user.schemas import (
     CreateUserRequest,
     GetUsersResponse,
     JWTResponse,
