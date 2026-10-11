@@ -3,11 +3,9 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.task.models import Task
-from app.task.schema import (
-    CreateTaskRequest,
-    TaskFilters,
-    TasksOut,
-)
+from app.task.schemas.create_task import CreateTaskRequest
+from app.task.schemas.get_filtered_tasks import TaskFilters, TasksOut
+
 
 from .repository import TaskRepoDeps
 

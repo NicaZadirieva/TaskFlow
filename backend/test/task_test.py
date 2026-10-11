@@ -8,19 +8,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.task.routes import router
-from app.task.schema import (
-    CreateTaskRequest,
-    CreateTaskResponse,
-    TaskFilters,
-    TaskSortBy,
-    SortOrder,
-    TaskDeadline,
-    TagShortOut,
-    ExecutorShortOut,
-    TaskOut,
-    TasksOut,
-    get_task_filters,
-)
+
+from app.task.schemas.create_task import CreateTaskRequest, CreateTaskResponse
+from app.task.schemas.get_filtered_tasks import ExecutorShortOut, SortOrder, TagShortOut, TaskDeadline, TaskFilters, TaskOut, TaskSortBy, TasksOut, get_task_filters
 from app.task.service import get_task_service
 from app.user.current_user import get_current_user
 from app.task.models import Priority, Status
@@ -354,7 +344,7 @@ class TestListAllTasks:
             items=[], total=0, limit=100, offset=0
         )
         response = client.get("/v1/task/all?user_ids=1,2,3")
-        assert response.status_code == 200, response.json()
+        assert response.status_code == 200
         assert mock_service.list_tasks.call_args.kwargs["user_ids"] == [
             1, 2, 3]
 

@@ -1,104 +1,12 @@
-
-from pydantic import BeforeValidator
-from typing import Annotated
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Annotated, Any
 
 from fastapi import Depends, Query
-from pydantic import AliasPath, BaseModel, ConfigDict, Field
+from pydantic import AliasPath, BaseModel, BeforeValidator, ConfigDict, Field
 
 from app.task.models import Priority, Status
-
-
-class CreateTaskRequest(BaseModel):
-    project_id: int | None = None
-
-    title: str = Field(..., min_length=1, max_length=200)
-    description: str | None = None
-
-    status: Status = Status.BACKLOG
-    priority: Priority = Priority.MEDIUM
-
-    due_date: datetime | None = None
-
-    estimated_budget: Decimal | None = Field(
-        default=None,
-        max_digits=12,
-        decimal_places=2,
-        ge=0,
-    )
-    actual_budget: Decimal | None = Field(
-        default=None,
-        max_digits=12,
-        decimal_places=2,
-        ge=0,
-    )
-
-    estimated_hours: Decimal | None = Field(
-        default=None,
-        max_digits=5,
-        decimal_places=2,
-        ge=0,
-    )
-    actual_hours: Decimal | None = Field(
-        default=None,
-        max_digits=5,
-        decimal_places=2,
-        ge=0,
-    )
-
-    note: dict[str, Any] | None = None
-    task_images: list[str] | None = None
-
-
-class CreateTaskResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    tenant_id: int
-
-
-class AdminGetAllTasksResponse(BaseModel):
-    project_id: int | None = None
-
-    title: str = Field(..., min_length=1, max_length=200)
-    description: str | None = None
-
-    status: Status = Status.BACKLOG
-    priority: Priority = Priority.MEDIUM
-
-    due_date: datetime | None = None
-
-    estimated_budget: Decimal | None = Field(
-        default=None,
-        max_digits=12,
-        decimal_places=2,
-        ge=0,
-    )
-    actual_budget: Decimal | None = Field(
-        default=None,
-        max_digits=12,
-        decimal_places=2,
-        ge=0,
-    )
-
-    estimated_hours: Decimal | None = Field(
-        default=None,
-        max_digits=5,
-        decimal_places=2,
-        ge=0,
-    )
-    actual_hours: Decimal | None = Field(
-        default=None,
-        max_digits=5,
-        decimal_places=2,
-        ge=0,
-    )
-
-    note: dict[str, Any] | None = None
-    task_images: list[str] | None = None
 
 
 class TaskDeadline(str, Enum):
@@ -135,9 +43,7 @@ class TaskFilters(BaseModel):
     priority: list[Priority] | None = None
     status: list[Status] | None = None
     deadline: list[TaskDeadline] | None = None
-    
 
-# ---------- вложенные ----------
 
 class TagShortOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -162,14 +68,13 @@ class ExecutorShortOut(BaseModel):
     role_in_task: str
     is_active: bool
     removed: bool
-    
+
     hours: float | None = None
     planned: float | None = None
-    
+
     hourly_rate: int | None = None
     remove_reason: str | None = None
     reassigned_reason: str | None = None
-    
 
 
 # ---------- сама задача ----------
@@ -212,7 +117,7 @@ class TaskOut(BaseModel):
         default_factory=list,
         validation_alias=AliasPath("assignees"),
     )
-    
+
 
 class TasksOut(BaseModel):
     items: list[TaskOut]
@@ -243,6 +148,7 @@ CsvIntList = Annotated[list[int],      BeforeValidator(_split_csv)]
 CsvPriority = Annotated[list[Priority], BeforeValidator(_split_csv)]
 CsvStatus = Annotated[list[Status],   BeforeValidator(_split_csv)]
 CsvDeadline = Annotated[list[TaskDeadline], BeforeValidator(_split_csv)]
+
 
 async def get_task_filters(
     limit: Annotated[

@@ -9,7 +9,7 @@ from app.shared.db import DbSessionDeps
 from app.assigned_task.models import AssignedTask
 from app.github_label.models import GithubLabel
 from app.task.models import Status, Task
-from app.task.schema import SortOrder, TaskDeadline, TaskFilters
+from app.task.schemas.get_filtered_tasks import SortOrder, TaskDeadline, TaskFilters
 
 
 class TaskRepository:

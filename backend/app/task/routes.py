@@ -2,14 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from app.task.schema import (
-    CreateTaskRequest,
-    CreateTaskResponse,
-    CsvIntList,
-    TasksOut,
-)
+
+from app.task.schemas.create_task import CreateTaskRequest, CreateTaskResponse
 from app.task.service import TaskServiceDeps
-from app.task.schema import TaskFiltersDeps
+from app.task.schemas.get_filtered_tasks import CsvIntList, TaskFiltersDeps, TasksOut
 from app.user.current_user import CurrentUserDeps
 
 router = APIRouter(prefix="/v1/task", tags=["Tasks"])
