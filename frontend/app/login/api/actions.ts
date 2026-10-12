@@ -24,6 +24,6 @@ export async function loginAction(email: string, password: string) {
         if (e instanceof RequestError) {
             return { error: e.message, status: e.statusCode };
         }
-        return { error: e, status: 401 };
+        return { error: "Произошла ошибка. Обратитесь к администратору", status: 401 };
     }
 }
