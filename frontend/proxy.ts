@@ -13,9 +13,9 @@ export function proxy(req: NextRequest) {
     // Неавторизованного — на /login
     if (!token && !isPublic) {
         const loginUrl = new URL('/login', req.url);
-        loginUrl.searchParams.set('from', pathname);
         return NextResponse.redirect(loginUrl);
     }
+    // выход из системы через повторное попадание на страницу login
     if (pathname.startsWith("/login") && token) {
         const response = NextResponse.next();
         response.cookies.delete('jwt');
