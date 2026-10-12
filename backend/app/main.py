@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI
+from app.shared import models  # noqa: F401 — регистрирует все модели в Base.registry
 
 from app.shared.settings import Settings
 from app.tenant.routes import router as tenant_router

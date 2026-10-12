@@ -8,12 +8,7 @@ from app.shared.db import Base
 from app.shared.settings import Settings
 
 # не удалять этот импорт. без него не загрузятся модели в БД
-import app.executor.models  # noqa: F401
-import app.github_label.models  # noqa: F401
-import app.project.models  # noqa: F401
-import app.task.models  # noqa: F401
-import app.tenant.models # noqa: F401
-import app.user.models # noqa: F401
+from app.shared.models import models  # noqa: F401
 
 
 # this is the Alembic Config object, which provides
