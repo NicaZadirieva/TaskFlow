@@ -1,38 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const PUBLIC_PATHS = ['/login'];
+const COOKIE_NAME = 'jwt';
 
 export function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
-    const token = req.cookies.get('jwt')?.value;
+    const token = req.cookies.get(COOKIE_NAME)?.value;
 
     const isPublic = PUBLIC_PATHS.some(
         (p) => pathname === p || pathname.startsWith(`${p}/`),
     );
+
+    // Уже авторизован, но зашёл на /login → выходим из системы
+    if (token && pathname === '/login') {
+        const response = NextResponse.redirect(new URL('/', req.url));
+        response.cookies.delete(COOKIE_NAME);
+        return response;
+    }
 
     // Неавторизованного — на /login
     if (!token && !isPublic) {
         const loginUrl = new URL('/login', req.url);
         return NextResponse.redirect(loginUrl);
     }
-    // выход из системы через повторное попадание на страницу login
-    if (pathname.startsWith("/login") && token) {
-        const response = NextResponse.next();
-        response.cookies.delete('jwt');
-        return response;
-    }
 
-
-
-    // Прокидываем токен дальше в headers для server components
-    const requestHeaders = new Headers(req.headers);
-    if (token) {
-        requestHeaders.set('Authorization', `Bearer ${token}`);
-    }
-
-    return NextResponse.next({
-        request: { headers: requestHeaders },
-    });
+    // Cookie автоматически едет дальше в server components —
+    // ничего прокидывать в headers не нужно.
+    return NextResponse.next();
 }
 
 export const config = {

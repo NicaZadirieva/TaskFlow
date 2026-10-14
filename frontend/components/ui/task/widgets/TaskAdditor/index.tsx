@@ -149,7 +149,7 @@ export default function TaskAdditor() {
     <>
       <TaskHeader task={taskToAdd} />
       <div className={styles.grid}>
-        <EditTaskForm task={taskToAdd} updateTask={updateTask}/>
+        <EditTaskForm task={taskToAdd} updateTask={updateTaskToAdd} saveTask={updateTask}/>
         <div className={styles.right}>
           <Card title={"Эталонные значения для планирования"} className={styles.card}>
             <ShowMetrics

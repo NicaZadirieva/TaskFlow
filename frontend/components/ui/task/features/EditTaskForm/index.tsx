@@ -35,13 +35,12 @@ const STATUS_OPTIONS = [
   { value: "DONE", label: "Завершена" },
 ];
 
-const PRIORITY_OPTIONS = [
-  { value: "LOW", label: "Низкий" },
+const PRIORITY_OPTIONS = [  { value: "LOW", label: "Низкий" },
   { value: "MEDIUM", label: "Средний" },
   { value: "HIGH", label: "Высокий" },
 ];
 
-export default function EditTaskForm({ task, updateTask }: { task?: TaskWithoutCreatedBy, updateTask: (task: TaskWithoutCreatedBy) => void; }) {
+export default function EditTaskForm({ task, updateTask, saveTask }: { task?: TaskWithoutCreatedBy, saveTask: (task: TaskWithoutCreatedBy) => Promise<void>, updateTask: (task: TaskWithoutCreatedBy) => void; }) {
   const tags_mapped = useCallback((tag_name: string) => task?.tags?.filter((tag) => tag.name == tag_name)[0], []);
 
   const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
@@ -83,8 +82,9 @@ export default function EditTaskForm({ task, updateTask }: { task?: TaskWithoutC
     return () => sub.unsubscribe();
   }, [watch, getValues, updateTask]);
 
-  const onSubmit = (data: EditTaskFormData) => {
+  const onSubmit = async (data: EditTaskFormData) => {
     updateTask(toTask(data));
+    await saveTask(toTask(data));
   };
 
   return (
