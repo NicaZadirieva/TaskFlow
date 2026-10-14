@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.shared import models  # noqa: F401 — регистрирует все модели в Base.registry
 
 from app.shared.settings import Settings
@@ -28,6 +29,21 @@ def create_app() -> FastAPI:
             {"name": "Tags", "description": "Управление тегами"}
         ],
     )
+
+    # Укажите разрешённые источники (домены)
+    origins = [
+        "http://localhost:3000",  # Ваш Next.js фронтенд
+        "http://127.0.0.1:3000",   # Альтернативный адрес
+    ]
+
+    new_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        # Разрешить отправку учётных данных (cookies, Authorization)
+        allow_credentials=True,
+        allow_methods=["*"],      # Разрешить все HTTP-методы
+        allow_headers=["*"],       # Разрешить все заголовки
+    )
     new_app.state.settings = settings
 
     new_app.include_router(tenant_router)
@@ -35,7 +51,7 @@ def create_app() -> FastAPI:
     new_app.include_router(executor_router)
     new_app.include_router(tasks_router)
     new_app.include_router(github_label_router)
-    
+
     return new_app
 
 
