@@ -36,7 +36,7 @@ const createEmptyTask = (): TaskWithoutCreatedBy => ({
   created_at: new Date()
 });
 
-export default function TaskAdditor() {
+export default function TaskAdditor({ tagsOptions }: { tagsOptions: {value: string, label: string}[]}) {
   const [removing, setRemoving] = useState<Assignee | null>(null);
   const [adding, setAdding] = useState(false);
   const [taskToAdd, updateTaskToAdd] = useState<TaskWithoutCreatedBy>(createEmptyTask);
@@ -153,7 +153,7 @@ export default function TaskAdditor() {
     <>
       <TaskHeader task={taskToAdd} />
       <div className={styles.grid}>
-        <EditTaskForm task={taskToAdd} updateTask={updateTaskToAdd} saveTask={updateTask}/>
+        <EditTaskForm tagsOptions={tagsOptions} task={taskToAdd} updateTask={updateTaskToAdd} saveTask={updateTask}/>
         <div className={styles.right}>
           <Card title={"Эталонные значения для планирования"} className={styles.card}>
             <ShowMetrics

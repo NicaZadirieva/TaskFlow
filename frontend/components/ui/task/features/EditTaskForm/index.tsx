@@ -40,7 +40,8 @@ const PRIORITY_OPTIONS = [  { value: "low", label: "Низкий" },
   { value: "high", label: "Высокий" },
 ];
 
-export default function EditTaskForm({ task, updateTask, saveTask }: { task?: TaskWithoutCreatedBy, saveTask: (task: TaskWithoutCreatedBy) => Promise<void>, updateTask: (task: TaskWithoutCreatedBy) => void; }) {
+export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }: { tagsOptions?: { value: string, label: string }[], task?: TaskWithoutCreatedBy, saveTask: (task: TaskWithoutCreatedBy) => Promise<void>, updateTask: (task: TaskWithoutCreatedBy) => void; }) {
+  
   const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
     defaultValues: {
       title: task ? task.title : "",
@@ -312,6 +313,7 @@ export default function EditTaskForm({ task, updateTask, saveTask }: { task?: Ta
                 <Select
                   {...field}
                   mode="tags"
+                  options={tagsOptions}
                   size="large"
                   placeholder="Добавьте теги и нажмите Enter"
                   tokenSeparators={[","]}

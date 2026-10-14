@@ -12,7 +12,6 @@ class GithubLabelOut(BaseModel):
     
     id: int
     name: str
-    description: str | None = None
     
 class GithubLabelListOut(BaseModel):
     items: list[GithubLabelOut] = Field(default_factory=list)
