@@ -4,6 +4,7 @@
 
 import { Task } from "@/entities/task.interface";
 import { getFormErrorMessage } from "@/utils/getFormErrorMessage";
+import { TaskWithoutCreatedBy } from "@/utils/types";
 import { UploadOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -20,7 +21,7 @@ import {
   Upload,
 } from "antd";
 import dayjs from "dayjs";
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import EditTaskFormData from "./EditTaskFormData.interface";
 import styles from "./index.module.css";
@@ -40,7 +41,9 @@ const PRIORITY_OPTIONS = [
   { value: "HIGH", label: "Высокий" },
 ];
 
-export default function EditTaskForm({ task, updateTask }: { task?: Task, updateTask: (task: Task) => void; }) {
+export default function EditTaskForm({ task, updateTask }: { task?: TaskWithoutCreatedBy, updateTask: (task: TaskWithoutCreatedBy) => void; }) {
+  const tags_mapped = useCallback((tag_name: string) => task?.tags?.filter((tag) => tag.name == tag_name)[0], []);
+
   const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
     defaultValues: {
       title: task ? task.title : "",
@@ -58,7 +61,7 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
  
 
   /** Преобразование данных формы в Task и отдача наверх */
-  const toTask = (data: EditTaskFormData): Task => ({
+  const toTask = (data: EditTaskFormData): TaskWithoutCreatedBy => ({
     ...(task ?? ({} as Task)),
     title: data.title,
     status: data.status,
@@ -68,7 +71,7 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
     hours: data.hours,
     budget: data.budget,
     note: data.note,
-    tags: data.tags?.map((name) => ({ name })),
+    tags: data.tags?.map((name) => tags_mapped(name))?.filter((value) => value !== undefined),
     task_images: data.task_images,
   });
 

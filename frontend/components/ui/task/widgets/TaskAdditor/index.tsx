@@ -7,8 +7,10 @@ import styles from "./index.module.css";
 import { useCallback, useMemo, useState } from "react";
 
 
+import { createTaskReq } from "@/api/requests";
 import { Assignee } from "@/entities/assignee.interface";
 import { Task } from "@/entities/task.interface";
+import { TaskWithoutCreatedBy } from "@/utils/types";
 import dayjs from 'dayjs';
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
 import AssigneeRemoval from "../../../assignees/features/RemoveAssigneeModal";
@@ -18,7 +20,7 @@ import ShowMetrics from "../../entities/ShowMetrics";
 import TaskHeader from "../../entities/TaskHeader";
 import EditTaskForm from "../../features/EditTaskForm";
 
-const createEmptyTask = (): Task => ({
+const createEmptyTask = (): TaskWithoutCreatedBy => ({
   id: 0,
   title: "",
   description: "",
@@ -32,14 +34,13 @@ const createEmptyTask = (): Task => ({
   tags: [],
   task_images: [],
   note: undefined,
-  created_by: 1,
   created_at: new Date()
 });
 
 export default function TaskAdditor() {
   const [removing, setRemoving] = useState<Assignee | null>(null);
   const [adding, setAdding] = useState(false);
-  const [taskToAdd, updateTaskToAdd] = useState<Task>(createEmptyTask);
+  const [taskToAdd, updateTaskToAdd] = useState<TaskWithoutCreatedBy>(createEmptyTask);
 
   /** Последнее удаление — для отката */
     const [lastRemoved, setLastRemoved] = useState<{
@@ -48,8 +49,13 @@ export default function TaskAdditor() {
     } | null>(null);
   
     /* ---------- Обновление задачи из формы ---------- */
-    const updateTask = useCallback((patch: Partial<Task>) => {
+    const updateTask = useCallback(async (patch: Omit<Task, 'created_by'>) => {
       updateTaskToAdd((prev) => ({ ...prev, ...patch }));
+      const assignees = patch.assignees.map((assignee) => {
+        return { ...assignee, actual_hours: assignee.hours, estimated_hours: assignee.planned }
+      })
+      await createTaskReq({...patch, 
+        ...{assignees: assignees}});
     }, []);
   
 
@@ -143,16 +149,16 @@ export default function TaskAdditor() {
     <>
       <TaskHeader task={taskToAdd} />
       <div className={styles.grid}>
-        <EditTaskForm task={taskToAdd} updateTask={updateTaskToAdd}/>
+        <EditTaskForm task={taskToAdd} updateTask={updateTask}/>
         <div className={styles.right}>
           <Card title={"Эталонные значения для планирования"} className={styles.card}>
             <ShowMetrics
               due_date={taskToAdd.due_date?.toLocaleDateString("ru-RU")}
               overdueDays={overdueDays /**TODO: посчитать на фронтенде */}
-              actualBudget={taskToAdd.budget.fact}
-              estimatedBudget={taskToAdd.budget.planned}
-              actualHours={taskToAdd.hours.fact}
-              estimatedHours={taskToAdd.hours.planned}
+              actualBudget={taskToAdd.budget.fact || 0}
+              estimatedBudget={taskToAdd.budget.planned || 0}
+              actualHours={taskToAdd.hours.fact || 0}
+              estimatedHours={taskToAdd.hours.planned || 0}
             />
           </Card>
           <Card className={styles.card} title={"Запланированные значения"}>
