@@ -59,7 +59,7 @@ export default function RemoveAssigneeModal({
       : removeReason.length > 0;
   return (
     <Modal
-      open={isOpen}
+      OPEN={isOpen}
       title="Удалить исполнителя"
       onCancel={onClose}
       onOk={confirmRemove}

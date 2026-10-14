@@ -21,7 +21,7 @@ import {
   Upload,
 } from "antd";
 import dayjs from "dayjs";
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import EditTaskFormData from "./EditTaskFormData.interface";
 import styles from "./index.module.css";
@@ -35,20 +35,18 @@ const STATUS_OPTIONS = [
   { value: "DONE", label: "Завершена" },
 ];
 
-const PRIORITY_OPTIONS = [  { value: "LOW", label: "Низкий" },
-  { value: "MEDIUM", label: "Средний" },
-  { value: "HIGH", label: "Высокий" },
+const PRIORITY_OPTIONS = [  { value: "low", label: "Низкий" },
+  { value: "medium", label: "Средний" },
+  { value: "high", label: "Высокий" },
 ];
 
 export default function EditTaskForm({ task, updateTask, saveTask }: { task?: TaskWithoutCreatedBy, saveTask: (task: TaskWithoutCreatedBy) => Promise<void>, updateTask: (task: TaskWithoutCreatedBy) => void; }) {
-  const tags_mapped = useCallback((tag_name: string) => task?.tags?.filter((tag) => tag.name == tag_name)[0], []);
-
   const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
     defaultValues: {
       title: task ? task.title : "",
-      status: task ? task.status : "",
+      status: task ? task.status : undefined,
       description: task ? task.description: "",
-      priority: task ? task.priority : "MEDIUM",
+      priority: task ? task.priority : "medium",
       due_date: task && task.due_date ? dayjs(task.due_date).toDate() : new Date(),
       hours: task && task.hours ? task.hours : { fact: 0, planned: 0 },
       budget: task && task.budget ? task.budget : { fact: 0, planned: 0 },
@@ -70,7 +68,7 @@ export default function EditTaskForm({ task, updateTask, saveTask }: { task?: Ta
     hours: data.hours,
     budget: data.budget,
     note: data.note,
-    tags: data.tags?.map((name) => tags_mapped(name))?.filter((value) => value !== undefined),
+    tags: data.tags?.map((tag) => { return {name: tag}}),
     task_images: data.task_images,
   });
 

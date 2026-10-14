@@ -4,10 +4,10 @@ import { GithubLabel } from './githubLabel.interface';
 // TODO: добавить OPEN в backend
 export type Status = 'OPEN' | 'BACKLOG' | 'IN_PROGRESS' | 'DONE';
 
-export type Priority = 'LOW' | 'HIGH' | 'MEDIUM' | 'CRITICAL';
+export type Priority = 'low' | 'high' | 'medium' | 'critical';
 
 export interface Task {
-  id: number;
+  id?: number;
   project_id?: number; 
   title: string;
   status: Status;

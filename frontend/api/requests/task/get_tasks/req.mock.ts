@@ -36,7 +36,7 @@ const TASKS: Task[] = [
 			{ id: 2, tenantId: 1, name: 'frontend', description: 'Клиентская часть' },
 			{ id: 3, tenantId: 1, name: 'reporting' },
 		],
-		priority: 'LOW',
+		priority: 'low',
 	},
 	{
 		id: 2,
@@ -92,7 +92,7 @@ const TASKS: Task[] = [
 			{ id: 7, tenantId: 1, name: 'tech-debt', description: 'Технический долг' },
 			{ id: 8, tenantId: 1, name: 'refactoring' },
 		],
-		priority: 'MEDIUM',
+		priority: 'medium',
 	},
 	{
 		id: 3,
@@ -158,7 +158,7 @@ const TASKS: Task[] = [
 			{ id: 10, name: 'performance', tenantId: 1 },
 			{ id: 11, name: 'infra', tenantId: 1 },
 		],
-		priority: 'HIGH',
+		priority: 'high',
 	},
 ];
 

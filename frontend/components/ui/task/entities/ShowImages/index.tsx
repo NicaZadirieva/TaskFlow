@@ -1,11 +1,11 @@
-import { Modal, Image, Typography } from 'antd';
+import { Image, Modal, Typography } from 'antd';
 const { Text } = Typography;
 
 export default function ShowImages({isOpen, onClose, imageUrls}: {isOpen: boolean, onClose: () => void, imageUrls: string[]}) {
 	return (
 		<Modal
         title="Изображения задачи"
-        open={isOpen}
+        OPEN={isOpen}
         onCancel={onClose}
         footer={null}
         width={800}

@@ -264,7 +264,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
         </div>
       </Card>
       <TimeCostsEditor
-        open={showTimeEditor}
+        OPEN={showTimeEditor}
         assignee={currentUser}
         taskTitle={task.title}
         onClose={() => {

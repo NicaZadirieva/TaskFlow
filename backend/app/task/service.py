@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.github_label.repository import GithubLabelRepoDeps
 from app.task.models import Task
 from app.task.schemas.create_task import CreateTaskRequest
 from app.task.schemas.get_filtered_tasks import TaskFilters, TasksOut
@@ -11,8 +12,10 @@ from .repository import TaskRepoDeps
 
 
 class TaskService:
-    def __init__(self, task_repo: TaskRepoDeps):
+    def __init__(self, task_repo: TaskRepoDeps, github_label_repo: GithubLabelRepoDeps):
         self.task_repo = task_repo
+        self.github_label_repo = github_label_repo
+
 
     async def create_task(
         self,
@@ -36,7 +39,10 @@ class TaskService:
             note=dto.note,
             task_images=dto.task_images,
         )
-        return await self.task_repo.save(task)
+        new_task = await self.task_repo.save(task)
+        for tag in dto.tags:
+           await self.github_label_repo.attach_or_create(new_task.id, tenant_id, tag.name, tag.description)
+        return new_task
 
     async def list_tasks(
         self,
@@ -66,8 +72,8 @@ class TaskService:
         )
 
 
-def get_task_service(task_repo: TaskRepoDeps) -> TaskService:
-    return TaskService(task_repo)
+def get_task_service(task_repo: TaskRepoDeps, github_label_repo: GithubLabelRepoDeps) -> TaskService:
+    return TaskService(task_repo, github_label_repo)
 
 
 TaskServiceDeps = Annotated[TaskService, Depends(get_task_service)]

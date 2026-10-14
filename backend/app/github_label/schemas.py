@@ -3,7 +3,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class CreateGithubLabelRequest(BaseModel):
     name: str
-    description: str | None = None
 
 class CreateGithubLabelResponse(BaseModel):
     id: int

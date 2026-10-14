@@ -2,12 +2,12 @@
 
 import { Assignee } from "@/entities/assignee.interface";
 import {
-  Alert,
-  Input,
-  InputNumber,
-  message,
-  Modal,
-  Typography
+    Alert,
+    Input,
+    InputNumber,
+    message,
+    Modal,
+    Typography
 } from "antd";
 import { useEffect, useState } from "react";
 import styles from "./index.module.css";
@@ -16,14 +16,14 @@ import styles from "./index.module.css";
 const { Text } = Typography;
 
 interface Props {
-  open: boolean;
+  OPEN: boolean;
   assignee: Assignee | null;
   taskTitle?: string;
   onClose: () => void;
 }
 
 export default function UpdateTimeCostModal({
-  open,
+  OPEN,
   assignee,
   taskTitle,
   onClose,
@@ -34,12 +34,12 @@ export default function UpdateTimeCostModal({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open && assignee) {
+    if (OPEN && assignee) {
       setHours(0);
       setMinutes(0);
       setComment("");
     }
-  }, [open, assignee]);
+  }, [OPEN, assignee]);
 
   const handleSave = async () => {
     // Переводим всё в часы (десятичное число) для onSave
@@ -61,7 +61,7 @@ export default function UpdateTimeCostModal({
 
   return (
     <Modal
-      open={open}
+      OPEN={OPEN}
       title={`Сколько потратили сегодня на ${taskTitle ? ` — ${taskTitle}` : ""}?`}
       onCancel={onClose}
       onOk={handleSave}

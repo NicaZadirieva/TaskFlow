@@ -7,7 +7,10 @@ from pydantic import BaseModel, Field
 
 from app.task.models import Priority, Status
 
-
+class TagOut(BaseModel):
+    name: str
+    description: str | None = None
+    
 class CreateTaskRequest(BaseModel):
     project_id: int | None = None
 
@@ -47,6 +50,7 @@ class CreateTaskRequest(BaseModel):
 
     note: dict[str, Any] | None = None
     task_images: list[str] | None = None
+    tags: list[TagOut] | None = None
 
 
 class CreateTaskResponse(BaseModel):

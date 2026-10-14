@@ -21,11 +21,10 @@ import TaskHeader from "../../entities/TaskHeader";
 import EditTaskForm from "../../features/EditTaskForm";
 
 const createEmptyTask = (): TaskWithoutCreatedBy => ({
-  id: 0,
   title: "",
   description: "",
   status: "OPEN",
-  priority: "MEDIUM",
+  priority: "medium",
   due_date: new Date(),
   overdueDays: 0,
   hours: { fact: 0, planned: 0 },
@@ -55,6 +54,11 @@ export default function TaskAdditor() {
         return { ...assignee, actual_hours: assignee.hours, estimated_hours: assignee.planned }
       })
       await createTaskReq({...patch, 
+
+        estimated_hours: patch.hours?.planned,
+        estimated_budget: patch.budget?.planned,
+        actual_budget: patch.budget?.fact,
+        actual_hours: patch.hours?.fact,
         ...{assignees: assignees}});
     }, []);
   

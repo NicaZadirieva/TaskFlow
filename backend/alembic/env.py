@@ -8,7 +8,7 @@ from app.shared.db import Base
 from app.shared.settings import Settings
 
 # не удалять этот импорт. без него не загрузятся модели в БД
-from app.shared.models import models  # noqa: F401
+import app.shared.models  # noqa: F401
 
 
 # this is the Alembic Config object, which provides

@@ -42,7 +42,7 @@ export default function UserAdditor() {
   return (
     <Modal
       title="Создание пользователя"
-      open={isOpen}
+      OPEN={isOpen}
       onOk={handleSave}
       okText="Создать"
       cancelText="Отмена"

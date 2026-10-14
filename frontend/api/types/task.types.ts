@@ -4,7 +4,7 @@ import ITaskNote from './note.types';
 import { User } from './user.types';
 
 export type TaskStatus = 'BACKLOG' | 'IN_PROGRESS' | 'OPEN' | 'DONE';
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type Priority = 'low' | 'medium' | 'high' | 'critical';
 
 export interface Task {
   id?: number;

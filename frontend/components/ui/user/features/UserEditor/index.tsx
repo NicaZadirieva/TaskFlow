@@ -41,7 +41,7 @@ export default function UserEditor({onSave, onReset, editingRecord = null}: {onS
 	return (
 	<Modal
         title="Редактирование пользователя"
-        open={!!editingRecord}
+        OPEN={!!editingRecord}
         onOk={handleSave}
         onCancel={closeEdit}
         okText="Сохранить"

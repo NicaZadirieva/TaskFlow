@@ -59,7 +59,7 @@ export default function AddAssigneeForm({
 
   return (
     <Modal
-      open={isOpen}
+      OPEN={isOpen}
       title="Добавить исполнителя"
       onCancel={onClose}
       onOk={submitAdd}

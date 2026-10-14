@@ -47,7 +47,7 @@ export default function ChangePasswordModal({
       title={
         selectedUser ? `Смена пароля — ${selectedUser.name}` : "Смена пароля"
       }
-      open={isOpen}
+      OPEN={isOpen}
       onOk={handleChangePassword}
       onCancel={closePasswordModal}
       okText="Сохранить"
