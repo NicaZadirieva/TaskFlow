@@ -12,9 +12,9 @@ export interface Task {
   title: string;
   status: Status;
   description?: string; // TODO: добавить в интерфейс
-  hours: { fact: number; planned: number; };
+  hours: { fact?: number; planned?: number; };
   // TODO: добавить estimated_budget, actial_budget в БД
-  budget: { fact: number; planned: number };
+  budget: { fact?: number; planned?: number };
   due_date: Date; // TODO: перевести datetime schema Task
   overdueDays: number; // TODO: посчитать через БД и вернуть
   // jsonb

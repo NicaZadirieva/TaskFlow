@@ -5,7 +5,7 @@ export interface Assignee {
   task_id: number;
   tenant_id: number;
   role_in_task: string; // TODO: добавить в интерфейс вместо role
-  assigned_at: Date;
+  assigned_at?: Date;
   is_active: boolean;
   // TODO: добавить ставку исполнителя для конкретной задачи в БД
   hours: number;
