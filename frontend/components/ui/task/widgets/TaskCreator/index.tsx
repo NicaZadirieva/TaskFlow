@@ -6,14 +6,13 @@ import styles from "./index.module.css";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-
 import { toTaskWithoutCreatedByDto } from "@/api/mappers";
 import { createTaskReq, getUsersReq } from "@/api/requests";
 import { Executor } from "@/entities/executor.interface";
 import { Task } from "@/entities/task.interface";
 import { User } from "@/entities/user.interface";
 import { TaskWithoutCreatedBy } from "@/utils/types";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
 import AssigneeRemoval from "../../../assignees/features/RemoveAssigneeModal";
 import TaskAssigneesWidget from "../../../assignees/widgets/TaskAssigneesWidget";
@@ -22,7 +21,9 @@ import ShowMetrics from "../../entities/ShowMetrics";
 import TaskHeader from "../../entities/TaskHeader";
 import EditTaskForm from "../../features/EditTaskForm";
 
-const createEmptyTask = (): TaskWithoutCreatedBy => ({
+type TaskWithoutAssignees = Omit<TaskWithoutCreatedBy, "assignees">;
+
+const createEmptyTask = (): TaskWithoutAssignees => ({
   title: "",
   description: "",
   status: "OPEN",
@@ -31,17 +32,26 @@ const createEmptyTask = (): TaskWithoutCreatedBy => ({
   overdueDays: 0,
   hours: { fact: 0, planned: 0 },
   budget: { fact: 0, planned: 0 },
-  assignees: [],
   tags: [],
   task_images: [],
   note: undefined,
-  created_at: new Date()
+  created_at: new Date(),
 });
 
-export default function TaskCreator({ tagsOptions }: { tagsOptions: {value: string, label: string}[]}) {
+export default function TaskCreator({
+  tagsOptions,
+}: {
+  tagsOptions: { value: string; label: string }[];
+}) {
   const [removing, setRemoving] = useState<Executor | null>(null);
   const [adding, setAdding] = useState(false);
-  const [taskToAdd, updateTaskToAdd] = useState<TaskWithoutCreatedBy>(createEmptyTask);
+
+  // Задача без assignees
+  const [task, updateTask] = useState<TaskWithoutAssignees>(createEmptyTask);
+
+  // Исполнители — отдельный, независимый стейт
+  const [assignees, setAssignees] = useState<Executor[]>([]);
+
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -49,139 +59,152 @@ export default function TaskCreator({ tagsOptions }: { tagsOptions: {value: stri
   }, []);
 
   /** Последнее удаление — для отката */
-    const [lastRemoved, setLastRemoved] = useState<{
-      assignee: Executor;
-      index: number;
-    } | null>(null);
-  
-    /* ---------- Обновление задачи из формы ---------- */
-    const updateTask = useCallback(async (patch: Omit<Task, 'created_by'>) => {
-      updateTaskToAdd((prev) => ({ ...prev, ...patch }));
-      await createTaskReq(toTaskWithoutCreatedByDto(patch));
-    }, []);
-  
+  const [lastRemoved, setLastRemoved] = useState<{
+    assignee: Executor;
+    index: number;
+  } | null>(null);
 
-  
-    /* ---------- Удаление ---------- */
-    const removeAssignee = (removed: Executor) => {
-      updateTaskToAdd((prev) => {
-        const index = prev.assignees.findIndex((a) => a.id === removed.id);
-        if (index === -1) return prev;
-  
-        setLastRemoved({ assignee: removed, index });
-  
-        return {
-          ...prev,
-          assignees: prev.assignees.filter((a) => a.id !== removed.id),
-        };
-      });
-  
-      setRemoving(null);
-      message.success("Исполнитель удалён");
-    };
-  
-    const undoRemove = () => {
-      if (!lastRemoved) return;
-  
-      updateTaskToAdd((prev) => {
-        const next = [...prev.assignees];
-        next.splice(lastRemoved.index, 0, lastRemoved.assignee);
-        return { ...prev, assignees: next };
-      });
-  
-      setLastRemoved(null);
-      message.info("Удаление отменено");
-    };
-  
-    /* ---------- Добавление ---------- */
-    const addAssignee = (assignee: Executor) => {
-      // Защита от дубликатов по id
-      updateTaskToAdd((prev) => {
-        const exists = prev.assignees.some((a) => a.id === assignee.id);
-        if (exists) return prev;
-  
-        return { ...prev, assignees: [...prev.assignees, assignee] };
-      });
-  
-      setAdding(false);
-      message.success("Исполнитель добавлен");
-    };
+  /* ---------- Сохранение задачи ---------- */
+  const saveTask = useCallback(
+    async (patch: Omit<Task, "created_by">) => {
+      const nextTask: TaskWithoutCreatedBy = {
+        ...task,
+        ...patch,
+        assignees
+      };
 
-     const computeActualBudget = (assignee: Executor) => {
-    return assignee.hourly_rate ? assignee.hourly_rate * assignee.hours: 0;
-  }
+      await createTaskReq(toTaskWithoutCreatedByDto(nextTask));
+    },
+    [task, assignees],
+  );
 
-  const computeEstimatedBudget = (assignee: Executor) => {
-    return assignee.hourly_rate ? assignee.hourly_rate * assignee.planned: 0;
-  }
+  /* ---------- Удаление ---------- */
+  const removeAssignee = (removed: Executor) => {
+    setAssignees((prev) => {
+      const index = prev.findIndex((a) => a.id === removed.id);
+      if (index === -1) return prev;
 
-  const computeActualHours = (assignee: Executor) => {
-    return assignee.hours;
-  }
+      setLastRemoved({ assignee: removed, index });
+      return prev.filter((a) => a.id !== removed.id);
+    });
 
-  const computeEstimatedHours = (assignee: Executor) => {
-    return assignee.planned;
-  }
+    setRemoving(null);
+    message.success("Исполнитель удалён");
+  };
+
+  const undoRemove = () => {
+    if (!lastRemoved) return;
+
+    setAssignees((prev) => {
+      const next = [...prev];
+      next.splice(lastRemoved.index, 0, lastRemoved.assignee);
+      return next;
+    });
+
+    setLastRemoved(null);
+    message.info("Удаление отменено");
+  };
+
+  /* ---------- Добавление ---------- */
+  const addAssignee = (assignee: Executor) => {
+    setAssignees((prev) => {
+      const exists = prev.some((a) => a.id === assignee.id);
+      if (exists) return prev;
+      return [...prev, assignee];
+    });
+
+    setAdding(false);
+    message.success("Исполнитель добавлен");
+  };
+
+  /* ---------- Расчёты по исполнителям ---------- */
+  const computeActualBudget = (a: Executor) =>
+    a.hourly_rate ? a.hourly_rate * a.hours : 0;
+
+  const computeEstimatedBudget = (a: Executor) =>
+    a.hourly_rate ? a.hourly_rate * a.planned : 0;
+
+  const computeActualHours = (a: Executor) => a.hours;
+  const computeEstimatedHours = (a: Executor) => a.planned;
 
   /* ---------- Просрочка ---------- */
-    /**
-     * Вычисление количества дней просрочки.
-     * Просрочка не считается, если:
-     *  - нет даты дедлайна;
-     *  - задача выполнена (статус DONE / CLOSED — подставьте свои значения).
-     * Возвращает целое число дней просрочки (0, если не просрочено).
-     */
-    const overdueDays = useMemo(() => {
-      if (!taskToAdd.due_date) return 0;
-  
-      // Если задача выполнена — просрочки нет
-      const doneStatuses = ["DONE", "CLOSED", "COMPLETED"];
-      if (doneStatuses.includes(taskToAdd.status)) return 0;
-  
-      const today = dayjs().startOf("day");
-      const dueDate = dayjs(taskToAdd.due_date).startOf("day");
-  
-      // Если дедлайн в будущем или сегодня — просрочки нет
-      if (!dueDate.isBefore(today)) return 0;
-  
-      return today.diff(dueDate, "day");
-    }, [taskToAdd.due_date, taskToAdd.status]);
-  
+  const overdueDays = useMemo(() => {
+    if (!task.due_date) return 0;
+
+    const doneStatuses = ["DONE", "CLOSED", "COMPLETED"];
+    if (doneStatuses.includes(task.status)) return 0;
+
+    const today = dayjs().startOf("day");
+    const dueDate = dayjs(task.due_date).startOf("day");
+
+    if (!dueDate.isBefore(today)) return 0;
+    return today.diff(dueDate, "day");
+  }, [task.due_date, task.status]);
+
+  // Заголовку задачи тоже нужен объект задачи с исполнителями
+  const taskForHeader = useMemo<TaskWithoutCreatedBy>(
+    () => ({ ...task, assignees }),
+    [task, assignees],
+  );
+
   return (
     <>
-      <TaskHeader task={taskToAdd} />
+      <TaskHeader task={taskForHeader} />
       <div className={styles.grid}>
-        <EditTaskForm tagsOptions={tagsOptions} task={taskToAdd} updateTask={updateTaskToAdd} saveTask={updateTask}/>
+        <EditTaskForm
+          tagsOptions={tagsOptions}
+          task={{ ...taskForHeader }} // форма видит полный снапшот, но менять может только свои поля
+          updateTask={(patch) => updateTask((prev) => ({ ...prev, ...patch }))}
+          saveTask={saveTask}
+        />
         <div className={styles.right}>
-          <Card title={"Эталонные значения для планирования"} className={styles.card}>
+          <Card
+            title={"Эталонные значения для планирования"}
+            className={styles.card}
+          >
             <ShowMetrics
-              due_date={taskToAdd.due_date?.toLocaleDateString("ru-RU")}
-              overdueDays={overdueDays /**TODO: посчитать на фронтенде */}
-              actualBudget={taskToAdd.budget.fact || 0}
-              estimatedBudget={taskToAdd.budget.planned || 0}
-              actualHours={taskToAdd.hours.fact || 0}
-              estimatedHours={taskToAdd.hours.planned || 0}
+              due_date={task.due_date?.toLocaleDateString("ru-RU")}
+              overdueDays={overdueDays}
+              actualBudget={task.budget.fact || 0}
+              estimatedBudget={task.budget.planned || 0}
+              actualHours={task.hours.fact || 0}
+              estimatedHours={task.hours.planned || 0}
             />
           </Card>
+
           <Card className={styles.card} title={"Запланированные значения"}>
             <ShowMetrics
-              due_date={taskToAdd.due_date?.toLocaleDateString("ru-RU")}
-              overdueDays={overdueDays /**TODO: посчитать на фронтенде */}
-              actualBudget={taskToAdd.assignees.reduce((prev, cur) => prev + computeActualBudget(cur), 0)}
-              estimatedBudget={taskToAdd.assignees.reduce((prev, cur) => prev + computeEstimatedBudget(cur), 0)}
-              actualHours={taskToAdd.assignees.reduce((prev, cur) => prev + computeActualHours(cur), 0)}
-              estimatedHours={taskToAdd.assignees.reduce((prev, cur) => prev + computeEstimatedHours(cur), 0)}
+              due_date={task.due_date?.toLocaleDateString("ru-RU")}
+              overdueDays={overdueDays}
+              actualBudget={assignees.reduce(
+                (prev, cur) => prev + computeActualBudget(cur),
+                0,
+              )}
+              estimatedBudget={assignees.reduce(
+                (prev, cur) => prev + computeEstimatedBudget(cur),
+                0,
+              )}
+              actualHours={assignees.reduce(
+                (prev, cur) => prev + computeActualHours(cur),
+                0,
+              )}
+              estimatedHours={assignees.reduce(
+                (prev, cur) => prev + computeEstimatedHours(cur),
+                0,
+              )}
             />
             <TaskAssigneesWidget
-              assignees={taskToAdd.assignees}
-              undoRemove={(assignee: Executor) => undoRemove()}
+              assignees={assignees}
+              undoRemove={() => undoRemove()}
               showAssigneeAddModal={() => setAdding(true)}
               showAssigneeRemoveModal={setRemoving}
             />
           </Card>
-          {taskToAdd.note && <TaskNote note={taskToAdd.note} />}
+
+          {task.note && <TaskNote note={task.note} />}
         </div>
       </div>
+
       <AddAssigneeForm
         isOpen={adding}
         onClose={() => setAdding(false)}
