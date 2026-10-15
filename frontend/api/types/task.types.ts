@@ -28,7 +28,7 @@ export interface Task {
   created_at: Date;
 
   created_by_user?: Pick<User, 'id' | 'name'>;
-  assignees?: Executor[];
+  executors?: Executor[];
 
   task_images?: string[];
   tags?: GithubLabel[]; 

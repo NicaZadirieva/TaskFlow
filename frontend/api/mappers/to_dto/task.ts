@@ -9,6 +9,6 @@ export default function toTaskWithoutCreatedByDto(task: TaskWithoutCreatedBy) {
         estimated_budget: task.budget?.planned,
         actual_budget: task.budget?.fact,
         actual_hours: task.hours?.fact,
-        ...{ assignees: task.assignees.map(toExecutorDto) }
+        ...{ executors: task.assignees.map(toExecutorDto) }
     }
 }

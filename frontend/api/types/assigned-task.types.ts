@@ -1,9 +1,9 @@
 export interface Executor {
-  id: number;
+  id?: number;
   user_name: string; // TODO: вычислить в БД
-  user_id: number;
-  task_id: number;
-  tenant_id: number;
+  user_id?: number;
+  task_id?: number;
+  tenant_id?: number;
   role_in_task: string;
   assigned_at?: Date; // TODO: добавить дату на бэке
   is_active: boolean;
