@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # --------- CREATE -----------
 class CreateExecutorRequest(BaseModel):
     task_id: int
-    user_id: int
+    login: str 
     role_in_task: str
     assigned_at: datetime
     hours: int | None = None

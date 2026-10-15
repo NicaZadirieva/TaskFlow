@@ -24,6 +24,12 @@ class UserRepository:
         query = select(User).where(User.email == email)
         user = await self.db_session.execute(query)
         return user.scalar_one_or_none()
+    
+    async def get_by_login(self, login: str, tenant_id: int):
+        query = select(User).where(User.login == login,
+                                   User.tenant_id == tenant_id)
+        user = await self.db_session.execute(query)
+        return user.scalar_one_or_none()
 
     async def get_by_id(self, id: int):
         user = await self.db_session.get(User, id)
