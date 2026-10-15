@@ -5,13 +5,13 @@ import {
 } from "antd";
 import { useState } from "react";
 
-import { IUser } from '@/entities/user.interface';
+import { User } from '@/entities/user.interface';
 import ChangePasswordModel from '../ChangePasswordModal';
 import DesktopUserTable from './components/desktop/DesktopUserTable';
 import MobileUserTable from './components/mobile/MobileUserTable';
 
-export default function ChangePasswordTable({users}: {users: IUser[]}) {
-  const [dataSource] = useState<IUser[]>(users);
+export default function ChangePasswordTable({users}: {users: User[]}) {
+  const [dataSource] = useState<User[]>(users);
   const [selectedKey, setSelectedKey] = useState<React.Key | null>(null);
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const selectedUser = dataSource.find((u) => u.id === selectedKey) ?? null;
@@ -49,9 +49,9 @@ export default function ChangePasswordTable({users}: {users: IUser[]}) {
         </Button>
       </div>
 
-      <DesktopUserTable dataSource={dataSource} onChooseRow={(row: IUser) => setSelectedKey(row.id)}/>
+      <DesktopUserTable dataSource={dataSource} onChooseRow={(row: User) => setSelectedKey(row.id)}/>
 
-      <MobileUserTable dataSource={dataSource} selectUser={(row: IUser) => setSelectedKey(row.id)} selectedUser={selectedUser}/>
+      <MobileUserTable dataSource={dataSource} selectUser={(row: User) => setSelectedKey(row.id)} selectedUser={selectedUser}/>
 
       <ChangePasswordModel selectedUser={selectedUser} hideModal={() => setModalOpen(false)} isOpen={isModalOpen}/>
       

@@ -1,14 +1,13 @@
-import { AssignedTask } from './assigned-task.types';
+import { Executor } from './assigned-task.types';
 import GithubLabel from './github-label.types';
 import ITaskNote from './note.types';
 import { User } from './user.types';
 
 export type TaskStatus = 'BACKLOG' | 'IN_PROGRESS' | 'OPEN' | 'DONE';
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type Priority = 'low' | 'medium' | 'high' | 'critical';
 
 export interface Task {
-  id: number;
-  tenantId: number;
+  id?: number;
   projectId?: number;
   title: string;
   description?: string;
@@ -16,20 +15,20 @@ export interface Task {
   status: TaskStatus;
   priority: Priority;
 
-  dueDate?: Date;
-  estimatedHours?: number;
-  actualHours?: number;
+  due_date?: Date;
+  estimated_hours?: number;
+  actual_hours?: number;
 
-  estimatedBudget?: number;
-  actualBudget?: number;
-  overdueDays?: number; // TODO: вычислить в БД
+  estimated_budget?: number;
+  actual_budget?: number;
+  overdue_days?: number; // TODO: вычислить в БД
 
   note?: ITaskNote;
-  createdBy: number;
-  createdAt: Date;
+  created_by?: number;
+  created_at: Date;
 
-  createdByUser?: Pick<User, 'id' | 'name'>;
-  assignees?: AssignedTask[];
+  created_by_user?: Pick<User, 'id' | 'name'>;
+  executors?: Executor[];
 
   task_images?: string[];
   tags?: GithubLabel[]; 

@@ -37,7 +37,7 @@ class User(Base):
     executors: Mapped[list["Executor"]] = relationship(  # type: ignore  # noqa: F821
         back_populates="user",
         cascade="all, delete-orphan",
-        foreign_keys="executors.user_id",
+        foreign_keys="Executor.user_id",
     )
 
     def __init__(

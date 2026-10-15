@@ -9,7 +9,7 @@ import styles from "./index.module.css";
 import { useCallback, useMemo, useState } from "react";
 
 
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import { Task } from "@/entities/task.interface";
 import dayjs from 'dayjs';
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
@@ -21,14 +21,14 @@ import TaskHeader from "../../entities/TaskHeader";
 import EditTaskForm from "../../features/EditTaskForm";
 
 export default function TaskEditor({ task }: { task: Task }) {
-  const [removing, setRemoving] = useState<Assignee | null>(null);
+  const [removing, setRemoving] = useState<Executor | null>(null);
   const [adding, setAdding] = useState(false);
 
   const [editedTask, updateEditedTask]  = useState<Task>(task);
 
   /** Последнее удаление — для отката */
   const [lastRemoved, setLastRemoved] = useState<{
-    assignee: Assignee;
+    assignee: Executor;
     index: number;
   } | null>(null);
 
@@ -39,7 +39,7 @@ export default function TaskEditor({ task }: { task: Task }) {
 
 
   /* ---------- Удаление ---------- */
-  const removeAssignee = (removed: Assignee) => {
+  const removeAssignee = (removed: Executor) => {
     updateEditedTask((prev) => {
       const index = prev.assignees.findIndex((a) => a.id === removed.id);
       if (index === -1) return prev;
@@ -70,7 +70,7 @@ export default function TaskEditor({ task }: { task: Task }) {
   };
 
   /* ---------- Добавление ---------- */
-  const addAssignee = (assignee: Assignee) => {
+  const addAssignee = (assignee: Executor) => {
     // Защита от дубликатов по id
     updateEditedTask((prev) => {
       const exists = prev.assignees.some((a) => a.id === assignee.id);
@@ -83,19 +83,19 @@ export default function TaskEditor({ task }: { task: Task }) {
     message.success("Исполнитель добавлен");
   };
 
-  const computeActualBudget = (assignee: Assignee) => {
+  const computeActualBudget = (assignee: Executor) => {
     return assignee.hourly_rate ? assignee.hourly_rate * assignee.hours: 0;
   }
 
-  const computeEstimatedBudget = (assignee: Assignee) => {
+  const computeEstimatedBudget = (assignee: Executor) => {
     return assignee.hourly_rate ? assignee.hourly_rate * assignee.planned: 0;
   }
 
-  const computeActualHours = (assignee: Assignee) => {
+  const computeActualHours = (assignee: Executor) => {
     return assignee.hours;
   }
 
-  const computeEstimatedHours = (assignee: Assignee) => {
+  const computeEstimatedHours = (assignee: Executor) => {
     return assignee.planned;
   }
 

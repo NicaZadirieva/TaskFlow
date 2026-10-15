@@ -62,3 +62,36 @@ class Executor(Base):
         String(500), nullable=True)
     reassigned_reason: Mapped[str | None] = mapped_column(
         String(500), nullable=True)
+    
+    def __init__(
+        self,
+        user_id: int,
+        task_id: int,
+        tenant_id: int,
+        role_in_task: str,
+        hours: float | None = None,
+        planned: float | None = None,
+        hourly_rate: int | None = None,
+        assigned_by: int | None = None,
+        is_active: bool = True,
+        removed: bool = False,
+        remove_reason: str | None = None,
+        reassigned_reason: str | None = None,
+        id: int | None = None,
+        assigned_at: datetime | None = None,
+    ) -> None:
+        self.id = id
+        self.tenant_id = tenant_id
+        self.user_id = user_id
+        self.task_id = task_id
+        self.role_in_task = role_in_task
+        if assigned_at is not None:
+            self.assigned_at = assigned_at
+        self.hours = hours
+        self.planned = planned
+        self.hourly_rate = hourly_rate
+        self.assigned_by = assigned_by
+        self.is_active = is_active
+        self.removed = removed
+        self.remove_reason = remove_reason
+        self.reassigned_reason = reassigned_reason

@@ -1,7 +1,8 @@
 import { Badge } from 'antd';
-import { IUser } from '../../entities/user.interface';
+import { User } from '../../entities/user.interface';
 
-export const buildUserStatus = (record: IUser) =>
+// TODO: проверить может лучше в component/shared
+export const buildUserStatus = (record: User) =>
   record.is_active ? (
     <Badge status="success" text="Активен" />
   ) : (

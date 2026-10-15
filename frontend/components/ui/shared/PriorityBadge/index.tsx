@@ -13,10 +13,10 @@ const PRIORITY_META: Record<
   Priority,
   { color: PriorityBadgeColor; label: string }
 > = {
-  LOW: { color: "default", label: "low" },
-  HIGH: { color: "warning", label: "high" },
-  CRITICAL: { color: "error", label: "high" },
-  MEDIUM: { color: "processing", label: "medium" },
+  low: { color: "default", label: "low" },
+  high: { color: "warning", label: "high" },
+  critical: { color: "error", label: "high" },
+  medium: { color: "processing", label: "medium" },
 };
 
 export default function PriorityBadge({ priority }: { priority: Priority }) {

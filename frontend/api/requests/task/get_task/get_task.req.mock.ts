@@ -68,7 +68,7 @@ const TEST_TASK = {
 	  { id: 10, name: 'performance', tenantId: 1  },
 	  { id: 11, name: 'infra', tenantId: 1  },
 	],
-	priority: 'HIGH' as Priority,
+	priority: 'high' as Priority,
   };
 
 export default async function getTaskReqMock(taskId: number) {

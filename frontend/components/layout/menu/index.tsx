@@ -1,11 +1,11 @@
 "use client";
-import { usePathname } from "next/navigation";
-import { Layout, Menu, Button, Typography, Drawer, theme } from "antd";
+import { LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { MenuOutlined, LogoutOutlined } from "@ant-design/icons";
+import { Button, Drawer, Layout, Menu, theme, Typography } from "antd";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { NAV_ITEMS } from "./nav_items_content";
 import { buildMenuItems, buildSelection } from "./helper/builders";
+import { NAV_ITEMS } from "./nav_items_content";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -148,7 +148,7 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
           icon={<MenuOutlined />}
           onClick={() => setMobileOpen(true)}
           style={{ marginRight: 16 }}
-          aria-label="open menu"
+          aria-label="OPEN menu"
         />
         <span style={{ fontWeight: 600, fontSize: 18 }}>TaskFlow</span>
       </Header>

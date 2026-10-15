@@ -2,6 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.executor.models import Executor
+from app.executor.repository import ExecutorRepoDeps
+from app.github_label.repository import GithubLabelRepoDeps
 from app.task.models import Task
 from app.task.schemas.create_task import CreateTaskRequest
 from app.task.schemas.get_filtered_tasks import TaskFilters, TasksOut
@@ -11,8 +14,10 @@ from .repository import TaskRepoDeps
 
 
 class TaskService:
-    def __init__(self, task_repo: TaskRepoDeps):
+    def __init__(self, task_repo: TaskRepoDeps, github_label_repo: GithubLabelRepoDeps, executors_repo: ExecutorRepoDeps):
         self.task_repo = task_repo
+        self.github_label_repo = github_label_repo
+        self.executors_repo = executors_repo
 
     async def create_task(
         self,
@@ -35,8 +40,29 @@ class TaskService:
             actual_hours=dto.actual_hours,
             note=dto.note,
             task_images=dto.task_images,
+            executors=[]
         )
-        return await self.task_repo.save(task)
+        new_task = await self.task_repo.save(task)
+        for tag in dto.tags:
+           await self.github_label_repo.attach_or_create(new_task.id, tenant_id, tag.name, tag.description)
+        executors = [
+            Executor(
+                user_id=e.user_id,
+                task_id=task.id,
+                tenant_id=tenant_id,
+                role_in_task=e.role_in_task,
+                hours=e.hours,
+                planned=e.planned,
+                hourly_rate=e.hourly_rate,
+                assigned_by=user_id,
+                is_active=True,
+                removed=False,
+            )
+            for e in dto.executors
+        ]
+        for executor in executors:
+            await self.executors_repo.save(executor)
+        return new_task
 
     async def list_tasks(
         self,
@@ -52,7 +78,7 @@ class TaskService:
             limit=filters.limit,
             offset=filters.offset,
         )
-        
+
     async def list_my_tasks(
         self,
         tenant_id: int,
@@ -66,8 +92,8 @@ class TaskService:
         )
 
 
-def get_task_service(task_repo: TaskRepoDeps) -> TaskService:
-    return TaskService(task_repo)
+def get_task_service(task_repo: TaskRepoDeps, github_label_repo: GithubLabelRepoDeps, executors_repo: ExecutorRepoDeps) -> TaskService:
+    return TaskService(task_repo, github_label_repo, executors_repo)
 
 
 TaskServiceDeps = Annotated[TaskService, Depends(get_task_service)]

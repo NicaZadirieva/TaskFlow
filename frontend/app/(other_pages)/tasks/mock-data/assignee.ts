@@ -1,8 +1,8 @@
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 
 
 
-export const assignee: Assignee = {
+export const assignee: Executor = {
   id: 1,
   user_name: "Иван",
   user_id: 42,
@@ -15,7 +15,7 @@ export const assignee: Assignee = {
   planned: 40,
 };
 
-export const reviewer: Assignee = {
+export const reviewer: Executor = {
   id: 2,
   user_id: 43,
   user_name: "Василиса",

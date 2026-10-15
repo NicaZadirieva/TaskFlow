@@ -33,6 +33,7 @@ class UserLoginRequest(BaseModel):
 
 class UserDto(BaseModel):
     id: int
+    login: str
     tenant_id: int
     role: TenantRole
     name: str

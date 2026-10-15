@@ -3,10 +3,10 @@ import { FilterOptionData } from "../../../features/MultipleFilterDropdown/Multi
 
 
 const STORAGE: FilterOptionData[] = [
-    { label: 'LOW', value: 'LOW', dotHexColor: 'grey' },
-    { label: 'MEDIUM', value: 'MEDIUM', dotHexColor: 'blue' },
-    { label: 'HIGH', value: 'HIGH', dotHexColor: 'orange' },
-    { label: 'CRITICAL', value: 'CRITICAL', dotHexColor: 'red' },
+    { label: 'low', value: 'low', dotHexColor: 'grey' },
+    { label: 'medium', value: 'medium', dotHexColor: 'blue' },
+    { label: 'high', value: 'high', dotHexColor: 'orange' },
+    { label: 'critical', value: 'critical', dotHexColor: 'red' },
 ];
 export default function PriorityTaskFilter() {
     return <MultipleFilterDropdown storage={STORAGE} optionsGroupName="Приоритет" widthInPx={170} />

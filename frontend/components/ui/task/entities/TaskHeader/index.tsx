@@ -1,13 +1,13 @@
 "use client";
 
-import { Task } from "@/entities/task.interface";
+import { TaskWithoutCreatedBy } from "@/utils/types";
 import { Card } from "antd";
 import cn from "classnames";
 import { GithubClickableTag, PriorityBadge, StatusTag } from '../../../shared';
 import styles from "./index.module.css";
 
 
-export default function TaskHeader({ task }: { task: Task }) {
+export default function TaskHeader({ task }: { task: TaskWithoutCreatedBy }) {
   return (
     <Card classNames={{ body: cn(styles.card, styles["task-header"]) }}>
       <div className={styles["task-header__top"]}>

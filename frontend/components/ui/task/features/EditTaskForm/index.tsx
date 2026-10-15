@@ -4,6 +4,7 @@
 
 import { Task } from "@/entities/task.interface";
 import { getFormErrorMessage } from "@/utils/getFormErrorMessage";
+import { TaskWithoutCreatedBy } from "@/utils/types";
 import { UploadOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -22,6 +23,7 @@ import {
 import dayjs from "dayjs";
 import { useEffect } from 'react';
 import { Controller, useForm } from "react-hook-form";
+import EditTaskFormProps from "./EditTaskForm.props";
 import EditTaskFormData from "./EditTaskFormData.interface";
 import styles from "./index.module.css";
 
@@ -34,19 +36,19 @@ const STATUS_OPTIONS = [
   { value: "DONE", label: "Завершена" },
 ];
 
-const PRIORITY_OPTIONS = [
-  { value: "LOW", label: "Низкий" },
-  { value: "MEDIUM", label: "Средний" },
-  { value: "HIGH", label: "Высокий" },
+const PRIORITY_OPTIONS = [  { value: "low", label: "Низкий" },
+  { value: "medium", label: "Средний" },
+  { value: "high", label: "Высокий" },
 ];
 
-export default function EditTaskForm({ task, updateTask }: { task?: Task, updateTask: (task: Task) => void; }) {
+export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }: EditTaskFormProps) {
+  
   const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
     defaultValues: {
       title: task ? task.title : "",
-      status: task ? task.status : "",
+      status: task ? task.status : undefined,
       description: task ? task.description: "",
-      priority: task ? task.priority : "MEDIUM",
+      priority: task ? task.priority : "medium",
       due_date: task && task.due_date ? dayjs(task.due_date).toDate() : new Date(),
       hours: task && task.hours ? task.hours : { fact: 0, planned: 0 },
       budget: task && task.budget ? task.budget : { fact: 0, planned: 0 },
@@ -58,7 +60,7 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
  
 
   /** Преобразование данных формы в Task и отдача наверх */
-  const toTask = (data: EditTaskFormData): Task => ({
+  const toTask = (data: EditTaskFormData): TaskWithoutCreatedBy => ({
     ...(task ?? ({} as Task)),
     title: data.title,
     status: data.status,
@@ -68,11 +70,10 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
     hours: data.hours,
     budget: data.budget,
     note: data.note,
-    tags: data.tags?.map((name) => ({ name })),
+    tags: data.tags?.map((tag) => { return {name: tag}}),
     task_images: data.task_images,
   });
 
-  /** Слушаем RHF — здесь значения уже актуальные */
   useEffect(() => {
     const sub = watch(() => {
       updateTask(toTask(getValues()));
@@ -80,8 +81,9 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
     return () => sub.unsubscribe();
   }, [watch, getValues, updateTask]);
 
-  const onSubmit = (data: EditTaskFormData) => {
+  const onSubmit = async (data: EditTaskFormData) => {
     updateTask(toTask(data));
+    await saveTask(toTask(data));
   };
 
   return (
@@ -311,6 +313,7 @@ export default function EditTaskForm({ task, updateTask }: { task?: Task, update
                 <Select
                   {...field}
                   mode="tags"
+                  options={tagsOptions}
                   size="large"
                   placeholder="Добавьте теги и нажмите Enter"
                   tokenSeparators={[","]}

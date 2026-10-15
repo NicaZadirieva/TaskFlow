@@ -2,7 +2,7 @@
 // TODO: временно поставила use client. Нужно понять почему ошибка
 import { Button, Space, Tooltip } from "antd";
 
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import { DeleteOutlined, UndoOutlined } from "@ant-design/icons";
 import styles from "./index.module.css";
 
@@ -12,9 +12,9 @@ export default function TaskAssignee({
   onChoose,
   onUndo,
 }: {
-  assignee: Assignee;
-  onChoose: (assignee: Assignee) => void;
-  onUndo: (assignee: Assignee) => void;
+  assignee: Executor;
+  onChoose: (assignee: Executor) => void;
+  onUndo: (assignee: Executor) => void;
 }) {
   const overdue = assignee.hours > assignee.planned;
   const removed = !!assignee.removed;

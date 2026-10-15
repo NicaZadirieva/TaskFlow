@@ -1,5 +1,5 @@
-import { GithubLabel } from '@/app/(other_pages)/tasks/interfaces/githubLabel.interface';
-import { Priority, Status } from '@/app/(other_pages)/tasks/interfaces/task.interface';
+import { Priority, Status } from "@/entities/task.interface";
+
 
 export default interface EditTaskFormData {
 	title: string;

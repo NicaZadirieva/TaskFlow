@@ -1,4 +1,4 @@
-import { IUser } from "@/entities/user.interface";
+import { User } from "@/entities/user.interface";
 import { Card, Tag, Typography } from "antd";
 const { Text } = Typography;
 export default function MobileUserTable({
@@ -6,9 +6,9 @@ export default function MobileUserTable({
   selectedUser,
   selectUser,
 }: {
-  dataSource: IUser[];
-  selectedUser: IUser | null;
-  selectUser: (user: IUser) => void;
+  dataSource: User[];
+  selectedUser: User | null;
+  selectUser: (user: User) => void;
 }) {
   return (
     <div className="user-table-mobile">

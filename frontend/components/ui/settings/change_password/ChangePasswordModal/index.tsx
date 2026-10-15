@@ -1,4 +1,4 @@
-import { IUser } from "@/entities/user.interface";
+import { User } from "@/entities/user.interface";
 import { Form, Input, message, Modal } from "antd";
 
 import { createUserDto } from "@/api/mappers";
@@ -14,7 +14,7 @@ export default function ChangePasswordModal({
   hideModal,
   isOpen = false,
 }: {
-  selectedUser: IUser | null;
+  selectedUser: User | null;
   hideModal: () => void;
   isOpen: boolean;
 }) {

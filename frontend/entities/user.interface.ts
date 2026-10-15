@@ -5,11 +5,12 @@ export enum TenantRole {
 }
 
 
-export interface IUser {
+export interface User {
   id: number;
   name: string;
   email: string;
   role: TenantRole;
   is_active: boolean;
   hourly_rate?: number;
+  login: string;
 }

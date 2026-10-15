@@ -1,5 +1,4 @@
 import { TenantRole, User } from '@/api/types/user.types';
-import { IUser } from '@/entities/user.interface';
 
 const mockUsers: User[] = [
   {
@@ -32,6 +31,6 @@ const mockUsers: User[] = [
 ];
 
 
-export default async function getUsersReqMock(): Promise<IUser[]> {
+export default async function getUsersReqMock(): Promise<User[]> {
 	return mockUsers;
 }

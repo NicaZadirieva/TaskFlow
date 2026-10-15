@@ -1,6 +1,4 @@
 export default interface GithubLabel {
-	id: number;
-	tenantId: number;
+	id?: number;
 	name: string;
-	description?: string;
 }

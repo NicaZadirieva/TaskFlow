@@ -1,6 +1,6 @@
 "use client";
 
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import {
   Alert,
   Input,
@@ -17,7 +17,7 @@ const { Text } = Typography;
 
 interface Props {
   open: boolean;
-  assignee: Assignee | null;
+  assignee: Executor | null;
   taskTitle?: string;
   onClose: () => void;
 }
@@ -72,7 +72,7 @@ export default function UpdateTimeCostModal({
       <div className={styles.content}>
         {assignee && (
           <Text type="secondary" className={styles.assignee}>
-            Assignee: {assignee.user_name ?? assignee.id}
+            Executor: {assignee.user_name ?? assignee.id}
           </Text>
         )}
 

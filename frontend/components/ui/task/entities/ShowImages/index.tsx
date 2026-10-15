@@ -1,4 +1,4 @@
-import { Modal, Image, Typography } from 'antd';
+import { Image, Modal, Typography } from 'antd';
 const { Text } = Typography;
 
 export default function ShowImages({isOpen, onClose, imageUrls}: {isOpen: boolean, onClose: () => void, imageUrls: string[]}) {

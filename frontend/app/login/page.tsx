@@ -4,6 +4,7 @@ import {
   EyeTwoTone,
 } from "@ant-design/icons";
 import { Button, Form, Input, notification } from 'antd';
+import { redirect } from "next/navigation";
 import { useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import TitledForm from '../../components/ui/shared/form/form';
@@ -34,6 +35,7 @@ export default function LoginPage() {
       })
     } 
     setSubmitting(false);
+    redirect('/');
   };
 
   return (
