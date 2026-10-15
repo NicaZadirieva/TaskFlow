@@ -1,6 +1,6 @@
-import { UserAdditor } from '@/components/ui/user';
+import { UserCreator } from '@/components/ui/user';
 
 export default function UserNewPage() {
-	return <UserAdditor/>;
+	return <UserCreator/>;
 }
 

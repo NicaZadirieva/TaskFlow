@@ -6,7 +6,7 @@ import { useState } from "react";
 import TextArea from "antd/es/input/TextArea";
 
 
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import styles from "./index.module.css";
 
 const { Text } = Typography;
@@ -26,8 +26,8 @@ export default function RemoveAssigneeModal({
   onRemove,
   assignee,
 }: {
-  assignee: Assignee;
-  onRemove: (newAssignee: Assignee) => void;
+  assignee: Executor;
+  onRemove: (newAssignee: Executor) => void;
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -59,7 +59,7 @@ export default function RemoveAssigneeModal({
       : removeReason.length > 0;
   return (
     <Modal
-      OPEN={isOpen}
+      open={isOpen}
       title="Удалить исполнителя"
       onCancel={onClose}
       onOk={confirmRemove}

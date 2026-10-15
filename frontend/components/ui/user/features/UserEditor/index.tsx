@@ -1,12 +1,12 @@
 'use client';
 
-import { IUser, TenantRole } from '@/entities/user.interface';
+import { TenantRole, User } from '@/entities/user.interface';
 import { Form, Input, InputNumber, Modal, Select, Switch } from 'antd';
 import { useEffect } from 'react';
 
 
-export default function UserEditor({onSave, onReset, editingRecord = null}: {onSave: (user: IUser) => void, editingRecord: IUser| null, onReset: () => void}) {
-  const [form] = Form.useForm<IUser>();
+export default function UserEditor({onSave, onReset, editingRecord = null}: {onSave: (user: User) => void, editingRecord: User| null, onReset: () => void}) {
+  const [form] = Form.useForm<User>();
 
   useEffect(() => {
 	if (editingRecord) {
@@ -41,7 +41,7 @@ export default function UserEditor({onSave, onReset, editingRecord = null}: {onS
 	return (
 	<Modal
         title="Редактирование пользователя"
-        OPEN={!!editingRecord}
+        open={!!editingRecord}
         onOk={handleSave}
         onCancel={closeEdit}
         okText="Сохранить"

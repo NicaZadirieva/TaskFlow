@@ -1,7 +1,7 @@
 'use client';
 import { createUserDto } from '@/api/mappers';
 import { changeHourlyRateReq } from "@/api/requests";
-import { IUser } from "@/entities/user.interface";
+import { User } from "@/entities/user.interface";
 import { Button, Form, InputNumber, message } from "antd";
 
 
@@ -13,7 +13,7 @@ interface HourlyRateFormValues {
 export default function ChangeHourlyRateForm({
   currentUser
 }: {
-  currentUser: IUser | null
+  currentUser: User | null
 }) {
   const [form] = Form.useForm<HourlyRateFormValues>();
 

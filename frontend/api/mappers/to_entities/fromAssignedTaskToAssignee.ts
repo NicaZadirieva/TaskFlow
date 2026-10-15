@@ -1,7 +1,6 @@
-import { AssignedTask } from '@/api/types/assigned-task.types';
-import { Assignee } from '@/entities/assignee.interface';
+import { Executor } from '@/api/types/assigned-task.types';
 
-export function fromAssignedTaskToAssignee(src: AssignedTask): Assignee {
+export function fromAssignedTaskToAssignee(src: Executor): Executor {
   return {
     id: src.id,
     user_id: src.user_id,

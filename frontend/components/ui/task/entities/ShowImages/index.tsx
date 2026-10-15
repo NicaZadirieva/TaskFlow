@@ -5,7 +5,7 @@ export default function ShowImages({isOpen, onClose, imageUrls}: {isOpen: boolea
 	return (
 		<Modal
         title="Изображения задачи"
-        OPEN={isOpen}
+        open={isOpen}
         onCancel={onClose}
         footer={null}
         width={800}

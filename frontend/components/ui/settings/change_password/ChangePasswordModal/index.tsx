@@ -1,4 +1,4 @@
-import { IUser } from "@/entities/user.interface";
+import { User } from "@/entities/user.interface";
 import { Form, Input, message, Modal } from "antd";
 
 import { createUserDto } from "@/api/mappers";
@@ -14,7 +14,7 @@ export default function ChangePasswordModal({
   hideModal,
   isOpen = false,
 }: {
-  selectedUser: IUser | null;
+  selectedUser: User | null;
   hideModal: () => void;
   isOpen: boolean;
 }) {
@@ -47,7 +47,7 @@ export default function ChangePasswordModal({
       title={
         selectedUser ? `Смена пароля — ${selectedUser.name}` : "Смена пароля"
       }
-      OPEN={isOpen}
+      open={isOpen}
       onOk={handleChangePassword}
       onCancel={closePasswordModal}
       okText="Сохранить"

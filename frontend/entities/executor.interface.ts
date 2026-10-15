@@ -1,4 +1,4 @@
-export interface Assignee {
+export interface Executor {
   id: number;
   user_id: number;
   user_name: string; // вычисляется внутри БД
@@ -13,5 +13,5 @@ export interface Assignee {
   removed?: boolean;
   remove_reason?: string;
   reassigned_reason?: string;
-  hourly_rate?: number; // TODO: добавить в интерфейс через БД (связь user <-> AssignedTask)
+  hourly_rate?: number; // TODO: добавить в интерфейс через БД (связь user <-> Executor)
 }

@@ -1,19 +1,19 @@
 "use client";
 
 import {
-    FileTextOutlined,
-    PictureOutlined,
-    PlusOutlined,
+  FileTextOutlined,
+  PictureOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import {
-    Badge,
-    Button,
-    Card,
-    message,
-    Popover,
-    Space,
-    Tag,
-    Typography,
+  Badge,
+  Button,
+  Card,
+  message,
+  Popover,
+  Space,
+  Tag,
+  Typography,
 } from "antd";
 import styles from "./index.module.css";
 
@@ -23,7 +23,7 @@ import Link from "next/link";
 
 
 import { assignee } from "@/app/(other_pages)/tasks/mock-data/assignee";
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import { Task } from "@/entities/task.interface";
 import TaskAssignee from "../../../assignees/entities/TaskAssignee";
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
@@ -53,7 +53,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
   const currentUser = assignee;
   const isDescriptionLong = !!task.description && task.description.length > 180;
 
-  const [removing, setRemoving] = useState<Assignee | null>(null);
+  const [removing, setRemoving] = useState<Executor | null>(null);
   const [adding, setAdding] = useState(false);
 
   const activeCount = useMemo(
@@ -66,12 +66,12 @@ export default function TaskInKanban({ task }: { task: Task }) {
   const undoRemove = (id: number) => {
     message.info("Удаление отменено");
   };
-  const removeAssignee = (updated: Assignee) => {
+  const removeAssignee = (updated: Executor) => {
     message.success("Исполнитель удалён");
   };
 
   /* ---------- Добавление ---------- */
-  const addAssignee = (assignee: Assignee) => {
+  const addAssignee = (assignee: Executor) => {
     message.success("Исполнитель добавлен");
   };
 
@@ -189,10 +189,10 @@ export default function TaskInKanban({ task }: { task: Task }) {
           </div>
         )}
         <ShowMetrics
-          actualBudget={task.budget.fact}
-          actualHours={task.hours.fact}
-          estimatedBudget={task.budget.planned}
-          estimatedHours={task.hours.planned}
+          actualBudget={task.budget.fact || 0}
+          actualHours={task.hours.fact || 0}
+          estimatedBudget={task.budget.planned || 0}
+          estimatedHours={task.hours.planned || 0}
           due_date={task.due_date.toLocaleDateString("ru-RU")}
           overdueDays={task.overdueDays}
         />
@@ -264,7 +264,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
         </div>
       </Card>
       <TimeCostsEditor
-        OPEN={showTimeEditor}
+        open={showTimeEditor}
         assignee={currentUser}
         taskTitle={task.title}
         onClose={() => {

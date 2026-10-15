@@ -1,6 +1,7 @@
 import { Task } from "@/api/types/task.types";
 import RequestError from "@/api/utils/error";
 import getBackendUrl from "@/utils/getBackendUrl";
+import parseErrorMessage from "@/utils/parseErrorMessage";
 
 export default async function createTaskReqReal(task: Omit<Task, 'created_by'>) {
     const res = await fetch(`${getBackendUrl()}/task/create`, {
@@ -13,8 +14,8 @@ export default async function createTaskReqReal(task: Omit<Task, 'created_by'>) 
     });
 
     if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new RequestError(errorData.detail || 'Invalid credentials', res.status);
+        const message = await parseErrorMessage(res, 'Invalid credentials');
+        throw new RequestError(message, res.status);
     }
     return true;
 }

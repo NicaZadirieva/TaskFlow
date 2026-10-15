@@ -1,20 +1,20 @@
 "use client";
 import { createNewUserDto } from "@/api/mappers";
-import { IUser, TenantRole } from "@/entities/user.interface";
+import { TenantRole, User } from "@/entities/user.interface";
 import { Form, Input, InputNumber, message, Modal, Select, Switch } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import createUserReq from "../../../../../api/requests/user/create_user/create_user.req";
 
-export default function UserAdditor() {
-  const [form] = Form.useForm<Omit<IUser, "id">>();
+export default function UserCreator() {
+  const [form] = Form.useForm<Omit<User, "id">>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
     setIsOpen(true);
   }, []);
-  const onCreate = async (user: Omit<IUser, "id">) => {
+  const onCreate = async (user: Omit<User, "id">) => {
     const normalized =
       user.role === TenantRole.CLIENT
         ? { ...user, hourly_rate: undefined }
@@ -42,7 +42,7 @@ export default function UserAdditor() {
   return (
     <Modal
       title="Создание пользователя"
-      OPEN={isOpen}
+      open={isOpen}
       onOk={handleSave}
       okText="Создать"
       cancelText="Отмена"

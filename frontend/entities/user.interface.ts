@@ -5,7 +5,7 @@ export enum TenantRole {
 }
 
 
-export interface IUser {
+export interface User {
   id: number;
   name: string;
   email: string;

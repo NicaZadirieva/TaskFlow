@@ -1,4 +1,4 @@
-import { Assignee } from './assignee.interface';
+import { Executor } from './executor.interface';
 import { GithubLabel } from './githubLabel.interface';
 
 // TODO: добавить OPEN в backend
@@ -19,7 +19,7 @@ export interface Task {
   overdueDays: number; // TODO: посчитать через БД и вернуть
   // jsonb
   note?: { kind: 'danger' | 'info'; label: string; text: string };
-  assignees: Assignee[];
+  assignees: Executor[];
   tags?: GithubLabel[];
   priority: Priority;
   // TODO: добавить в интерфейс

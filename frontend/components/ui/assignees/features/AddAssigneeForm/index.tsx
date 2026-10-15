@@ -5,7 +5,7 @@ import { Form, Input, InputNumber, message, Modal, Select, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
 import { assignee } from "@/app/(other_pages)/tasks/mock-data/assignee";
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import styles from "./index.module.css";
 
 
@@ -37,7 +37,7 @@ export default function AddAssigneeForm({
 }: {
   onClose: () => void;
   isOpen: boolean;
-  save: (assignee: Assignee) => void;
+  save: (assignee: Executor) => void;
 }) {
   const [form] = Form.useForm<AddFormValues>();
   const role = Form.useWatch("role", form);
@@ -59,7 +59,7 @@ export default function AddAssigneeForm({
 
   return (
     <Modal
-      OPEN={isOpen}
+      open={isOpen}
       title="Добавить исполнителя"
       onCancel={onClose}
       onOk={submitAdd}

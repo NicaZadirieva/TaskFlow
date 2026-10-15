@@ -1,4 +1,4 @@
-import { IUser } from "@/entities/user.interface";
+import { User } from "@/entities/user.interface";
 import { Table } from "antd";
 
 const { Column } = Table;
@@ -6,12 +6,12 @@ export default function DesktopUserTable({
   dataSource,
   onChooseRow,
 }: {
-  dataSource: IUser[];
-  onChooseRow: (row: IUser) => void;
+  dataSource: User[];
+  onChooseRow: (row: User) => void;
 }) {
   return (
     <div className="user-table-desktop">
-      <Table<IUser>
+      <Table<User>
         dataSource={dataSource}
         rowKey="id"
         onRow={(record) => ({

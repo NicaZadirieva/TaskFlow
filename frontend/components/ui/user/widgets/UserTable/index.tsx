@@ -2,7 +2,7 @@
 
 import { createUserDto } from '@/api/mappers';
 import changeUserReq from '@/api/requests/user/change_user/change_user.req';
-import { IUser, TenantRole } from '@/entities/user.interface';
+import { TenantRole, User } from '@/entities/user.interface';
 import { message } from "antd";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,16 +10,16 @@ import UserEditor from "../../features/UserEditor";
 import DesktopUserTable from "./components/desktop";
 import MobileUserTable from "./components/mobile";
 
-export default function UserTable({ users }: { users: IUser[] }) {
-  const [editingRecord, setEditingRecord] = useState<IUser | null>(null);
+export default function UserTable({ users }: { users: User[] }) {
+  const [editingRecord, setEditingRecord] = useState<User | null>(null);
   const router = useRouter();
-  const onEdit = (record: IUser) => {
+  const onEdit = (record: User) => {
     setEditingRecord(record);
   };
 
-  const onSave = async (user: IUser) => {
+  const onSave = async (user: User) => {
     // Если роль — клиент, сбрасываем стоимость часа
-    const normalized: IUser =
+    const normalized: User =
       user.role === TenantRole.CLIENT
         ? { ...user, hourly_rate: undefined }
         : user;

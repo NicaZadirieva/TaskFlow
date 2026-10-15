@@ -1,6 +1,6 @@
 "use client";
 
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Space, Typography } from "antd";
 import { useMemo } from "react";
@@ -15,10 +15,10 @@ export default function TaskAssigneesWidget({
   showAssigneeAddModal,
   showAssigneeRemoveModal,
 }: {
-  assignees: Assignee[];
-  undoRemove: (assignee: Assignee) => void;
+  assignees: Executor[];
+  undoRemove: (assignee: Executor) => void;
   showAssigneeAddModal: () => void;
-  showAssigneeRemoveModal: (assignee: Assignee) => void;
+  showAssigneeRemoveModal: (assignee: Executor) => void;
 }) {
   const activeCount = useMemo(
     () => assignees.filter((a) => !a.removed).length,

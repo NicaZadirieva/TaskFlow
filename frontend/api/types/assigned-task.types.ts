@@ -1,4 +1,4 @@
-export interface AssignedTask {
+export interface Executor {
   id: number;
   user_name: string; // TODO: вычислить в БД
   user_id: number;

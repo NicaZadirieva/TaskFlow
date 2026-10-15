@@ -1,6 +1,6 @@
 "use client";
 
-import { IUser, TenantRole } from "@/entities/user.interface";
+import { TenantRole, User } from "@/entities/user.interface";
 import { buildUserStatus } from "@/utils/buildUserStatus/buildUserStatus";
 import { Badge, Button, Table } from "antd";
 
@@ -14,19 +14,19 @@ export default function DesktopUserTable({
   onEdit,
   dataSource
 }: {
-  onEdit: (record: IUser) => void;
-  dataSource: IUser[]
+  onEdit: (record: User) => void;
+  dataSource: User[]
 }) {
   return (
     <div className="user-table-desktop">
-      <Table<IUser> dataSource={dataSource} rowKey="id">
+      <Table<User> dataSource={dataSource} rowKey="id">
         <Column title="Имя" key="name" dataIndex="name" />
         <Column title="Email" key="email" dataIndex="email" />
         <Column title="Роль" key="role" dataIndex="role" />
         <Column
           title="Активен"
           key="is_active"
-          render={(_, record: IUser) => buildUserStatus(record)}
+          render={(_, record: User) => buildUserStatus(record)}
         />
         <Column
           title="Стоимость в час"
@@ -42,7 +42,7 @@ export default function DesktopUserTable({
         <Column
           title="Редактировать"
           key="edit"
-          render={(_, record: IUser) => (
+          render={(_, record: User) => (
             <Button type="link" onClick={() => onEdit(record)}>
               Изменить
             </Button>

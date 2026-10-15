@@ -1,13 +1,13 @@
 "use client";
 
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import {
-    Alert,
-    Input,
-    InputNumber,
-    message,
-    Modal,
-    Typography
+  Alert,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Typography
 } from "antd";
 import { useEffect, useState } from "react";
 import styles from "./index.module.css";
@@ -16,14 +16,14 @@ import styles from "./index.module.css";
 const { Text } = Typography;
 
 interface Props {
-  OPEN: boolean;
-  assignee: Assignee | null;
+  open: boolean;
+  assignee: Executor | null;
   taskTitle?: string;
   onClose: () => void;
 }
 
 export default function UpdateTimeCostModal({
-  OPEN,
+  open,
   assignee,
   taskTitle,
   onClose,
@@ -34,12 +34,12 @@ export default function UpdateTimeCostModal({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (OPEN && assignee) {
+    if (open && assignee) {
       setHours(0);
       setMinutes(0);
       setComment("");
     }
-  }, [OPEN, assignee]);
+  }, [open, assignee]);
 
   const handleSave = async () => {
     // Переводим всё в часы (десятичное число) для onSave
@@ -61,7 +61,7 @@ export default function UpdateTimeCostModal({
 
   return (
     <Modal
-      OPEN={OPEN}
+      open={open}
       title={`Сколько потратили сегодня на ${taskTitle ? ` — ${taskTitle}` : ""}?`}
       onCancel={onClose}
       onOk={handleSave}
@@ -72,7 +72,7 @@ export default function UpdateTimeCostModal({
       <div className={styles.content}>
         {assignee && (
           <Text type="secondary" className={styles.assignee}>
-            Assignee: {assignee.user_name ?? assignee.id}
+            Executor: {assignee.user_name ?? assignee.id}
           </Text>
         )}
 

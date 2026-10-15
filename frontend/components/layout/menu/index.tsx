@@ -156,7 +156,7 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
       {/* Мобильный Drawer */}
       <Drawer
         placement="left"
-        OPEN={mobileOpen}
+        open={mobileOpen}
         onClose={closeMobile}
         styles={{ body: { padding: 0 } }}
         size={DRAWER_WIDTH}

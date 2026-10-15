@@ -7,8 +7,9 @@ import styles from "./index.module.css";
 import { useCallback, useMemo, useState } from "react";
 
 
+import { toTaskWithoutCreatedByDto } from "@/api/mappers";
 import { createTaskReq } from "@/api/requests";
-import { Assignee } from "@/entities/assignee.interface";
+import { Executor } from "@/entities/executor.interface";
 import { Task } from "@/entities/task.interface";
 import { TaskWithoutCreatedBy } from "@/utils/types";
 import dayjs from 'dayjs';
@@ -36,36 +37,27 @@ const createEmptyTask = (): TaskWithoutCreatedBy => ({
   created_at: new Date()
 });
 
-export default function TaskAdditor({ tagsOptions }: { tagsOptions: {value: string, label: string}[]}) {
-  const [removing, setRemoving] = useState<Assignee | null>(null);
+export default function TaskCreator({ tagsOptions }: { tagsOptions: {value: string, label: string}[]}) {
+  const [removing, setRemoving] = useState<Executor | null>(null);
   const [adding, setAdding] = useState(false);
   const [taskToAdd, updateTaskToAdd] = useState<TaskWithoutCreatedBy>(createEmptyTask);
 
   /** Последнее удаление — для отката */
     const [lastRemoved, setLastRemoved] = useState<{
-      assignee: Assignee;
+      assignee: Executor;
       index: number;
     } | null>(null);
   
     /* ---------- Обновление задачи из формы ---------- */
     const updateTask = useCallback(async (patch: Omit<Task, 'created_by'>) => {
       updateTaskToAdd((prev) => ({ ...prev, ...patch }));
-      const assignees = patch.assignees.map((assignee) => {
-        return { ...assignee, actual_hours: assignee.hours, estimated_hours: assignee.planned }
-      })
-      await createTaskReq({...patch, 
-
-        estimated_hours: patch.hours?.planned,
-        estimated_budget: patch.budget?.planned,
-        actual_budget: patch.budget?.fact,
-        actual_hours: patch.hours?.fact,
-        ...{assignees: assignees}});
+      await createTaskReq(toTaskWithoutCreatedByDto(patch));
     }, []);
   
 
   
     /* ---------- Удаление ---------- */
-    const removeAssignee = (removed: Assignee) => {
+    const removeAssignee = (removed: Executor) => {
       updateTaskToAdd((prev) => {
         const index = prev.assignees.findIndex((a) => a.id === removed.id);
         if (index === -1) return prev;
@@ -96,7 +88,7 @@ export default function TaskAdditor({ tagsOptions }: { tagsOptions: {value: stri
     };
   
     /* ---------- Добавление ---------- */
-    const addAssignee = (assignee: Assignee) => {
+    const addAssignee = (assignee: Executor) => {
       // Защита от дубликатов по id
       updateTaskToAdd((prev) => {
         const exists = prev.assignees.some((a) => a.id === assignee.id);
@@ -109,19 +101,19 @@ export default function TaskAdditor({ tagsOptions }: { tagsOptions: {value: stri
       message.success("Исполнитель добавлен");
     };
 
-     const computeActualBudget = (assignee: Assignee) => {
+     const computeActualBudget = (assignee: Executor) => {
     return assignee.hourly_rate ? assignee.hourly_rate * assignee.hours: 0;
   }
 
-  const computeEstimatedBudget = (assignee: Assignee) => {
+  const computeEstimatedBudget = (assignee: Executor) => {
     return assignee.hourly_rate ? assignee.hourly_rate * assignee.planned: 0;
   }
 
-  const computeActualHours = (assignee: Assignee) => {
+  const computeActualHours = (assignee: Executor) => {
     return assignee.hours;
   }
 
-  const computeEstimatedHours = (assignee: Assignee) => {
+  const computeEstimatedHours = (assignee: Executor) => {
     return assignee.planned;
   }
 
@@ -176,7 +168,7 @@ export default function TaskAdditor({ tagsOptions }: { tagsOptions: {value: stri
             />
             <TaskAssigneesWidget
               assignees={taskToAdd.assignees}
-              undoRemove={(assignee: Assignee) => undoRemove()}
+              undoRemove={(assignee: Executor) => undoRemove()}
               showAssigneeAddModal={() => setAdding(true)}
               showAssigneeRemoveModal={setRemoving}
             />

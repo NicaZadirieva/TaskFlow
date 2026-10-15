@@ -1,4 +1,4 @@
-import { IUser, TenantRole } from "@/entities/user.interface";
+import { TenantRole, User } from "@/entities/user.interface";
 import { buildUserStatus } from "@/utils/buildUserStatus/buildUserStatus";
 import { Button, Card, Tag, Typography } from "antd";
 
@@ -10,8 +10,8 @@ export default function MobileUserTable({
   dataSource,
   onEdit,
 }: {
-  dataSource: IUser[];
-  onEdit: (item: IUser) => void;
+  dataSource: User[];
+  onEdit: (item: User) => void;
 }) {
   return (
     <div className="user-table-mobile">

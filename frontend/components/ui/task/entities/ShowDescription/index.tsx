@@ -16,7 +16,7 @@ export default function ShowDescription({
   return (
     <Modal
       title={task.title}
-      OPEN={isOpen}
+      open={isOpen}
       onCancel={onClose}
       footer={<Button onClick={onClose}>Закрыть</Button>}
       width={640}

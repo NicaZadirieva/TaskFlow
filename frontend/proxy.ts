@@ -24,8 +24,6 @@ export function proxy(req: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // Cookie автоматически едет дальше в server components —
-    // ничего прокидывать в headers не нужно.
     return NextResponse.next();
 }
 

@@ -1,4 +1,4 @@
-import { AssignedTask } from './assigned-task.types';
+import { Executor } from './assigned-task.types';
 import GithubLabel from './github-label.types';
 import ITaskNote from './note.types';
 import { User } from './user.types';
@@ -28,7 +28,7 @@ export interface Task {
   created_at: Date;
 
   created_by_user?: Pick<User, 'id' | 'name'>;
-  assignees?: AssignedTask[];
+  assignees?: Executor[];
 
   task_images?: string[];
   tags?: GithubLabel[]; 

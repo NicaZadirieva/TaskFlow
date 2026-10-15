@@ -23,6 +23,7 @@ import {
 import dayjs from "dayjs";
 import { useEffect } from 'react';
 import { Controller, useForm } from "react-hook-form";
+import EditTaskFormProps from "./EditTaskForm.props";
 import EditTaskFormData from "./EditTaskFormData.interface";
 import styles from "./index.module.css";
 
@@ -40,7 +41,7 @@ const PRIORITY_OPTIONS = [  { value: "low", label: "Низкий" },
   { value: "high", label: "Высокий" },
 ];
 
-export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }: { tagsOptions?: { value: string, label: string }[], task?: TaskWithoutCreatedBy, saveTask: (task: TaskWithoutCreatedBy) => Promise<void>, updateTask: (task: TaskWithoutCreatedBy) => void; }) {
+export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }: EditTaskFormProps) {
   
   const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
     defaultValues: {
@@ -73,7 +74,6 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
     task_images: data.task_images,
   });
 
-  /** Слушаем RHF — здесь значения уже актуальные */
   useEffect(() => {
     const sub = watch(() => {
       updateTask(toTask(getValues()));
