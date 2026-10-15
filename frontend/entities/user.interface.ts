@@ -12,4 +12,5 @@ export interface User {
   role: TenantRole;
   is_active: boolean;
   hourly_rate?: number;
+  login: string;
 }

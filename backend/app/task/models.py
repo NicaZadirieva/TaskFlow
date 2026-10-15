@@ -6,6 +6,7 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.executor.models import Executor
 from app.shared.db import Base
 from app.github_label.models import task_github_label
 
@@ -94,6 +95,7 @@ class Task(Base):
                  actual_hours: float | None = None,
                  note: dict | None = None,
                  task_images: list[str] | None = None,
+                 executors: list[Executor] | None = None
                  ) -> None:
         self.tenant_id = tenant_id
         self.created_by = created_by
@@ -109,3 +111,4 @@ class Task(Base):
         self.actual_hours = actual_hours
         self.note = note
         self.task_images = task_images
+        self.executors = executors

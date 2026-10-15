@@ -30,17 +30,9 @@ const ROLE_OPTIONS = [
 
 const OTHER_ROLE = "Other";
 
-// User может иметь разные поля для отображаемого имени — подстрахуемся.
-// Убери лишние варианты, если в User жёстко задан `name`.
-type UserLike = User & {
-  name?: string;
-  full_name?: string;
-  username?: string;
-  email?: string;
-};
 
-const getUserLabel = (user: UserLike) =>
-  user.name ?? user.full_name ?? user.username ?? user.email ?? String(user.id);
+const getUserLabel = (user: User) =>
+  user.name ?? user.email ?? String(user.id);
 
 export default function AddAssigneeForm({
   save,
@@ -60,7 +52,7 @@ export default function AddAssigneeForm({
     () =>
       users.map((u) => ({
         value: u.id,
-        label: getUserLabel(u as UserLike),
+        label: getUserLabel(u),
       })),
     [users],
   );
@@ -75,12 +67,15 @@ export default function AddAssigneeForm({
         return;
       }
 
-      const userLabel = getUserLabel(user as UserLike);
+      const userLabel = getUserLabel(user);
 
       const finalRole =
         values.role === OTHER_ROLE ? values.customRole!.trim() : values.role;
 
       const newExecutor: Executor = {
+        user_id: values.userId,
+        login: user.login,
+        email: user.email,
         user_name: userLabel,
         role_in_task: finalRole,
         hours: values.hours ?? 0,
@@ -88,7 +83,7 @@ export default function AddAssigneeForm({
         hourly_rate: values.hourly_rate_from_admin,
         is_active: true,
       };
-
+      console.log(newExecutor);
       await save(newExecutor);
 
       message.success(`${userLabel} добавлен`);

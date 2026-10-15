@@ -68,6 +68,7 @@ async def get_users(current_user: CurrentUserDeps, service: UserServiceDeps):
                     role=TenantRole(user.role.value),
                     is_active=user.is_active,
                     hourly_rate=user.hourly_rate,
+                    login=user.login
                 )
                 for user in users
             ]

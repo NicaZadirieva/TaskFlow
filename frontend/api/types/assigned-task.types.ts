@@ -1,7 +1,7 @@
 export interface Executor {
   id?: number;
   user_name: string; // TODO: вычислить в БД
-  user_id?: number;
+  user_id: number;
   task_id?: number;
   tenant_id?: number;
   role_in_task: string;
@@ -13,4 +13,6 @@ export interface Executor {
   remove_reason?: string;
   reassigned_reason?: string;
   hourly_rate?: number;
+  login: string;
+  email: string;
 }

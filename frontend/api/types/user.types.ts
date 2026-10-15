@@ -11,6 +11,7 @@ export interface User {
   tenant_id?: number;          // tenant_id → camelCase
   role: TenantRole;
   name: string;
+  login: string;
   email: string;
   is_active: boolean;         // is_active → camelCase
   hourly_rate?: number;       // nullable: hourly_rate может отсутствовать

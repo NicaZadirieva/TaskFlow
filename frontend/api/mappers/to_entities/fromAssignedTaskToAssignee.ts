@@ -1,8 +1,11 @@
-import { Executor } from '@/api/types/assigned-task.types';
+import { Executor as ExecutorDto } from '@/api/types/assigned-task.types';
+import { Executor } from '@/entities/executor.interface';
 
-export function fromAssignedTaskToAssignee(src: Executor): Executor {
+export function fromAssignedTaskToAssignee(src: ExecutorDto): Executor {
   return {
     id: src.id,
+    login: src.login,
+    email: src.email,
     user_id: src.user_id,
     user_name: src.user_name,
     task_id: src.task_id,

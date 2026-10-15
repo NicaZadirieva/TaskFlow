@@ -60,7 +60,7 @@ class ExecutorService:
         
         
     
-    async def create_executor(self, tenant_id: int, dto: CreateExecutorRequest):
+    async def create_executor(self, user_id: int, tenant_id: int, dto: CreateExecutorRequest):
         existing_user = await self.user_repo.get_by_login(dto.login, tenant_id)
         if existing_user is None:
             raise ValueError("User not exists")
