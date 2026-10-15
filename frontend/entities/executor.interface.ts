@@ -1,9 +1,9 @@
 export interface Executor {
-  id: number;
-  user_id: number;
+  id?: number;
+  user_id?: number;
   user_name: string; // вычисляется внутри БД
-  task_id: number;
-  tenant_id: number;
+  task_id?: number;
+  tenant_id?: number;
   role_in_task: string; // TODO: добавить в интерфейс вместо role
   assigned_at?: Date;
   is_active: boolean;

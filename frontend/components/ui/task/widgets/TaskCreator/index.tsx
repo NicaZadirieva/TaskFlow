@@ -4,13 +4,14 @@ import { Card, message } from "antd";
 
 import styles from "./index.module.css";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 
 import { toTaskWithoutCreatedByDto } from "@/api/mappers";
-import { createTaskReq } from "@/api/requests";
+import { createTaskReq, getUsersReq } from "@/api/requests";
 import { Executor } from "@/entities/executor.interface";
 import { Task } from "@/entities/task.interface";
+import { User } from "@/entities/user.interface";
 import { TaskWithoutCreatedBy } from "@/utils/types";
 import dayjs from 'dayjs';
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
@@ -41,6 +42,11 @@ export default function TaskCreator({ tagsOptions }: { tagsOptions: {value: stri
   const [removing, setRemoving] = useState<Executor | null>(null);
   const [adding, setAdding] = useState(false);
   const [taskToAdd, updateTaskToAdd] = useState<TaskWithoutCreatedBy>(createEmptyTask);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    getUsersReq().then(setUsers);
+  }, []);
 
   /** Последнее удаление — для отката */
     const [lastRemoved, setLastRemoved] = useState<{
@@ -180,6 +186,7 @@ export default function TaskCreator({ tagsOptions }: { tagsOptions: {value: stri
         isOpen={adding}
         onClose={() => setAdding(false)}
         save={addAssignee}
+        users={users}
       />
 
       {removing && (

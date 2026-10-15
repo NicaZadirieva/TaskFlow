@@ -7,7 +7,7 @@ export enum TenantRole {
 }
 
 export interface User {
-  id?: number;
+  id: number;
   tenant_id?: number;          // tenant_id → camelCase
   role: TenantRole;
   name: string;
