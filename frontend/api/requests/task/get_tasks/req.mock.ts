@@ -1,281 +1,212 @@
-import { Task, TasksWithTags } from '@/api/types/task.types';
+import { ExecutorShortOut } from "@/api/dto/task/get_tasks/ExecutorShortOut";
+import TagShortOut from "@/api/dto/task/get_tasks/TagShortOut";
+import { TaskOut } from "@/api/dto/task/get_tasks/TaskOut";
+import TasksOut from "@/api/dto/task/get_tasks/TasksOut";
 
-const TASKS: Task[] = [
+// ---------- фабрика executor ----------
+
+function executor(
+	overrides: Partial<ExecutorShortOut> &
+		Pick<ExecutorShortOut, "id" | "user_id" | "name">,
+): ExecutorShortOut {
+	return {
+		login: `user${overrides.user_id}`,
+		email: overrides.user_id + "@yandex.ru",
+		role_in_task: "Developer",
+		is_active: true,
+		removed: false,
+		hours: null,
+		planned: null,
+		hourly_rate: null,
+		remove_reason: null,
+		reassigned_reason: null,
+		...overrides,
+	};
+}
+
+// ---------- справочники ----------
+
+const TAGS: TagShortOut[] = [
+	{ id: 1, tenant_id: 1, name: "feature", description: "Новая функциональность" },
+	{ id: 2, tenant_id: 1, name: "frontend", description: "Клиентская часть" },
+	{ id: 3, tenant_id: 1, name: "reporting", description: null },
+	{ id: 4, tenant_id: 1, name: "chore", description: "Рутинная работа" },
+	{ id: 5, tenant_id: 1, name: "backend", description: "Серверная часть" },
+	{ id: 6, tenant_id: 1, name: "auth", description: null },
+	{ id: 7, tenant_id: 1, name: "tech-debt", description: "Технический долг" },
+	{ id: 8, tenant_id: 1, name: "refactoring", description: null },
+	{ id: 9, tenant_id: 1, name: "research", description: "Исследование" },
+	{ id: 10, tenant_id: 1, name: "performance", description: null },
+	{ id: 11, tenant_id: 1, name: "infra", description: null },
+];
+
+const ALL_EXECUTORS: ExecutorShortOut[] = [
+	executor({ id: 101, user_id: 1,  name: "Алексей К.",   login: "alex",       role_in_task: "Frontend" }),
+	executor({ id: 102, user_id: 2,  name: "Мария С.",     login: "maria",      role_in_task: "Backend" }),
+	executor({ id: 103, user_id: 3,  name: "Иван П.",      login: "ivan",       role_in_task: "Backend" }),
+	executor({ id: 104, user_id: 4,  name: "Дмитрий П.",   login: "dmitry",     role_in_task: "Tech Lead" }),
+	executor({ id: 105, user_id: 5,  name: "Елена С.",     login: "elena",      role_in_task: "Backend" }),
+	executor({ id: 106, user_id: 6,  name: "Олег Р.",      login: "oleg",       role_in_task: "DevOps" }),
+	executor({ id: 107, user_id: 7,  name: "Анна К.",      login: "anna",       role_in_task: "QA" }),
+	executor({ id: 108, user_id: 8,  name: "Дмитрий В.",   login: "dmitryv",    role_in_task: "Backend" }),
+	executor({ id: 109, user_id: 9,  name: "Мария П.",     login: "mariap",     role_in_task: "Frontend" }),
+	executor({ id: 110, user_id: 10, name: "Сергей Н.",    login: "sergey",     role_in_task: "DevOps" }),
+	executor({ id: 111, user_id: 11, name: "Ирина Л.",     login: "irina",      role_in_task: "Designer" }),
+];
+
+// ---------- задачи ----------
+
+const TASKS: TaskOut[] = [
 	{
 		id: 1,
-		projectId: 1,
-		tenantId: 1,
-		title: 'Добавить экспорт отчёта в CSV',
+		tenant_id: 1,
+		project_id: 1,
+		title: "Добавить экспорт отчёта в CSV",
 		description:
 			'Реализовать выгрузку текущего отчёта в формате CSV по кнопке на странице отчётов. Учесть корректное экранирование значений, разделитель ";" для совместимости с Excel (RU-локаль) и кодировку UTF-8 с BOM. Название файла формировать по шаблону report_YYYY-MM-DD.csv. Экспорт должен работать для всех активных фильтров, применённых к отчёту.',
-		status: 'DONE',
-		actualHours: 6,
-		estimatedHours: 8,
-		actualBudget: 12000,
-		estimatedBudget: 16000,
-		dueDate: new Date('2026-09-10'),
-		createdBy: 1,
-		createdAt: new Date('2026-08-10'),
-		overdueDays: 0,
-		assignees: [
-			{
+		status: "DONE",
+		priority: "low",
+		due_date: "2026-09-10T00:00:00Z",
+		created_at: "2026-08-10T00:00:00Z",
+		created_by: 1,
+		overdue_days: 0,
+		estimated_hours: "8.00",
+		actual_hours: "6.00",
+		estimated_budget: "16000.00",
+		actual_budget: "12000.00",
+		note: null,
+		task_images: null,
+		tags: TAGS.filter((t) => [1, 2, 3].includes(t.id)),
+		executors: [
+			executor({
 				id: 1,
-				taskId: 1,
-				userId: 1,
-				userName: 'Алексей К.',
-				roleInTask: 'Frontend',
-				actualHours: 6,
-				estimatedHours: 8,
-				tenantId: 1,
-				assignedAt: new Date(),
-				isActive: true,
-			},
+				user_id: 1,
+				name: "Алексей К.",
+				login: "alex",
+				role_in_task: "Frontend",
+				hours: 6,
+				planned: 8,
+				hourly_rate: 1500,
+			}),
 		],
-		tags: [
-			{ id: 1, tenantId: 1, name: 'feature', description: 'Новая функциональность' },
-			{ id: 2, tenantId: 1, name: 'frontend', description: 'Клиентская часть' },
-			{ id: 3, tenantId: 1, name: 'reporting' },
-		],
-		priority: 'low',
 	},
 	{
 		id: 2,
-		tenantId: 1,
-		projectId: 1,
-		title: 'Рефакторинг модуля авторизации',
+		tenant_id: 1,
+		project_id: 1,
+		title: "Рефакторинг модуля авторизации",
 		description:
-			'Привести модуль авторизации к единому стилю: выделить сервисный слой, убрать дублирование проверок прав, перейти на единый тип AuthContext. Разделить обработку JWT и refresh-токенов, добавить недостающие тесты на граничные случаи (просроченный токен, отсутствующий заголовок, невалидная подпись). В рамках задачи также планируется устранить накопленный техдолг по этому модулю, выявленный на последнем ревью.',
-		status: 'IN_PROGRESS',
-		actualHours: 26,
-		estimatedHours: 16,
-		actualBudget: 78000,
-		estimatedBudget: 48000,
-		dueDate: new Date('2026-09-08'),
-		createdBy: 1,
-		createdAt: new Date('2026-08-01'),
-		overdueDays: 8,
+			"Привести модуль авторизации к единому стилю: выделить сервисный слой, убрать дублирование проверок прав, перейти на единый тип AuthContext. Разделить обработку JWT и refresh-токенов, добавить недостающие тесты на граничные случаи (просроченный токен, отсутствующий заголовок, невалидная подпись). В рамках задачи также планируется устранить накопленный техдолг по этому модулю, выявленный на последнем ревью.",
+		status: "IN_PROGRESS",
+		priority: "medium",
+		due_date: "2026-09-08T00:00:00Z",
+		created_at: "2026-08-01T00:00:00Z",
+		created_by: 1,
+		overdue_days: 8,
+		estimated_hours: "16.00",
+		actual_hours: "26.00",
+		estimated_budget: "48000.00",
+		actual_budget: "78000.00",
 		note: {
-			kind: 'danger',
-			label: 'Причина',
-			text: 'недооценил объём — задача > 8 ч, надо было дробить',
+			kind: "danger",
+			label: "Причина",
+			text: "недооценил объём — задача > 8 ч, надо было дробить",
 		},
-		assignees: [
-			{
+		task_images: null,
+		tags: TAGS.filter((t) => [4, 5, 6, 7, 8].includes(t.id)),
+		executors: [
+			executor({
 				id: 2,
-				taskId: 2,
-				userId: 2,
-				userName: 'Мария С.',
-				roleInTask: 'Backend',
-				actualHours: 18,
-				estimatedHours: 10,
-				tenantId: 1,
-				assignedAt: new Date('2026-08-01'),
-				isActive: true,
-			},
-			{
+				user_id: 2,
+				name: "Мария С.",
+				login: "maria",
+				role_in_task: "Backend",
+				hours: 18,
+				planned: 10,
+				hourly_rate: 2000,
+			}),
+			executor({
 				id: 3,
-				taskId: 2,
-				userId: 3,
-				userName: 'Иван П.',
-				roleInTask: 'Backend',
-				actualHours: 8,
-				estimatedHours: 6,
-				tenantId: 1,
-				assignedAt: new Date('2026-08-01'),
-				isActive: true,
-			},
+				user_id: 3,
+				name: "Иван П.",
+				login: "ivan",
+				role_in_task: "Backend",
+				hours: 8,
+				planned: 6,
+				hourly_rate: 1800,
+			}),
 		],
-		tags: [
-			{ id: 4, tenantId: 1, name: 'chore', description: 'Рутинная работа' },
-			{ id: 5, tenantId: 1, name: 'backend', description: 'Серверная часть' },
-			{ id: 6, tenantId: 1, name: 'auth', },
-			{ id: 7, tenantId: 1, name: 'tech-debt', description: 'Технический долг' },
-			{ id: 8, tenantId: 1, name: 'refactoring' },
-		],
-		priority: 'medium',
 	},
 	{
 		id: 3,
-		projectId: 1,
-		tenantId: 1,
-		title: 'Исследовать варианты кэширования',
+		tenant_id: 1,
+		project_id: 1,
+		title: "Исследовать варианты кэширования",
 		description:
-			'Провести сравнительный анализ вариантов кэширования для высоконагруженных эндпоинтов: in-memory (LRU), Redis и CDN-кэш на уровне edge. Оценить latency, стоимость инфраструктуры, сложность инвалидации и влияние на консистентность данных. По итогам исследования подготовить краткий документ с рекомендацией и черновой схемой внедрения. Формат — timebox на 8 часов, оценка намеренно нестабильна.',
-		status: 'OPEN',
-		actualHours: 4,
-		estimatedHours: 8,
-		actualBudget: 20000,
-		estimatedBudget: 40000,
-		dueDate: new Date('2026-09-20'),
-		createdBy: 1,
-		createdAt: new Date('2026-08-05'),
-		overdueDays: 0,
+			"Провести сравнительный анализ вариантов кэширования для высоконагруженных эндпоинтов: in-memory (LRU), Redis и CDN-кэш на уровне edge. Оценить latency, стоимость инфраструктуры, сложность инвалидации и влияние на консистентность данных. По итогам исследования подготовить краткий документ с рекомендацией и черновой схемой внедрения. Формат — timebox на 8 часов, оценка намеренно нестабильна.",
+		status: "OPEN",
+		priority: "high",
+		due_date: "2026-09-20T00:00:00Z",
+		created_at: "2026-08-05T00:00:00Z",
+		created_by: 1,
+		overdue_days: 0,
+		estimated_hours: "8.00",
+		actual_hours: "4.00",
+		estimated_budget: "40000.00",
+		actual_budget: "20000.00",
 		note: {
-			kind: 'info',
-			label: 'Timebox',
-			text: 'исследование — оценка нестабильна, ограничено 8 ч',
+			kind: "info",
+			label: "Timebox",
+			text: "исследование — оценка нестабильна, ограничено 8 ч",
 		},
-		assignees: [
-			{
+		task_images: null,
+		tags: TAGS.filter((t) => [9, 10, 11].includes(t.id)),
+		executors: [
+			executor({
 				id: 4,
-				taskId: 3,
-				userId: 4,
-				userName: 'Дмитрий П.',
-				roleInTask: 'Tech Lead',
-				actualHours: 2,
-				estimatedHours: 4,
-				tenantId: 1,
-				assignedAt: new Date('2026-08-05'),
-				isActive: true,
-			},
-			{
+				user_id: 4,
+				name: "Дмитрий П.",
+				login: "dmitry",
+				role_in_task: "Tech Lead",
+				hours: 2,
+				planned: 4,
+				hourly_rate: 3000,
+			}),
+			executor({
 				id: 5,
-				taskId: 3,
-				userId: 5,
-				userName: 'Елена С.',
-				roleInTask: 'Backend',
-				actualHours: 1.5,
-				estimatedHours: 3,
-				tenantId: 1,
-				assignedAt: new Date('2026-08-05'),
-				isActive: true,
-			},
-			{
+				user_id: 5,
+				name: "Елена С.",
+				login: "elena",
+				role_in_task: "Backend",
+				hours: 1.5,
+				planned: 3,
+				hourly_rate: 1900,
+			}),
+			executor({
 				id: 6,
-				taskId: 3,
-				userId: 6,
-				userName: 'Олег Р.',
-				roleInTask: 'DevOps',
-				actualHours: 0.5,
-				estimatedHours: 1,
-				tenantId: 1,
-				assignedAt: new Date('2026-08-05'),
-				isActive: true,
-			},
+				user_id: 6,
+				name: "Олег Р.",
+				login: "oleg",
+				role_in_task: "DevOps",
+				hours: 0.5,
+				planned: 1,
+				hourly_rate: 2200,
+			}),
 		],
-		tags: [
-			{ id: 9, name: 'research', description: 'Исследование', tenantId: 1 },
-			{ id: 10, name: 'performance', tenantId: 1 },
-			{ id: 11, name: 'infra', tenantId: 1 },
-		],
-		priority: 'high',
 	},
 ];
 
-export default async function getTasksReqMock() {
+// ---------- экспорт ----------
+
+export default async function getTasksReqMock(
+	_search?: URLSearchParams,
+): Promise<TasksOut> {
 	return {
-		tasks: TASKS,
-		allTags: [
-			{ id: 9, name: 'research', description: 'Исследование', tenantId: 1 },
-			{ id: 10, name: 'performance', tenantId: 1 },
-			{ id: 11, name: 'infra', tenantId: 1 }
-		],
-		allAssignees: [
-			{
-				userId: 6,
-				userName: 'Олег Р.',
-				tenantId: 1,
-			},
-			{
-				userId: 5,
-				userName: 'Елена С.',
-				tenantId: 1,
-			},
-			{
-				userId: 7,
-				userName: 'Анна К.',
-				tenantId: 1,
-			},
-			{
-				userId: 8,
-				userName: 'Дмитрий В.',
-				tenantId: 1,
-			},
-			{
-				userId: 9,
-				userName: 'Мария П.',
-				tenantId: 1,
-			},
-			{
-				userId: 10,
-				userName: 'Сергей Н.',
-				tenantId: 1,
-			},
-			{
-				userId: 11,
-				userName: 'Ирина Л.',
-				tenantId: 1,
-			},
-			{
-				userId: 12,
-				userName: 'Алексей Т.',
-				tenantId: 1,
-			},
-			{
-				userId: 13,
-				userName: 'Наталья М.',
-				tenantId: 1,
-			},
-			{
-				userId: 14,
-				userName: 'Виктор Ш.',
-				tenantId: 1,
-			},
-			{
-				userId: 15,
-				userName: 'Ольга Б.',
-				tenantId: 1,
-			},
-			{
-				userId: 16,
-				userName: 'Павел Ж.',
-				tenantId: 1,
-			},
-			{
-				userId: 17,
-				userName: 'Татьяна Ф.',
-				tenantId: 1,
-			},
-			{
-				userId: 18,
-				userName: 'Андрей Г.',
-				tenantId: 1,
-			},
-			{
-				userId: 19,
-				userName: 'Светлана Д.',
-				tenantId: 1,
-			},
-			{
-				userId: 20,
-				userName: 'Максим З.',
-				tenantId: 1,
-			},
-			{
-				userId: 21,
-				userName: 'Юлия Р.',
-				tenantId: 1,
-			},
-			{
-				userId: 22,
-				userName: 'Николай С.',
-				tenantId: 1,
-			},
-			{
-				userId: 23,
-				userName: 'Екатерина И.',
-				tenantId: 1,
-			},
-			{
-				userId: 24,
-				userName: 'Роман К.',
-				tenantId: 1,
-			},
-			{
-				userId: 25,
-				userName: 'Валентина О.',
-				tenantId: 1,
-			},
-		]
-	} as TasksWithTags
+		items: TASKS,
+		total: TASKS.length,
+		limit: 100,
+		offset: 0,
+		all_tags: TAGS,
+		all_executors: ALL_EXECUTORS,
+	};
 }

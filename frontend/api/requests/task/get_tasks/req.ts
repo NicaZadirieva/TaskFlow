@@ -1,10 +1,11 @@
 import isMockEnabled from '@/utils/isMockEnabled';
 import getTasksReqMock from './req.mock';
-import getTasksReqReal from './req.real';
+import { getTasksReqReal } from './req.real';
 
-export default async function getTasksReq() {
+
+export default async function getTasksReq(search?: URLSearchParams,) {
 	if (isMockEnabled()) {
-		return await getTasksReqMock();
+		return await getTasksReqMock(search);
 	}
-	return await getTasksReqReal();
+	return await getTasksReqReal(search);
 }

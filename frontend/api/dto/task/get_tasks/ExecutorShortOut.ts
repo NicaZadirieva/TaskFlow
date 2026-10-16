@@ -4,6 +4,7 @@ export interface ExecutorShortOut {
 
     name: string;
     login: string;
+    email: string;
 
     role_in_task: string;
     is_active: boolean;

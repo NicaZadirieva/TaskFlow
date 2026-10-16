@@ -36,4 +36,5 @@ export interface TaskOut {
 
     tags: TagShortOut[];
     executors: ExecutorShortOut[];
+    overdue_days: number;
 }

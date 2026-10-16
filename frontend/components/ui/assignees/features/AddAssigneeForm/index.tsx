@@ -43,14 +43,14 @@ export default function AddAssigneeForm({
   onClose: () => void;
   isOpen: boolean;
   save: (assignee: Executor) => void;
-  users: User[];
+  users?: User[];
 }) {
   const [form] = Form.useForm<AddFormValues>();
   const role = Form.useWatch("role", form);
 
   const userOptions = useMemo(
     () =>
-      users.map((u) => ({
+      users?.map((u) => ({
         value: u.id,
         label: getUserLabel(u),
       })),
@@ -61,7 +61,7 @@ export default function AddAssigneeForm({
     try {
       const values = await form.validateFields();
 
-      const user = users.find((u) => u.id === values.userId);
+      const user = users?.find((u) => u.id === values.userId);
       if (!user) {
         message.error("Пользователь не найден");
         return;

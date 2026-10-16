@@ -1,15 +1,16 @@
-import { HtmlHTMLAttributes } from "react";
 
 export interface FilterOptionData {
   value: string; // на бэкенде
   label: string; // на фронтенде
-  dotHexColor: string;
+  dotHexColor?: string;
 }
 
-export default interface MultipleFilterDropdownProps extends HtmlHTMLAttributes<HTMLSelectElement> {
+export default interface MultipleFilterDropdownProps {
   iconSrc?: string; 
   optionsGroupName: string;
   widthInPx: number;
   storage: FilterOptionData[];
   showSearch?: boolean;
+  value?: string[];
+  onChange: (values: string[]) => void;
 }

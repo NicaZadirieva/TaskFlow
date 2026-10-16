@@ -101,7 +101,7 @@ class TaskRepository:
         stmt = self._apply_filters(stmt, filters, user_ids)
         stmt = self._apply_sort_and_pagination(stmt, filters).options(
             selectinload(Task.tags),
-            selectinload(Task.assignees),
+            selectinload(Task.executors),
         )
         result = await self.db_session.execute(stmt)
         return list(result.scalars().unique().all())
