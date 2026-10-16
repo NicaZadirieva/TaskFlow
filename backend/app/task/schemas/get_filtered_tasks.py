@@ -115,8 +115,7 @@ class TaskOut(BaseModel):
 
     tags: list[TagShortOut] = []
     executors: list[ExecutorShortOut] = Field(
-        default_factory=list,
-        validation_alias=AliasPath("assignees"),
+        default_factory=list
     )
 
     @computed_field
@@ -136,14 +135,19 @@ class TaskOut(BaseModel):
             return 0
         return (now - due).days
 
-
+class UserShortOut(BaseModel):
+    user_id: int
+    login: str
+    email: str
+    name: str
+    
 class TasksOut(BaseModel):
     items: list[TaskOut]
     total: int
     limit: int
     offset: int
     
-    all_executors: list[ExecutorShortOut] | None = None
+    all_executors: list[UserShortOut] | None = None
     all_tags: list[TagShortOut] | None = None
 
 

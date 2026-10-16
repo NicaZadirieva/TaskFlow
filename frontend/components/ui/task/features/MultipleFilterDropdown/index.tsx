@@ -5,7 +5,6 @@ import { useState } from 'react';
 import ColoredFilterOption from '../../../shared/ColoredFilterOption';
 import MultipleFilterDropdownProps from './MultipleFilterDropdownProps.props';
 
-
 const badgeStyle: React.CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -21,7 +20,6 @@ const badgeStyle: React.CSSProperties = {
     lineHeight: 1,
 };
 
-// Единый рендер «Статус + кружок»
 const renderLabel = (count: number, filterName: string) => (
     <span
         style={{
@@ -43,47 +41,52 @@ export default function MultipleFilterDropdown({
     storage,
     optionsGroupName,
     widthInPx,
-    showSearch = false
+    showSearch = false,
+    value,
+    onChange,
 }: MultipleFilterDropdownProps) {
-    const [activeOptions, updateActiveOptions] = useState<string[]>([]);
-    return (
+    // fallback для неконтролируемого использования
+    const [local, setLocal] = useState<string[]>([]);
+    const isControlled = value !== undefined && onChange !== undefined;
+    const selected = isControlled ? value! : local;
 
+    const handleChange = (next: string[]) => {
+        if (isControlled) onChange!(next);
+        else setLocal(next);
+    };
+
+    return (
         <Select
             style={{
-                width: `${widthInPx}px`, ...(activeOptions.length > 0 && {
-                    backgroundColor: '#e6f4ff', // светло-синий фон
-                    boxShadow: `0 0 0 1px ${ACTIVE_COLOR} inset`, // цветная рамка
-                })
+                width: `${widthInPx}px`,
+                ...(selected.length > 0 && {
+                    backgroundColor: '#e6f4ff',
+                    boxShadow: `0 0 0 1px ${ACTIVE_COLOR} inset`,
+                }),
             }}
             mode="multiple"
-            // Отключаем поиск / автокомплит
-            showSearch={showSearch && { optionFilterProp: 'label'}}
-            // Скрываем все теги
+            value={selected}
+            onChange={(v) => handleChange((v ?? []) as string[])}
+            showSearch={showSearch ? { optionFilterProp: 'label' } : false}
             maxTagCount={0}
-            // Показывается, когда есть выбранные значения
-            maxTagPlaceholder={(omittedValues) => renderLabel(omittedValues.length, optionsGroupName)}
-            // Показывается, когда ничего не выбрано
+            maxTagPlaceholder={(omittedValues) =>
+                renderLabel(omittedValues.length, optionsGroupName)
+            }
             placeholder={renderLabel(0, optionsGroupName)}
-
-
-            onChange={(values) => updateActiveOptions(values as string[])}
             options={storage}
             optionRender={(option) => {
-                const value = String(option.value ?? '');
-                const label = String(option.label ?? '');
-
+                const v = String(option.value ?? '');
+                const l = String(option.label ?? '');
+                const dot = (option.data as any)?.dotHexColor;
                 return (
                     <ColoredFilterOption
-                        key={value}
-                        data={{ label, value, dotHexColor: option.data.dotHexColor }}
-                        isActive={!!activeOptions?.includes(value)}
-                        dotHexColor={option.data.dotHexColor}
+                        key={v}
+                        data={{ label: l, value: v, dotHexColor: dot }}
+                        isActive={selected.includes(v)}
+                        dotHexColor={dot}
                     />
                 );
-            }
-            }
-
-
+            }}
         />
     );
 }

@@ -8,7 +8,7 @@ from app.executor.schema import ExecutorOut
 from app.github_label.repository import GithubLabelRepoDeps
 from app.task.models import Task
 from app.task.schemas.create_task import CreateTaskRequest
-from app.task.schemas.get_filtered_tasks import ExecutorShortOut, TaskFilters, TasksOut
+from app.task.schemas.get_filtered_tasks import ExecutorShortOut, TaskFilters, TasksOut, UserShortOut
 
 
 from .repository import TaskRepoDeps
@@ -73,14 +73,19 @@ class TaskService:
     ) -> TasksOut:
         items = await self.task_repo.list_tasks(tenant_id, filters, user_ids)
         total = await self.task_repo.count(tenant_id, filters, user_ids)
-        data = await self.executors_repo.get_all_executors(tenant_id, only_active=True)
+        data = await self.executors_repo.get_executors(tenant_id, only_active=True)
         all_tags = await self.github_label_repo.get_all(tenant_id)
         return TasksOut(
             items=items,
             total=total,
             limit=filters.limit,
             offset=filters.offset,
-            all_executors=[ExecutorShortOut.model_validate(e) for e in data],
+            all_executors=[UserShortOut(
+                user_id=e.id,
+                login=e.login,
+                email=e.email,
+                name=e.name
+                ) for e in data],
             all_tags=all_tags
         )
 

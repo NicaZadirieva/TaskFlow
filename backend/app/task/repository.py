@@ -23,42 +23,66 @@ class TaskRepository:
         await self.db_session.commit()
         await self.db_session.refresh(task)
         return task
-    
+
     # ---------- helpers ----------
 
     @staticmethod
     def _deadline_conditions(deadlines: list[TaskDeadline]) -> list:
-        """OR-условия по Task.due_date / Task.status."""
-        now = datetime.now(timezone.utc)
-        today_end = now.replace(hour=23, minute=59, second=59, microsecond=0)
-        in_one_day = now + timedelta(days=1)
-        in_four_days = now + timedelta(days=4)
-        in_seven_days = now + timedelta(days=7)
+        """OR-условия по Task.due_date / Task.status.
+
+        Границы — календарные, полуинтервалы [start, end).
+        Сравнение в naive UTC — совместимо с DateTime без timezone=True.
+        """
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+        start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_tomorrow = start_of_today + timedelta(days=1)
+        start_in_5_days = start_of_today + timedelta(days=5)
+        start_in_8_days = start_of_today + timedelta(days=8)
 
         conds = []
         for d in deadlines:
             if d == TaskDeadline.overdue:
                 conds.append(
-                    and_(Task.due_date < now, Task.status != Status.DONE)
+                    and_(
+                        Task.due_date.is_not(None),
+                        Task.due_date < now,
+                        Task.status != Status.DONE,
+                    )
                 )
             elif d == TaskDeadline.today:
                 conds.append(
-                    and_(Task.due_date >= now, Task.due_date <= today_end)
+                    and_(
+                        Task.due_date.is_not(None),
+                        Task.due_date >= start_of_today,
+                        Task.due_date < start_of_tomorrow,
+                    )
                 )
             elif d == TaskDeadline.this_week:
                 conds.append(
                     and_(
-                        Task.due_date > in_one_day,
-                        Task.due_date <= in_four_days,
+                        Task.due_date.is_not(None),
+                        Task.due_date >= start_of_tomorrow,
+                        Task.due_date < start_in_5_days,
                     )
                 )
             elif d == TaskDeadline.next_week:
-                conds.append(Task.due_date > in_seven_days)
+                conds.append(
+                    and_(
+                        Task.due_date.is_not(None),
+                        Task.due_date >= start_in_8_days,
+                    )
+                )
             elif d == TaskDeadline.done:
                 conds.append(Task.status == Status.DONE)
         return conds
 
-    def _apply_filters(self, stmt: Select, f: TaskFilters, user_ids: list[int] | None = None) -> Select:
+    def _apply_filters(
+        self,
+        stmt: Select,
+        f: TaskFilters,
+        user_ids: list[int] | None = None,
+    ) -> Select:
         if f.priority:
             stmt = stmt.where(Task.priority.in_(f.priority))
 
@@ -69,7 +93,6 @@ class TaskRepository:
             stmt = stmt.where(or_(*self._deadline_conditions(f.deadline)))
 
         if f.tag_ids:
-            # EXISTS — без JOIN, без размножения строк, пагинация цела
             stmt = stmt.where(Task.tags.any(GithubLabel.id.in_(f.tag_ids)))
 
         if user_ids:
@@ -95,7 +118,10 @@ class TaskRepository:
     # ---------- read ----------
 
     async def list_tasks(
-        self, tenant_id: int, filters: TaskFilters, user_ids: list[int] | None = None
+        self,
+        tenant_id: int,
+        filters: TaskFilters,
+        user_ids: list[int] | None = None,
     ) -> list[Task]:
         stmt = select(Task).where(Task.tenant_id == tenant_id)
         stmt = self._apply_filters(stmt, filters, user_ids)
@@ -106,7 +132,12 @@ class TaskRepository:
         result = await self.db_session.execute(stmt)
         return list(result.scalars().unique().all())
 
-    async def count(self, tenant_id: int, filters: TaskFilters, user_ids: list[int] | None = None) -> int:
+    async def count(
+        self,
+        tenant_id: int,
+        filters: TaskFilters,
+        user_ids: list[int] | None = None,
+    ) -> int:
         stmt = (
             select(func.count(Task.id))
             .select_from(Task)
@@ -121,7 +152,7 @@ class TaskRepository:
             .where(Task.id == task_id, Task.tenant_id == tenant_id)
             .options(
                 selectinload(Task.tags),
-                selectinload(Task.assignees),
+                selectinload(Task.executors),
             )
         )
         result = await self.db_session.execute(stmt)
@@ -130,5 +161,6 @@ class TaskRepository:
 
 def get_task_repository(db_session: DbSessionDeps) -> TaskRepository:
     return TaskRepository(db_session)
+
 
 TaskRepoDeps = Annotated[TaskRepository, Depends(get_task_repository)]

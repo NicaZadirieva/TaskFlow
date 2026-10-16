@@ -63,7 +63,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
   const removedCount = task.assignees.length - activeCount;
 
   /* ---------- Удаление ---------- */
-  const undoRemove = (id: number) => {
+  const undoRemove = (assignee: Executor) => {
     message.info("Удаление отменено");
   };
   const removeAssignee = (updated: Executor) => {
@@ -256,7 +256,7 @@ export default function TaskInKanban({ task }: { task: Task }) {
                 <TaskAssignee
                   assignee={assignee}
                   onChoose={(assignee) => setRemoving(assignee)}
-                  onUndo={(assignee) => undoRemove(assignee.id)}
+                  onUndo={(assignee) => undoRemove(assignee)}
                 />
               );
             })}
