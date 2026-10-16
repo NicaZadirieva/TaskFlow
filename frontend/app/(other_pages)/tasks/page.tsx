@@ -1,5 +1,5 @@
+import fromGithubLabelOut from '@/api/dto/github_label/get_all/mappers/fromGithubLabelOut';
 import { fromTaskDto } from '@/api/mappers';
-import { fromGithubLabelDto } from '@/api/mappers/to_entities/fromGithubLabelDto';
 import { getTasksReq } from '@/api/requests';
 import { DeadlineFilter, PriorityTaskFilter, StatusTaskFilter, TasksInKanban } from '@/components/ui/task';
 import MultipleFilterDropdown from '@/components/ui/task/features/MultipleFilterDropdown';
@@ -11,7 +11,7 @@ export default async function ListAllTasksPage() {
   const tasks = await getTasksReq();
   if (tasks) {
     const mappedTasks = tasks.tasks.map(fromTaskDto);
-    const mappedAllTags = tasks.allTags?.map(fromGithubLabelDto);
+    const mappedAllTags = tasks.allTags?.map(fromGithubLabelOut);
     const tagsStorage = mappedAllTags?.map((tag) => {
       return { value: tag.id.toString(), label: tag.name, dotHexColor: GithubLabelDefaultColor} as FilterOptionData;
     })

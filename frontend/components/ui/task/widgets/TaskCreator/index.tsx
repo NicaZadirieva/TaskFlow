@@ -6,10 +6,10 @@ import styles from "./index.module.css";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { toTaskWithoutCreatedByDto } from "@/api/mappers";
 import { createTaskReq, getUsersReq } from "@/api/requests";
+
+import { toCreateTaskRequest } from "@/api/dto/task/create/mapper/toCreateTaskRequest";
 import { Executor } from "@/entities/executor.interface";
-import { Task } from "@/entities/task.interface";
 import { User } from "@/entities/user.interface";
 import { TaskWithoutCreatedBy } from "@/utils/types";
 import dayjs from "dayjs";
@@ -66,14 +66,14 @@ export default function TaskCreator({
 
   /* ---------- Сохранение задачи ---------- */
   const saveTask = useCallback(
-    async (patch: Omit<Task, "created_by">) => {
+    async (patch: TaskWithoutCreatedBy) => {
       const nextTask: TaskWithoutCreatedBy = {
         ...task,
         ...patch,
         assignees
       };
 
-      await createTaskReq(toTaskWithoutCreatedByDto(nextTask));
+      await createTaskReq(toCreateTaskRequest(nextTask));
     },
     [task, assignees],
   );
