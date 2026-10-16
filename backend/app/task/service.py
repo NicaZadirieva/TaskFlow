@@ -44,7 +44,7 @@ class TaskService:
         )
         new_task = await self.task_repo.save(task)
         for tag in dto.tags:
-           await self.github_label_repo.attach_or_create(new_task.id, tenant_id, tag.name, tag.description)
+           await self.github_label_repo.attach_or_create(new_task.id, tenant_id, tag.name)
         executors = [
             Executor(
                 user_id=e.user_id,

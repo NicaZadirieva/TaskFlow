@@ -37,7 +37,6 @@ class GithubLabelRepo:
         task_id: int,
         tenant_id: int,
         name: str,
-        description: str | None = None,
     ) -> GithubLabel:
         """
         Привязывает GithubLabel к задаче по task_id.

@@ -9,7 +9,6 @@ from app.task.models import Priority, Status
 
 class TagOut(BaseModel):
     name: str
-    description: str | None = None
     
 class CreateTaskExecutor(BaseModel):
     user_id: int
