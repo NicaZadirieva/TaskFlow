@@ -61,12 +61,20 @@ async def create_executor(
     service: ExecutorServiceDeps,
     current_user: CurrentUserDeps,
 ) -> CreateExecutorResponse:
-    executor_id = await service.create_executor(
+    executor, user = await service.create_executor(
         user_id=current_user.id,
         tenant_id=current_user.tenant_id,
         dto=dto,
     )
-    return CreateExecutorResponse(id=executor_id)
+    return CreateExecutorResponse(id=executor.id, 
+                                  user_id=executor.user_id, 
+                                  user_name=user.name, 
+                                  role_in_task=executor.role_in_task, 
+                                  hours=executor.hours, 
+                                  planned=executor.planned,
+                                  is_active=executor.is_active,
+                                  login=user.login,
+                                  email=user.email)
 
 # -------- Soft Delete User (removed=True) ------------
 

@@ -10,8 +10,8 @@ export interface Executor {
   login: string;
   email: string;
   // TODO: добавить ставку исполнителя для конкретной задачи в БД
-  hours: number;
-  planned: number;
+  hours?: number;
+  planned?: number;
   removed?: boolean;
   remove_reason?: string;
   reassigned_reason?: string;

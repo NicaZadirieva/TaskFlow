@@ -1,9 +1,22 @@
 'use client';
+import { getUsersReq } from "@/api/requests";
 import { Task } from "@/entities/task.interface";
+import { User } from "@/entities/user.interface";
+import { useEffect, useState } from "react";
 import TaskInKanban from "../../entities/TaskInKanban";
 
 
 export default function TasksInKanban({ tasks }: { tasks: Task[] }) {
+  const [taskCache, updateTaskCache] = useState(tasks);
+  const updateTask = (taskId: number, updater: (prev: Task) => Task) => {
+    updateTaskCache(prev => prev.map(t => t.id === taskId ? updater(t) : t));
+  };
+
+  const [users, setUsers] = useState<User[]>([]);
+  
+    useEffect(() => {
+      getUsersReq().then(setUsers);
+    }, []);
   return (
     <>
       <div
@@ -15,8 +28,8 @@ export default function TasksInKanban({ tasks }: { tasks: Task[] }) {
           margin: "0 auto",
         }}
       >
-        {tasks.map((t) => (
-          <TaskInKanban key={t.id} task={t} />
+        {taskCache.map((t) => (
+          <TaskInKanban key={t.id} task={t} updateTask={updateTask} users={users}/>
         ))}
       </div>
 

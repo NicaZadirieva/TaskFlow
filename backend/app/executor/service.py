@@ -66,7 +66,7 @@ class ExecutorService:
             raise ValueError("User not exists")
         existing = await self.executor_repo.get_by_task_and_user(
             task_id=dto.task_id,
-            user_id=existing_user.user_id,
+            user_id=existing_user.id,
             tenant_id=tenant_id,
         )
         if existing is not None and not existing.removed:
@@ -85,9 +85,8 @@ class ExecutorService:
         executor = Executor(
             tenant_id=tenant_id,
             task_id=dto.task_id,
-            user_id=dto.user_id,
+            user_id=existing_user.id,
             role_in_task=dto.role_in_task,
-            assigned_at=dto.assigned_at,
             hours=dto.hours,
             planned=dto.planned,
             hourly_rate=dto.hourly_rate,
@@ -95,7 +94,7 @@ class ExecutorService:
             assigned_by=user_id,  # кто назначил — текущий пользователь
         )
         refreshed_executor = await self.executor_repo.save(executor)
-        return refreshed_executor.id
+        return refreshed_executor, existing_user
     
      # -------- Soft Delete User (removed=True) ------------
 

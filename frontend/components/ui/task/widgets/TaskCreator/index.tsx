@@ -20,7 +20,7 @@ import { TaskNote } from "../../../shared";
 import ShowMetrics from "../../entities/ShowMetrics";
 import TaskHeader from "../../entities/TaskHeader";
 import EditTaskForm from "../../features/EditTaskForm";
-
+// TODO: убрать id через новый тип
 type TaskWithoutAssignees = Omit<TaskWithoutCreatedBy, "assignees">;
 
 const createEmptyTask = (): TaskWithoutAssignees => ({

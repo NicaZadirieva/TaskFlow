@@ -9,13 +9,23 @@ class CreateExecutorRequest(BaseModel):
     task_id: int
     login: str 
     role_in_task: str
-    assigned_at: datetime
     hours: int | None = None
     planned: int | None = None
     hourly_rate: int | None = None
     
 class CreateExecutorResponse(BaseModel):
     id: int
+    user_id: int
+    user_name: str
+    role_in_task: str
+    is_active: bool
+    login: str
+    email: str
+    hours: int | None = None
+    planned: int | None = None
+    hourly_rate: int | None = None
+    
+    
     
 # --------- UPDATE -----------
 
