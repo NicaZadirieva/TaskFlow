@@ -1,43 +1,43 @@
-'use client';
-import { getUsersReq } from "@/api/requests";
+"use client";
+import { fromTaskOut } from "@/api/dto/task/get_tasks/mapper/fromTaskOut";
+import getTasksClientReq from "@/api/requests/task/get_tasks/client/req";
+import getClientUsersReq from "@/api/requests/user/get_users/client/get_users.req";
 import { Task } from "@/entities/task.interface";
 import { User } from "@/entities/user.interface";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import TaskInKanban from "../../entities/TaskInKanban";
 
+export default function TasksInKanban({
+  initialTasks,
+  initialUsers,
+  search,
+}: {
+  initialTasks: Task[];
+  initialUsers: User[];
+  search: string;
+}) {
+  const { data: tasks = [] } = useQuery({
+    queryKey: ["tasks", search],
+    queryFn: () =>
+      getTasksClientReq(search ? new URLSearchParams(search) : undefined).then(
+        (d) => d.items.map(fromTaskOut),
+      ),
+    initialData: initialTasks,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
+  });
 
-export default function TasksInKanban({ tasks }: { tasks: Task[] }) {
-  const [taskCache, updateTaskCache] = useState(tasks);
-  const updateTask = (taskId: number, updater: (prev: Task) => Task) => {
-    updateTaskCache(prev => prev.map(t => t.id === taskId ? updater(t) : t));
-  };
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => getClientUsersReq().then((d) => d.users),
+    initialData: initialUsers,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
 
-  const [users, setUsers] = useState<User[]>([]);
-  
-    useEffect(() => {
-      getUsersReq().then(setUsers);
-    }, []);
   return (
-    <>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
-          gap: 20,
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
-        {taskCache.map((t) => (
-          <TaskInKanban key={t.id} task={t} updateTask={updateTask} users={users}/>
-        ))}
-      </div>
-
-      <style>{`
-        .assignee-actions { opacity: 0; transition: opacity .15s ease; }
-        .assignee-row:hover { background: #f9fafb; }
-        .assignee-row:hover .assignee-actions { opacity: 1; }
-      `}</style>
-    </>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 20, maxWidth: 1200, margin: "0 auto" }}>
+      {tasks.map((t) => <TaskInKanban key={t.id} task={t} users={users} />)}
+    </div>
   );
 }

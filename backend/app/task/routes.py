@@ -10,7 +10,7 @@ from app.user.current_user import CurrentUserDeps
 
 router = APIRouter(prefix="/v1/task", tags=["Tasks"])
 
-
+# TODO: добавить updated_at в редактирование задачи
 @router.post(
     "/create",
     response_model=CreateTaskResponse,

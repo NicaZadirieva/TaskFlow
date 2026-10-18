@@ -2,6 +2,7 @@ import { Priority, Status } from "@/entities/task.interface";
 
 
 export default interface EditTaskFormData {
+	id?: number;
 	title: string;
 	status: Status;
 	description?: string;

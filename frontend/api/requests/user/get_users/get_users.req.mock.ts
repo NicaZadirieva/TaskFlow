@@ -1,6 +1,8 @@
-import { TenantRole, User } from '@/api/types/user.types';
+import GetUsersResponse from '@/api/dto/user/get_users/GetUsersResponse';
+import UserDto from '@/api/dto/user/get_users/UserDto';
+import { TenantRole } from '@/api/types/user.types';
 
-const mockUsers: User[] = [
+const mockUsers: UserDto[] = [
   {
     id: 101,
     tenant_id: 5,
@@ -9,8 +11,10 @@ const mockUsers: User[] = [
     email: "anna@taskflow.io",
     is_active: true,
     hourly_rate: 1500, // ₽
+    login: "login"
   },
   {
+    login: "login2",
     id: 203,
     tenant_id: 5,
     role: TenantRole.CLIENT,
@@ -27,10 +31,11 @@ const mockUsers: User[] = [
     email: "sergey@taskflow.io",
     is_active: true,
     hourly_rate: 1200,
+    login: "login3"
   },
 ];
 
 
-export default async function getUsersReqMock(): Promise<User[]> {
-	return mockUsers;
+export default async function getUsersReqMock(): Promise<GetUsersResponse> {
+	return {users: mockUsers};
 }

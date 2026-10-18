@@ -4,7 +4,7 @@
 
 import { Task } from "@/entities/task.interface";
 import { getFormErrorMessage } from "@/utils/getFormErrorMessage";
-import { TaskWithoutCreatedBy } from "@/utils/types";
+import { NewTask, TaskWithoutCreatedBy } from "@/utils/types";
 import { UploadOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -60,8 +60,9 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
  
 
   /** Преобразование данных формы в Task и отдача наверх */
-  const toTask = (data: EditTaskFormData): TaskWithoutCreatedBy => ({
+  const toTask = (data: EditTaskFormData): TaskWithoutCreatedBy | NewTask => ({
     ...(task ?? ({} as Task)),
+    
     title: data.title,
     status: data.status,
     description: data.description,
@@ -70,7 +71,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
     hours: data.hours,
     budget: data.budget,
     note: data.note,
-    tags: data.tags?.map((tag) => { return {name: tag}}),
+    tags: data.tags?.map((tag) => { return {name: tag }}),
     task_images: data.task_images,
   });
 

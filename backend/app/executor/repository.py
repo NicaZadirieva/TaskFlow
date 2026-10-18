@@ -14,6 +14,7 @@ class ExecutorRepository:
         self.db_session = db_session
 
     async def save(self, assigned: Executor) -> Executor:
+        assigned.version = assigned.version + 1
         self.db_session.add(assigned)
         await self.db_session.commit()
         await self.db_session.refresh(assigned)

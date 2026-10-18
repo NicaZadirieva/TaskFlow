@@ -4,15 +4,18 @@ import { Card, message } from "antd";
 
 import styles from "./index.module.css";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { createTaskReq, getUsersReq } from "@/api/requests";
+import { createTaskReq } from "@/api/requests";
 
 import { toCreateTaskRequest } from "@/api/dto/task/create/mapper/toCreateTaskRequest";
+import getClientUsersReq from "@/api/requests/user/get_users/client/get_users.req";
 import { Executor } from "@/entities/executor.interface";
 import { User } from "@/entities/user.interface";
-import { TaskWithoutCreatedBy } from "@/utils/types";
+import { NewTask, TaskWithoutAssignees, TaskWithoutCreatedBy } from "@/utils/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { useRouter } from "next/router";
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
 import AssigneeRemoval from "../../../assignees/features/RemoveAssigneeModal";
 import TaskAssigneesWidget from "../../../assignees/widgets/TaskAssigneesWidget";
@@ -20,8 +23,6 @@ import { TaskNote } from "../../../shared";
 import ShowMetrics from "../../entities/ShowMetrics";
 import TaskHeader from "../../entities/TaskHeader";
 import EditTaskForm from "../../features/EditTaskForm";
-// TODO: убрать id через новый тип
-type TaskWithoutAssignees = Omit<TaskWithoutCreatedBy, "assignees">;
 
 const createEmptyTask = (): TaskWithoutAssignees => ({
   title: "",
@@ -40,9 +41,14 @@ const createEmptyTask = (): TaskWithoutAssignees => ({
 
 export default function TaskCreator({
   tagsOptions,
+  initialUsers
 }: {
   tagsOptions: { value: string; label: string }[];
+    initialUsers?: User[];
 }) {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  
   const [removing, setRemoving] = useState<Executor | null>(null);
   const [adding, setAdding] = useState(false);
 
@@ -52,11 +58,14 @@ export default function TaskCreator({
   // Исполнители — отдельный, независимый стейт
   const [assignees, setAssignees] = useState<Executor[]>([]);
 
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    getUsersReq().then(setUsers);
-  }, []);
+  /* ---------- Справочник пользователей ---------- */
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => getClientUsersReq().then((d) => d.users),
+    initialData: initialUsers,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
 
   /** Последнее удаление — для отката */
   const [lastRemoved, setLastRemoved] = useState<{
@@ -65,17 +74,36 @@ export default function TaskCreator({
   } | null>(null);
 
   /* ---------- Сохранение задачи ---------- */
-  const saveTask = useCallback(
-    async (patch: TaskWithoutCreatedBy) => {
-      const nextTask: TaskWithoutCreatedBy = {
-        ...task,
-        ...patch,
-        assignees
-      };
-
-      await createTaskReq(toCreateTaskRequest(nextTask));
+  const saveTaskMutation = useMutation({
+    mutationFn: (patch: TaskWithoutCreatedBy) => {
+      const nextTask: TaskWithoutCreatedBy = { ...task, ...patch, assignees };
+      return createTaskReq(toCreateTaskRequest(nextTask));
     },
-    [task, assignees],
+
+    onSuccess: (created) => {
+      // 1. Список задач на доске должен увидеть новую задачу
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+
+      // 2. Если API вернул созданную задачу — можно оптимистично добавить её в кэш
+      // (не обязательно, invalidate уже даст актуальные данные через refetch)
+
+      message.success("Задача создана");
+
+      // 3. Уйти с формы создания — например, на страницу задачи или на доску
+      // Зависит от того, что возвращает createTaskReq:
+      // router.push(`/tasks/${created.id}`)
+      router.push("/tasks");
+    },
+
+    onError: (err) => {
+      console.error(err);
+      message.error("Не удалось создать задачу");
+    },
+  });
+
+  const saveTask = useCallback(
+    (patch: TaskWithoutCreatedBy) => { saveTaskMutation.mutateAsync(patch) },
+    [saveTaskMutation],
   );
 
   /* ---------- Удаление ---------- */
@@ -119,10 +147,10 @@ export default function TaskCreator({
 
   /* ---------- Расчёты по исполнителям ---------- */
   const computeActualBudget = (a: Executor) =>
-    a.hourly_rate ? a.hourly_rate * a.hours : 0;
+    a.hourly_rate && a.hours ? a.hourly_rate * a.hours : 0;
 
   const computeEstimatedBudget = (a: Executor) =>
-    a.hourly_rate ? a.hourly_rate * a.planned : 0;
+    a.hourly_rate && a.planned ? a.hourly_rate * a.planned : 0;
 
   const computeActualHours = (a: Executor) => a.hours;
   const computeEstimatedHours = (a: Executor) => a.planned;
@@ -141,19 +169,19 @@ export default function TaskCreator({
     return today.diff(dueDate, "day");
   }, [task.due_date, task.status]);
 
-  // Заголовку задачи тоже нужен объект задачи с исполнителями
-  const taskForHeader = useMemo<TaskWithoutCreatedBy>(
+  const taskForForm = useMemo<NewTask>(
     () => ({ ...task, assignees }),
     [task, assignees],
   );
 
   return (
     <>
-      <TaskHeader task={taskForHeader} />
+      <TaskHeader title={task.title} description={task.description} status={task.status} priority={task.priority}
+      tags={task.tags} />
       <div className={styles.grid}>
         <EditTaskForm
           tagsOptions={tagsOptions}
-          task={{ ...taskForHeader }} // форма видит полный снапшот, но менять может только свои поля
+          task={{ ...taskForForm }} // форма видит полный снапшот, но менять может только свои поля
           updateTask={(patch) => updateTask((prev) => ({ ...prev, ...patch }))}
           saveTask={saveTask}
         />
@@ -177,19 +205,19 @@ export default function TaskCreator({
               due_date={task.due_date?.toLocaleDateString("ru-RU")}
               overdueDays={overdueDays}
               actualBudget={assignees.reduce(
-                (prev, cur) => prev + computeActualBudget(cur),
+                (prev, cur) => prev + (computeActualBudget(cur) || 0),
                 0,
               )}
               estimatedBudget={assignees.reduce(
-                (prev, cur) => prev + computeEstimatedBudget(cur),
+                (prev, cur) => prev + (computeEstimatedBudget(cur) || 0),
                 0,
               )}
               actualHours={assignees.reduce(
-                (prev, cur) => prev + computeActualHours(cur),
+                (prev, cur) => prev + (computeActualHours(cur) || 0),
                 0,
               )}
               estimatedHours={assignees.reduce(
-                (prev, cur) => prev + computeEstimatedHours(cur),
+                (prev, cur) => prev + (computeEstimatedHours(cur) || 0),
                 0,
               )}
             />

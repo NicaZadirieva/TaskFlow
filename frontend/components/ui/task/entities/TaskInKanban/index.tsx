@@ -28,6 +28,7 @@ import { assignee } from "@/app/(other_pages)/tasks/mock-data/assignee";
 import { Executor } from "@/entities/executor.interface";
 import { Task } from "@/entities/task.interface";
 import { User } from "@/entities/user.interface";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TaskAssignee from "../../../assignees/entities/TaskAssignee";
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
 import AssigneeRemoval from "../../../assignees/features/RemoveAssigneeModal";
@@ -40,7 +41,7 @@ import ShowMetrics from "../ShowMetrics";
 
 const { Text } = Typography;
 
-export default function TaskInKanban({ task, updateTask, users }: { task: Task, updateTask: (taskId: number, updater: (prev: Task) => Task) => void, users: User[]}) {
+export default function TaskInKanban({ task, users }: { task: Task, users: User[]}) {
   const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
   const showTimeCostsEditor = () => setShowTimeEditor(true);
   const hideTimeCostsEditor = () => setShowTimeEditor(false);
@@ -73,37 +74,42 @@ export default function TaskInKanban({ task, updateTask, users }: { task: Task, 
     message.success("Исполнитель удалён");
   };
 
-  /* ---------- Добавление ---------- */
-  const addAssignee = async (assignee: Executor) => {
-    createExecutorReq({
-      task_id: task.id,
-      login: assignee.login,
-      role_in_task: assignee.role_in_task,
-      hours: assignee.hours,
-      planned: assignee.planned
+  const queryClient = useQueryClient();
 
-    }).then((res: CreateExecutorResult) => {
-      if (res.success) {
-        const loadedAssignee: Executor = {
-          id: res.data.id,
-          user_id: res.data.user_id,
-          user_name: res.data.user_name,
-          planned: res.data.planned,
-          hours: res.data.hours,
-          role_in_task: res.data.role_in_task,
-          is_active: res.data.is_active,
-          login: res.data.login,
-          email: res.data.email
-        };
-        updateTask(task.id, prev => ({
-          ...prev,
-          assignees: [...prev.assignees, loadedAssignee],
-        }));
-      } else {
+  const addAssigneeMutation = useMutation({
+    mutationFn: (assignee: Executor) =>
+      createExecutorReq({
+        task_id: task.id,
+        login: assignee.login,
+        role_in_task: assignee.role_in_task,
+        hours: assignee.hours,
+        planned: assignee.planned,
+        version: task.version, // ← на бэкенд для оптимистичной блокировки
+      }),
+
+    onSuccess: (res: CreateExecutorResult) => {
+      if (!res.success) {
         message.error(res.error);
+        return;
       }
-      })
-  };
+      queryClient.setQueryData<Task[]>(["tasks"], (prev = []) =>
+        prev.map((t) =>
+          t.id === task.id
+            ? { ...t, assignees: [...t.assignees, res.data], version: (t.version ?? 0) + 1 }
+            : t,
+        ),
+      );
+      message.success("Исполнитель добавлен");
+    },
+
+    onError: () => {
+      // 409 конфликт или сетевая ошибка → тянем свежие данные
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      message.error("Не удалось добавить исполнителя — обновите задачу");
+    },
+  });
+
+  const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
 
   return (
     <>
@@ -223,7 +229,7 @@ export default function TaskInKanban({ task, updateTask, users }: { task: Task, 
           actualHours={task.hours.fact || 0}
           estimatedBudget={task.budget.planned || 0}
           estimatedHours={task.hours.planned || 0}
-          due_date={task.due_date.toLocaleDateString("ru-RU")}
+          due_date={new Date(task.due_date).toLocaleDateString("ru-RU")}
           overdueDays={task.overdueDays}
         />
         {task.note && <TaskNote note={task.note} />}

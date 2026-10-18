@@ -1,7 +1,9 @@
-
 import { Suspense } from "react";
 
 import fromGithubLabelOut from "@/api/dto/github_label/get_all/mappers/fromGithubLabelOut";
+import { fromTaskOut } from "@/api/dto/task/get_tasks/mapper/fromTaskOut";
+import getTasksServerReq from "@/api/requests/task/get_tasks/server/req";
+
 
 import {
   DeadlineFilter,
@@ -9,14 +11,12 @@ import {
   StatusTaskFilter,
   TasksInKanban,
 } from "@/components/ui/task";
-import { FilterOptionData } from "@/components/ui/task/features/MultipleFilterDropdown/MultipleFilterDropdownProps.props";
-
-import { GithubLabelDefaultColor } from "@/entities/githubLabel.interface";
-
-import { fromTaskOut } from "@/api/dto/task/get_tasks/mapper/fromTaskOut";
-import getTasksReq from "@/api/requests/task/get_tasks/req";
 import AssigneesFilter from "@/components/ui/task/entities/filters/AssigneesFilter";
 import TagsFilter from "@/components/ui/task/entities/filters/TagsFilter";
+import { FilterOptionData } from "@/components/ui/task/features/MultipleFilterDropdown/MultipleFilterDropdownProps.props";
+
+import { getUsersServerReq } from "@/api/requests/user/get_users/server/get_users.req.real";
+import { GithubLabelDefaultColor } from "@/entities/githubLabel.interface";
 import { filtersToSearchParams, parseFilters } from "@/lib/taskFfiltersUrl";
 import { toURLSearchParams } from "@/lib/toUrlSearchParams";
 import styles from "./page.module.css";
@@ -31,21 +31,30 @@ export default async function ListAllTasksPage({
   const sp = await toURLSearchParams(searchParams);
   const filters = parseFilters(sp);
 
-  const tasks = await getTasksReq(filtersToSearchParams(filters));
+  const [tasks, usersData] = await Promise.all([
+    getTasksServerReq(filtersToSearchParams(filters)),
+    getUsersServerReq().catch((e) => {
+      // Справочник пользователей не критичен для отображения доски —
+      // если упал, отдаём пустой список, форма добавления подтянет через useQuery.
+      console.error("[ListAllTasksPage] users fetch failed", e);
+      return { users: [] };
+    }),
+  ]);
+
   if (!tasks) return null;
 
   const mappedTasks = tasks.items.map(fromTaskOut);
   const mappedAllTags = tasks.all_tags?.map(fromGithubLabelOut);
 
   const tagsStorage: FilterOptionData[] | undefined = mappedAllTags?.map((tag) => ({
-    value: tag.id.toString(),
+    value: tag.id?.toString() ?? tag.name,
     label: tag.name,
     dotHexColor: GithubLabelDefaultColor,
   }));
 
   const assigneesStorage: FilterOptionData[] | undefined =
     tasks.all_executors?.map((e) => ({
-      value: e.user_id.toString(),/////
+      value: e.user_id.toString(),
       label: e.name,
     }));
 
@@ -61,7 +70,11 @@ export default async function ListAllTasksPage({
         </div>
       </Suspense>
 
-      <TasksInKanban tasks={mappedTasks} />
+      <TasksInKanban
+        initialTasks={mappedTasks}
+        initialUsers={usersData.users}
+        search={sp.toString()}
+      />
     </div>
   );
 }

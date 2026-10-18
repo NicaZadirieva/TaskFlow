@@ -1,29 +1,29 @@
 "use client";
 
-import { TaskWithoutCreatedBy } from "@/utils/types";
 import { Card } from "antd";
 import cn from "classnames";
 import { GithubClickableTag, PriorityBadge, StatusTag } from '../../../shared';
 import styles from "./index.module.css";
+import TaskHeaderProps from "./TaskHeader.props";
 
 
-export default function TaskHeader({ task }: { task: TaskWithoutCreatedBy }) {
+export default function TaskHeader(props: TaskHeaderProps) {
   return (
     <Card classNames={{ body: cn(styles.card, styles["task-header"]) }}>
       <div className={styles["task-header__top"]}>
-        <StatusTag status={task.status} />
-        <div className={styles["task-header__id"]}>id {task.id}</div>
-        <PriorityBadge priority={task.priority} />
+        <StatusTag status={props.status} />
+        <div className={styles["task-header__id"]}>id {props.id}</div>
+        <PriorityBadge priority={props.priority} />
       </div>
       <div className={styles["task-header__content"]}>
-        <h1 className={styles["task-header__title"]} data-title={task.title}>
-          {task.title}
+        <h1 className={styles["task-header__title"]} data-title={props.title}>
+          {props.title}
         </h1>
-        {task.description && <p>{task.description}</p>}
+        {props.description && <p>{props.description}</p>}
       </div>
       <div className={styles["task-header__badges"]}>
-        {task.tags &&
-          task.tags.map((tag) => {
+        {props.tags &&
+          props.tags.map((tag) => {
             return (
               <GithubClickableTag
                 githubLabel={tag}

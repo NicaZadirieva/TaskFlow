@@ -74,7 +74,8 @@ async def create_executor(
                                   planned=executor.planned,
                                   is_active=executor.is_active,
                                   login=user.login,
-                                  email=user.email)
+                                  email=user.email,
+                                  version=executor.version)
 
 # -------- Soft Delete User (removed=True) ------------
 
