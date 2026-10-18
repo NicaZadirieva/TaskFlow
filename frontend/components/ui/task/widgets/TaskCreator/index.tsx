@@ -75,8 +75,8 @@ export default function TaskCreator({
 
   /* ---------- Сохранение задачи ---------- */
   const saveTaskMutation = useMutation({
-    mutationFn: (patch: TaskWithoutCreatedBy) => {
-      const nextTask: TaskWithoutCreatedBy = { ...task, ...patch, assignees };
+    mutationFn: (patch: TaskWithoutCreatedBy | NewTask) => {
+      const nextTask: TaskWithoutCreatedBy | NewTask = { ...task, ...patch, assignees };
       return createTaskReq(toCreateTaskRequest(nextTask));
     },
 
@@ -102,7 +102,7 @@ export default function TaskCreator({
   });
 
   const saveTask = useCallback(
-    (patch: TaskWithoutCreatedBy) => { saveTaskMutation.mutateAsync(patch) },
+    (patch: TaskWithoutCreatedBy | NewTask) => { saveTaskMutation.mutateAsync(patch) },
     [saveTaskMutation],
   );
 

@@ -1,8 +1,8 @@
-import { TaskWithoutCreatedBy } from "@/utils/types";
+import { NewTask, TaskWithoutCreatedBy } from "@/utils/types";
 import { CreateTaskRequest } from "../CreateTaskRequest";
 import toCreateTaskExecutor from "./toCreateTaskExecutor";
 
-export function toCreateTaskRequest(task: TaskWithoutCreatedBy): CreateTaskRequest {
+export function toCreateTaskRequest(task: TaskWithoutCreatedBy | NewTask): CreateTaskRequest {
     return {
         project_id: task.project_id ?? null,
         title: task.title,
