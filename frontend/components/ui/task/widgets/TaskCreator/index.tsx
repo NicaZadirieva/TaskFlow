@@ -15,7 +15,7 @@ import { User } from "@/entities/user.interface";
 import { NewTask, TaskWithoutAssignees, TaskWithoutCreatedBy } from "@/utils/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import AddAssigneeForm from "../../../assignees/features/AddAssigneeForm";
 import AssigneeRemoval from "../../../assignees/features/RemoveAssigneeModal";
 import TaskAssigneesWidget from "../../../assignees/widgets/TaskAssigneesWidget";
@@ -44,11 +44,11 @@ export default function TaskCreator({
   initialUsers
 }: {
   tagsOptions: { value: string; label: string }[];
-    initialUsers?: User[];
+  initialUsers?: User[];
 }) {
   const queryClient = useQueryClient();
   const router = useRouter();
-  
+
   const [removing, setRemoving] = useState<Executor | null>(null);
   const [adding, setAdding] = useState(false);
 
@@ -177,7 +177,7 @@ export default function TaskCreator({
   return (
     <>
       <TaskHeader title={task.title} description={task.description} status={task.status} priority={task.priority}
-      tags={task.tags} />
+        tags={task.tags} />
       <div className={styles.grid}>
         <EditTaskForm
           tagsOptions={tagsOptions}

@@ -85,6 +85,7 @@ class TaskOut(BaseModel):
 
     id: int
     tenant_id: int
+    version: int
     project_id: int | None = None
 
     title: str

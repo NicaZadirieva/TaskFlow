@@ -67,7 +67,7 @@ class Task(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
     
-    version: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Связи
     tenant: Mapped["Tenant"] = relationship(back_populates="tasks")  # type: ignore  # noqa: F821

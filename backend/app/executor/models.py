@@ -54,7 +54,7 @@ class Executor(Base):
 
     user: Mapped["User"] = relationship(back_populates="executors",  foreign_keys=[user_id])  # type: ignore  # noqa: F821
     task: Mapped["Task"] = relationship(back_populates="executors")  # type: ignore  # noqa: F821
-    version: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # soft-delete / история переназначений
     removed: Mapped[bool] = mapped_column(

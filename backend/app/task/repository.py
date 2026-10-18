@@ -19,6 +19,8 @@ class TaskRepository:
     # ---------- write ----------
 
     async def save(self, task: Task) -> Task:
+        if task.version:
+            task.version += 1
         self.db_session.add(task)
         await self.db_session.commit()
         await self.db_session.refresh(task)
