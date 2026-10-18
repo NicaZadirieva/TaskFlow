@@ -15,7 +15,7 @@ class ExecutorRepository:
 
     async def save(self, assigned: Executor) -> Executor:
         if assigned.version:
-            assigned.version = assigned.version + 1
+            assigned.version = assigned.version + 1 # TODO: убрать отсюда бизнес-логику
         self.db_session.add(assigned)
         await self.db_session.commit()
         await self.db_session.refresh(assigned)

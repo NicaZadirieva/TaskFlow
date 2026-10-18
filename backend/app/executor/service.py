@@ -71,6 +71,7 @@ class ExecutorService:
         )
         if existing is not None and not existing.removed:
             raise ValueError("User is already assigned to this task")
+        # TODO: добавить проверку на version только если edit_task
         if dto.version is not None and existing.version != dto.version:
             raise ValueError("Dto has got not actual version for executor data")
         # Если была soft-deleted запись — реактивируем её, а не создаём дубль
