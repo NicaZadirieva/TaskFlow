@@ -3,9 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 
 
+from app.github_label.schemas import GithubLabelOut
 from app.task.schemas.create_task import CreateTaskRequest, CreateTaskResponse
 from app.task.service import TaskServiceDeps
-from app.task.schemas.get_filtered_tasks import CsvIntList, TaskFiltersDeps, TasksOut
+from app.task.schemas.get_filtered_tasks import CsvIntList, TaskFiltersDeps, TasksOut, UserShortOut
 from app.user.current_user import CurrentUserDeps
 
 router = APIRouter(prefix="/v1/task", tags=["Tasks"])
@@ -66,3 +67,19 @@ async def list_all_tasks(
         filters=filters,
         user_ids=user_ids,
     )
+    
+
+@router.get("/filters/assignees", response_model=list[UserShortOut])
+async def list_filter_assignees(
+    user: CurrentUserDeps,
+    service: TaskServiceDeps,
+):
+    return await service.get_filter_assignees(user.tenant_id)
+
+
+@router.get("/filters/tags", response_model=list[GithubLabelOut])
+async def list_filter_tags(
+    user: CurrentUserDeps,
+    service: TaskServiceDeps,
+):
+    return await service.get_filter_tags(user.tenant_id)

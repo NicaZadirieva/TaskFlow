@@ -82,7 +82,8 @@ export default function TaskCreator({
 
     onSuccess: (created) => {
       // 1. Список задач на доске должен увидеть новую задачу
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] }); 
+      queryClient.invalidateQueries({ queryKey: ["filter-tags"] });
 
       // 2. Если API вернул созданную задачу — можно оптимистично добавить её в кэш
       // (не обязательно, invalidate уже даст актуальные данные через refetch)

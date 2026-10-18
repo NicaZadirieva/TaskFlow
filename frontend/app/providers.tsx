@@ -9,6 +9,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 staleTime: 2_000,
                 refetchOnWindowFocus: true,
                 retry: 1,
+                refetchOnMount: false
             },
         },
     }));

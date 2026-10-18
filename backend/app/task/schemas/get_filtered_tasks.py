@@ -147,9 +147,6 @@ class TasksOut(BaseModel):
     total: int
     limit: int
     offset: int
-    
-    all_executors: list[UserShortOut] | None = None
-    all_tags: list[TagShortOut] | None = None
 
 
 # ---------- DI-фабрика ----------
