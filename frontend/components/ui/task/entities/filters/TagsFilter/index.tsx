@@ -15,9 +15,9 @@ export default function TagsFilter({ initialData }: { initialData: GithubLabelOu
         queryKey: ["filter-tags"],
         queryFn: getTagsFiltersClientReq,
         initialData,
-        staleTime: 5 * 60_000,
+        refetchInterval: 5_000,
+        refetchIntervalInBackground: false,
         refetchOnWindowFocus: false,
-        // refetchInterval отсутствует — справочник не опрашиваем
     });
 
     const storage: FilterOptionData[] = tags.map((e) => ({

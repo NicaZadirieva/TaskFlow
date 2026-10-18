@@ -15,7 +15,8 @@ export default function AssigneesFilter({ initialData }: { initialData: Executor
         queryKey: ["filter-assignees"],
         queryFn: getAssigneeFiltersClientReq,
         initialData,
-        staleTime: 5 * 60_000,
+        refetchInterval: 5_000,
+        refetchIntervalInBackground: false,
         refetchOnWindowFocus: false,
         // refetchInterval отсутствует — справочник не опрашиваем
     });
