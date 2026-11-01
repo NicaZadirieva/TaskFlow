@@ -36,10 +36,11 @@ import { User } from '@/entities/user.interface';
 import { CreateExecutorResult } from '@/api/requests/executor/create.req.real';
 import createExecutorReq from '@/api/requests/executor/create.req';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
 
 const { Text } = Typography;
 
-export default function TaskRow({ task, users }: { task: Task, users: User[] }) {
+export default function TaskRow({ task, users, currentUser }: { task: Task, users: User[], currentUser: GetCurrentUserResponse }) {
 	const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
 		const showTimeCostsEditor = () => setShowTimeEditor(true);
 		const hideTimeCostsEditor = () => setShowTimeEditor(false);
@@ -52,7 +53,7 @@ export default function TaskRow({ task, users }: { task: Task, users: User[] }) 
 		const showImagesModal = () => setShowImages(true);
 		const hideImagesModal = () => setShowImages(false);
 	
-		const currentUser = assignee;
+		const currentAssignee = task.assignees.filter((a) => a.user_id == currentUser.user_id)[0];
 		const isDescriptionLong = !!task.description && task.description.length > 180;
 	
 		const [removing, setRemoving] = useState<Executor | null>(null);
@@ -303,7 +304,7 @@ export default function TaskRow({ task, users }: { task: Task, users: User[] }) 
 			</Card>
 			<TimeCostsEditor
 				open={showTimeEditor}
-				assignee={currentUser}
+				assignee={currentAssignee}
 				taskTitle={task.title}
 				onClose={() => {
 					hideTimeCostsEditor();

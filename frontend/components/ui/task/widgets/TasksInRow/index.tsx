@@ -7,13 +7,15 @@ import { useQuery } from '@tanstack/react-query';
 import getTasksClientReq from '@/api/requests/task/get_tasks/client/req';
 import { fromTaskOut } from '@/api/dto/task/get_tasks/mapper/fromTaskOut';
 import getClientUsersReq from '@/api/requests/user/get_users/client/get_users.req';
+import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
 
 
 
 
-export default function TasksInRow({ initialTasks,
+export default function TasksInRow({ currentUser, initialTasks,
 	initialUsers,
 	search }: {
+		currentUser: GetCurrentUserResponse,
 	  initialTasks: Task[];
 	  initialUsers: User[];
 	  search: string;
@@ -47,7 +49,7 @@ export default function TasksInRow({ initialTasks,
 				}}
 	  >
 				{tasks.map((t) => (
-		  <TaskRow key={t.id} task={t} users={users}/>
+		  <TaskRow key={t.id} task={t} users={users} currentUser={currentUser}/>
 				))}
 	  </div>
 
