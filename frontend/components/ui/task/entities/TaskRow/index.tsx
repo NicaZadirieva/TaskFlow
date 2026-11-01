@@ -30,10 +30,9 @@ import { DividerWithMargins, GithubClickableTag, PriorityBadge, StatusTag, Toolt
 import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import { User } from '@/entities/user.interface';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
-import createExecutorReq from '@/api/requests/executor/create/client/create.req';
-import CreateExecutorResponse from '@/api/dto/executor/create/CreateExecutorResponse';
+import { useRemoveAssignee } from '@/hooks/useRemoveAssignee';
+import { useAddAssignee } from '@/hooks/useAddAssignee';
 
 const { Text } = Typography;
 
@@ -66,42 +65,12 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 	const undoRemove = (assignee: Executor) => {
 		message.info('Удаление отменено');
 	};
-	const removeAssignee = (updated: Executor) => {
-		message.success('Исполнитель удалён');
-	};
-	
-	const queryClient = useQueryClient();
-	
-	const addAssigneeMutation = useMutation({
-		mutationFn: (assignee: Executor) =>
-			createExecutorReq({
-				task_id: task.id,
-				login: assignee.login,
-				role_in_task: assignee.role_in_task,
-				hours: assignee.hours,
-				planned: assignee.planned,
-				version: task.version // ← на бэкенд для оптимистичной блокировки
-			}),
-	
-		onSuccess: (res: CreateExecutorResponse) => {
-			queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
-				prev.map((t) =>
-					t.id === task.id
-						? { ...t, assignees: [...t.assignees, res], version: (t.version ?? 0) + 1 }
-						: t
-				)
-			);
-			message.success('Исполнитель добавлен');
-		},
-	
-		onError: () => {
-			// 409 конфликт или сетевая ошибка → тянем свежие данные
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			message.error('Не удалось добавить исполнителя — обновите задачу');
-		}
-	});
+	const removeAssigneeMutation = useRemoveAssignee({ taskId: task.id });
+	const addAssigneeMutation = useAddAssignee({ taskId: task.id, version: task.version });
+		
 	
 	const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
+	const removeAssignee = (a: Executor) => removeAssigneeMutation.mutate(a);
 
 	const timeOver = task.hours.fact && task.hours.planned && task.hours.fact > task.hours.planned;
 	const budgetOver = task.budget.fact && task.budget.planned && task.budget.fact > task.budget.planned;

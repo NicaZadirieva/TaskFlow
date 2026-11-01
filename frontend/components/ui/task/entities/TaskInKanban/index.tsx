@@ -23,7 +23,6 @@ import Link from 'next/link';
 import { Executor } from '@/entities/executor.interface';
 import { Task } from '@/entities/task.interface';
 import { User } from '@/entities/user.interface';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TaskAssignee from '../../../assignees/entities/TaskAssignee';
 import AddAssigneeForm from '../../../assignees/features/AddAssigneeForm';
 import AssigneeRemoval from '../../../assignees/features/RemoveAssigneeModal';
@@ -41,11 +40,8 @@ import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import ShowMetrics from '../ShowMetrics';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
-import createExecutorReq from '@/api/requests/executor/create/client/create.req';
-import removeExecutorFromTaskReq from '@/api/requests/executor/remove/client/remove.req';
-import RemoveUserFromTaskRequest from '@/api/dto/executor/remove/RemoveUserFromTaskRequest';
-import RemoveUserFromTaskResponse from '@/api/dto/executor/remove/RemoveUserFromTaskResponse';
-import CreateExecutorResponse from '@/api/dto/executor/create/CreateExecutorResponse';
+import { useRemoveAssignee } from '@/hooks/useRemoveAssignee';
+import { useAddAssignee } from '@/hooks/useAddAssignee';
 
 const { Text } = Typography;
 
@@ -88,59 +84,9 @@ export default function TaskInKanban({
 	const undoRemove = (assignee: Executor) => {
 		message.info('Удаление отменено');
 	};
-	const removeAssigneeMutation = useMutation({
-		mutationFn: (assignee: Executor) =>
-			removeExecutorFromTaskReq({
-				task_id: task.id,
-				user_id: assignee.user_id,
-				remove_reason: assignee.remove_reason
-			}),
-
-		onSuccess: (res: RemoveUserFromTaskResponse) => {
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			message.success('Исполнитель удален');
-		},
-
-		onError: () => {
-			// 409 конфликт или сетевая ошибка → тянем свежие данные
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			message.error('Не удалось удалить исполнителя — обновите задачу');
-		}
-	});
-	const queryClient = useQueryClient();
-
-	const addAssigneeMutation = useMutation({
-		mutationFn: (assignee: Executor) =>
-			createExecutorReq({
-				task_id: task.id,
-				login: assignee.login,
-				role_in_task: assignee.role_in_task,
-				hours: assignee.hours,
-				planned: assignee.planned,
-				version: task.version
-			}),
-
-		onSuccess: (res: CreateExecutorResponse) => {
-			queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
-				prev.map((t) =>
-					t.id === task.id
-						? {
-							...t,
-							assignees: [...t.assignees, res],
-							version: (t.version ?? 0) + 1
-						}
-						: t
-				)
-			);
-			message.success('Исполнитель добавлен');
-		},
-
-		onError: () => {
-			// 409 конфликт или сетевая ошибка → тянем свежие данные
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			message.error('Не удалось добавить исполнителя — обновите задачу');
-		}
-	});
+	const removeAssigneeMutation = useRemoveAssignee({ taskId: task.id });
+	const addAssigneeMutation = useAddAssignee({ taskId: task.id, version: task.version });
+	
 
 	const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
 	const removeAssignee = (a: Executor) => removeAssigneeMutation.mutate(a);
