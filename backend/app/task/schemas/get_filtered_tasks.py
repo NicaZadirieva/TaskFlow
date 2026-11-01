@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Annotated, Any
 
 from fastapi import Depends, Query
-from pydantic import AliasPath, BaseModel, BeforeValidator, ConfigDict, Field
+from pydantic import AliasPath, BaseModel, BeforeValidator, ConfigDict, Field, computed_field
 
 from app.task.models import Priority, Status
 
@@ -64,6 +64,7 @@ class ExecutorShortOut(BaseModel):
     # name/login — через связанного User
     name: str = Field(validation_alias=AliasPath("user", "name"))
     login: str = Field(validation_alias=AliasPath("user", "login"))
+    email: str = Field(validation_alias=AliasPath("user", "email"))
 
     role_in_task: str
     is_active: bool
@@ -84,6 +85,7 @@ class TaskOut(BaseModel):
 
     id: int
     tenant_id: int
+    version: int
     project_id: int | None = None
 
     title: str
@@ -114,11 +116,32 @@ class TaskOut(BaseModel):
 
     tags: list[TagShortOut] = []
     executors: list[ExecutorShortOut] = Field(
-        default_factory=list,
-        validation_alias=AliasPath("assignees"),
+        default_factory=list
     )
 
+    @computed_field
+    @property
+    def overdue_days(self) -> int:
+        """Сколько дней задача просрочена. 0 — если не просрочена или закрыта."""
+        if self.due_date is None or self.status == Status.DONE:
+            return 0
 
+        # due_date из БД — обычно naive UTC, приводим к aware
+        due = self.due_date
+        if due.tzinfo is None:
+            due = due.replace(tzinfo=timezone.utc)
+
+        now = datetime.now(timezone.utc)
+        if due >= now:
+            return 0
+        return (now - due).days
+
+class UserShortOut(BaseModel):
+    user_id: int
+    login: str
+    email: str
+    name: str
+    
 class TasksOut(BaseModel):
     items: list[TaskOut]
     total: int

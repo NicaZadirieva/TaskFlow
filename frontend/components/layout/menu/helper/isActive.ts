@@ -5,7 +5,7 @@
  * @returns 
  */
 export function isActive(pathname: string | null, menuItemHref: string) {
-  if (!pathname) return false;
-  if (menuItemHref === "/") return pathname === "/";
-  return pathname === menuItemHref;
+	if (!pathname) return false;
+	if (menuItemHref === '/') return pathname === '/';
+	return pathname === menuItemHref;
 }

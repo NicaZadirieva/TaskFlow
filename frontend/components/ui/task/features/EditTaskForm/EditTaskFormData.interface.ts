@@ -1,7 +1,8 @@
-import { Priority, Status } from "@/entities/task.interface";
+import { Priority, Status } from '@/entities/task.interface';
 
 
 export default interface EditTaskFormData {
+	id?: number;
 	title: string;
 	status: Status;
 	description?: string;
@@ -12,4 +13,4 @@ export default interface EditTaskFormData {
 	tags?: string[];
 	priority: Priority;
 	task_images?: string[];
-}
+};;;;;;;;;;

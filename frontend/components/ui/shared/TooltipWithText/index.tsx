@@ -7,7 +7,7 @@ const { Text } = Typography;
 export default function TooltipWithText({text, className}: {text: string, className?: string}) {
 	return (
 		<Tooltip className={cn(className, styles.tooltip)} title={text} placement="topLeft">
-            <Text className={styles.text}>{text}</Text>
-        </Tooltip>
-	)
+			<Text className={styles.text}>{text}</Text>
+		</Tooltip>
+	);
 }

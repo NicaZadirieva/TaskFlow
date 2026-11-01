@@ -6,10 +6,10 @@ export default function ChangeHourlyRatePage() {
 	const currentUser: User = {
 		id: 101,
 		role: TenantRole.OWNER,
-		name: "Анна Демченко",
-		email: "anna@taskflow.io",
+		name: 'Анна Демченко',
+		email: 'anna@taskflow.io',
 		is_active: true,
-		hourly_rate: 1500, // ₽
-	}
-	return <ChangeHourlyRateForm currentUser={currentUser} />
+		hourly_rate: 1500 // ₽
+	};
+	return <ChangeHourlyRateForm currentUser={currentUser} />;
 }

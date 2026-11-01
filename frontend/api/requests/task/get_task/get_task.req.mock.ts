@@ -20,56 +20,56 @@ const TEST_TASK = {
 	note: {
 	  kind: 'info',
 	  label: 'Timebox',
-	  text: 'исследование — оценка нестабильна, ограничено 8 ч',
+	  text: 'исследование — оценка нестабильна, ограничено 8 ч'
 	},
 	assignees: [
 	  {
-		id: 4,
-		taskId: 3,
-		userId: 4,
-		userName: 'Дмитрий П.',
-		roleInTask: 'Tech Lead',
-		actualHours: 2,
-		estimatedHours: 4,
-		tenantId: 1,
-		assignedAt: new Date('2026-08-05'),
-		isActive: true,
-		hourly_rate: 4500
+			id: 4,
+			taskId: 3,
+			userId: 4,
+			userName: 'Дмитрий П.',
+			roleInTask: 'Tech Lead',
+			actualHours: 2,
+			estimatedHours: 4,
+			tenantId: 1,
+			assignedAt: new Date('2026-08-05'),
+			isActive: true,
+			hourly_rate: 4500
 	  },
 	  {
-		id: 5,
-		taskId: 3,
-		userId: 5,
-		userName: 'Елена С.',
-		roleInTask: 'Backend',
-		actualHours: 1.5,
-		estimatedHours: 3,
-		tenantId: 1,
-		assignedAt: new Date('2026-08-05'),
-		isActive: true,
-		hourly_rate: 2500
+			id: 5,
+			taskId: 3,
+			userId: 5,
+			userName: 'Елена С.',
+			roleInTask: 'Backend',
+			actualHours: 1.5,
+			estimatedHours: 3,
+			tenantId: 1,
+			assignedAt: new Date('2026-08-05'),
+			isActive: true,
+			hourly_rate: 2500
 	  },
 	  {
-		id: 6,
-		taskId: 3,
-		userId: 6,
-		userName: 'Олег Р.',
-		roleInTask: 'DevOps',
-		actualHours: 0.5,
-		estimatedHours: 1,
-		tenantId: 1,
-		assignedAt: new Date('2026-08-05'),
-		isActive: true,
-		hourly_rate: 1500
-	  },
+			id: 6,
+			taskId: 3,
+			userId: 6,
+			userName: 'Олег Р.',
+			roleInTask: 'DevOps',
+			actualHours: 0.5,
+			estimatedHours: 1,
+			tenantId: 1,
+			assignedAt: new Date('2026-08-05'),
+			isActive: true,
+			hourly_rate: 1500
+	  }
 	],
 	tags: [
 	  { id: 9, name: 'research', description: 'Исследование', tenantId: 1 },
 	  { id: 10, name: 'performance', tenantId: 1  },
-	  { id: 11, name: 'infra', tenantId: 1  },
+	  { id: 11, name: 'infra', tenantId: 1  }
 	],
-	priority: 'high' as Priority,
-  };
+	priority: 'high' as Priority
+};
 
 export default async function getTaskReqMock(taskId: number) {
 	return TEST_TASK;

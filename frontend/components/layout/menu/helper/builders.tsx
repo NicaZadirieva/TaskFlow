@@ -8,25 +8,25 @@ import  { isActive } from './isActive';
  * @param navItems 
  * @returns 
  */
-export const buildMenuItems = (navItems: NavItem[]): MenuProps["items"] =>
-  navItems.map((item) =>
-    item.children
-      ? {
-          key: item.id,
-          icon: item.icon,
-          label: item.label,
-          children: item.children.map((child) => ({
-            key: child.href,
-            icon: child.icon,
-            label: <Link href={child.href}>{child.label}</Link>,
-          })),
-        }
-      : {
-          key: item.href!,
-          icon: item.icon,
-          label: <Link href={item.href!}>{item.label}</Link>,
-        },
-  );
+export const buildMenuItems = (navItems: NavItem[]): MenuProps['items'] =>
+	navItems.map((item) =>
+		item.children
+			? {
+				key: item.id,
+				icon: item.icon,
+				label: item.label,
+				children: item.children.map((child) => ({
+					key: child.href,
+					icon: child.icon,
+					label: <Link href={child.href}>{child.label}</Link>
+				}))
+			}
+			: {
+				key: item.href!,
+				icon: item.icon,
+				label: <Link href={item.href!}>{item.label}</Link>
+			}
+	);
 
 /**
  * Определить, какие пункты меню активны
@@ -35,20 +35,20 @@ export const buildMenuItems = (navItems: NavItem[]): MenuProps["items"] =>
  * @returns 
  */
 export const buildSelection = (navItems: NavItem[], pathname: string) => {
-  const selected: string[] = [];
-  const opened: string[] = [];
+	const selected: string[] = [];
+	const opened: string[] = [];
 
-  for (const item of navItems) {
-    if (item.children) {
-      const matched = item.children.find((c) => isActive(pathname, c.href));
-      if (matched) {
-        selected.push(matched.href);
-        opened.push(item.id);
-      }
-    } else if (item.href && isActive(pathname, item.href)) {
-      selected.push(item.href);
-    }
-  }
+	for (const item of navItems) {
+		if (item.children) {
+			const matched = item.children.find((c) => isActive(pathname, c.href));
+			if (matched) {
+				selected.push(matched.href);
+				opened.push(item.id);
+			}
+		} else if (item.href && isActive(pathname, item.href)) {
+			selected.push(item.href);
+		}
+	}
 
-  return { selectedKeys: selected, openKeys: opened };
+	return { selectedKeys: selected, openKeys: opened };
 };

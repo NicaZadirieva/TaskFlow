@@ -1,7 +1,7 @@
-import { Task } from "@/api/types/task.types";
+import { CreateTaskRequest } from '@/api/dto/task/create/CreateTaskRequest';
 
-export default async function createTaskReqMock(task: Omit<Task, 'created_by'>) {
-    return Promise.resolve(
-        true
-    );
+export default async function createTaskReqMock(task: CreateTaskRequest) {
+	return Promise.resolve(
+		true
+	);
 }

@@ -6,5 +6,5 @@ export default async function AddTaskPage() {
 	return <TaskCreator tagsOptions={tagsOptions.map((tag) => {return {
 		value: tag.name,
 		label: tag.name
-	}})}/>
+	};})}/>;
 }

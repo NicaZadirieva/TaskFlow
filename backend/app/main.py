@@ -2,14 +2,15 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.shared import models  # noqa: F401 — регистрирует все модели в Base.registry
+from fastapi_offline import FastAPIOffline
 
+from app.executor.routes import router as executor_router
+from app.github_label.routes import router as github_label_router
+from app.shared import models  # noqa: F401 — регистрирует все модели в Base.registry
 from app.shared.settings import Settings
+from app.task.routes import router as tasks_router
 from app.tenant.routes import router as tenant_router
 from app.user.routes import router as user_router
-from app.executor.routes import router as executor_router
-from app.task.routes import router as tasks_router
-from app.github_label.routes import router as github_label_router
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 def create_app() -> FastAPI:
     logger.debug("Запуск")
     settings = Settings()  # type: ignore
-    new_app = FastAPI(
+    new_app = FastAPIOffline(
         title="TaskFlow",
         description="API для работы приложения трекер задач TaskFlow",
         version="0.0.1",
@@ -26,14 +27,14 @@ def create_app() -> FastAPI:
             {"name": "User", "description": "Авторизация пользователя"},
             {"name": "Executors", "description": "Управление назначенными тасками"},
             {"name": "Tasks", "description": "Управление задачами"},
-            {"name": "Tags", "description": "Управление тегами"}
+            {"name": "Tags", "description": "Управление тегами"},
         ],
     )
 
     # разрешённые источники (домены)
     origins = [
         "http://localhost:3000",  # Next.js фронтенд
-        "http://127.0.0.1:3000",   # Альтернативный адрес
+        "http://127.0.0.1:3000",  # Альтернативный адрес
     ]
 
     new_app.add_middleware(
@@ -41,8 +42,8 @@ def create_app() -> FastAPI:
         allow_origins=origins,
         # Разрешить отправку учётных данных (cookies, Authorization)
         allow_credentials=True,
-        allow_methods=["*"],      # Разрешить все HTTP-методы
-        allow_headers=["*"],       # Разрешить все заголовки
+        allow_methods=["*"],  # Разрешить все HTTP-методы
+        allow_headers=["*"],  # Разрешить все заголовки
     )
     new_app.state.settings = settings
 

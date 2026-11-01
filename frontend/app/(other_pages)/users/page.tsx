@@ -1,10 +1,11 @@
-import { getUsersReq } from '@/api/requests';
+import getServerUsersReq from '@/api/requests/user/get_users/server/get_users.req';
 import { UserTable } from '@/components/ui/user';
 
 
 export default async function UsersPage() {
-  const users = await getUsersReq();
-  if (users) {
-      return <UserTable users={users}/>;
-  }
+	const dto = await getServerUsersReq();
+	if (dto) {
+		// TODO: перевести dto в entities
+		return <UserTable users={dto.users}/>;
+	}
 }

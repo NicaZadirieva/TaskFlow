@@ -12,5 +12,5 @@ export default async function TaskPage({ params }: TaskPageParams) {
 		return notFound();
 	}
 	const mapped = fromTaskDto(task);
-	return <TaskEditor task={mapped}/>
+	return <TaskEditor task={mapped}/>;
 }

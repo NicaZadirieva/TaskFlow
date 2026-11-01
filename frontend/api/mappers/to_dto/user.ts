@@ -1,5 +1,5 @@
 import { User } from '@/api/types/user.types';
-
+// TODO: переделать createUserDto в api dto
 export function createUserDto(userDto: User) {
 	return userDto as User;
 }
