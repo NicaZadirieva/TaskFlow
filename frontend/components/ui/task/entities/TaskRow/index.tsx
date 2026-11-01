@@ -137,7 +137,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 				]}
 			>
 				<div className={styles.left}>
-					{isOver && (
+					{isOver == true && (
 						<>
 							<Tag color={'error'}>Просрочка</Tag>
 							<DividerWithMargins />

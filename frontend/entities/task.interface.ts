@@ -28,6 +28,9 @@ export interface Task {
   // TODO: добавить в БД
   task_images?: string[];
   version?: number;
+
+  executorsHours: { fact?: number; planned?: number };
+  executorsBudget: { fact?: number; planned?: number };
 }
 
 
