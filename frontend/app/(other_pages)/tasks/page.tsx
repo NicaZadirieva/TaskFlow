@@ -20,6 +20,7 @@ import { getUsersServerReq } from '@/api/requests/user/get_users/server/get_user
 import { filtersToSearchParams, parseFilters } from '@/lib/taskFiltersUrl';
 import { toURLSearchParams } from '@/lib/toUrlSearchParams';
 import styles from './page.module.css';
+import getCurrentUserServerReq from '@/api/requests/user/get_current_user/server/get_current_user.req';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -45,6 +46,7 @@ export default async function ListAllTasksPage({
 
 	if (!tasks) return null;
 	const mappedTasks = tasks.items.map(fromTaskOut);
+	const currentUser = await getCurrentUserServerReq();
 
 
 	return (
@@ -60,6 +62,7 @@ export default async function ListAllTasksPage({
 			</Suspense>
 
 			<TasksInKanban
+				currentUser={currentUser}
 				initialTasks={mappedTasks}
 				initialUsers={userData.users}
 				search={sp.toString()}

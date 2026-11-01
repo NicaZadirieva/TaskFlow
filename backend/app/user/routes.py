@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from app.user.current_user import CurrentUserDeps
 from app.user.schemas import (
     CreateUserRequest,
+    GetCurrentUserResponse,
     GetUsersResponse,
     JWTResponse,
     TenantRole,
@@ -68,9 +69,18 @@ async def get_users(current_user: CurrentUserDeps, service: UserServiceDeps):
                     role=TenantRole(user.role.value),
                     is_active=user.is_active,
                     hourly_rate=user.hourly_rate,
-                    login=user.login
+                    login=user.login,
                 )
                 for user in users
             ]
         )
     raise HTTPException(403, "Tenant not exists")
+
+
+@router.get("/current", response_model=GetCurrentUserResponse, status_code=200)
+async def get_current_user(current_user: CurrentUserDeps, service: UserServiceDeps):
+    return GetCurrentUserResponse(
+        user_id=current_user.id,
+        role=TenantRole[current_user.role.value],
+        tenant_id=current_user.tenant_id,
+    )

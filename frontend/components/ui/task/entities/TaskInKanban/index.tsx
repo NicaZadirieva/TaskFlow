@@ -37,11 +37,12 @@ import { DefaultTaskNote, DividerWithMargins, GithubClickableTag, PriorityBadge,
 import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import ShowMetrics from '../ShowMetrics';
+import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
 
 
 const { Text } = Typography;
 
-export default function TaskInKanban({ task, users }: { task: Task, users: User[]}) {
+export default function TaskInKanban({ task, users, currentUser }: { task: Task, users: User[], currentUser: GetCurrentUserResponse}) {
 	const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
 	const showTimeCostsEditor = () => setShowTimeEditor(true);
 	const hideTimeCostsEditor = () => setShowTimeEditor(false);
@@ -54,7 +55,7 @@ export default function TaskInKanban({ task, users }: { task: Task, users: User[
 	const showImagesModal = () => setShowImages(true);
 	const hideImagesModal = () => setShowImages(false);
 
-	const currentUser = assignee;
+	const currentAssignee = task.assignees.filter((a) => a.user_id == currentUser.user_id)[0];
 	const isDescriptionLong = !!task.description && task.description.length > 180;
 
 	const [removing, setRemoving] = useState<Executor | null>(null);
@@ -301,7 +302,7 @@ export default function TaskInKanban({ task, users }: { task: Task, users: User[
 			</Card>
 			<TimeCostsEditor
 				open={showTimeEditor}
-				assignee={currentUser}
+				assignee={currentAssignee}
 				taskTitle={task.title}
 				onClose={() => {
 					hideTimeCostsEditor();

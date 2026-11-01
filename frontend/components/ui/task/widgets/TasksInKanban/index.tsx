@@ -6,12 +6,15 @@ import { Task } from '@/entities/task.interface';
 import { User } from '@/entities/user.interface';
 import { useQuery } from '@tanstack/react-query';
 import TaskInKanban from '../../entities/TaskInKanban';
+import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
 
 export default function TasksInKanban({
+	currentUser,
 	initialTasks,
 	initialUsers,
 	search
 }: {
+  currentUser: GetCurrentUserResponse,
   initialTasks: Task[];
   initialUsers: User[];
   search: string;
@@ -37,7 +40,7 @@ export default function TasksInKanban({
 
 	return (
 		<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20, maxWidth: 1200, margin: '0 auto' }}>
-			{tasks.map((t) => <TaskInKanban key={t.id} task={t} users={users} />)}
+			{tasks.map((t) => <TaskInKanban key={t.id} task={t} users={users} currentUser={currentUser}/>)}
 		</div>
 	);
 }
