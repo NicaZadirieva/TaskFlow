@@ -44,3 +44,12 @@ class UserDto(BaseModel):
 
 class GetUsersResponse(BaseModel):
     users: list[UserDto]
+
+
+# получение текущего юзера
+
+
+class GetCurrentUserResponse(BaseModel):
+    user_id: int
+    role: TenantRole
+    tenant_id: int
