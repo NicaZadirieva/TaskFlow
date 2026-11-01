@@ -1,4 +1,4 @@
-import { TenantRole } from "@/api/types/user.types";
+import { TenantRole } from '@/api/types/user.types';
 
 export default interface UserDto {
     id: number;
@@ -9,4 +9,4 @@ export default interface UserDto {
     email: string;
     is_active: boolean;
     hourly_rate?: number;
-}
+};;;;;;;;;;

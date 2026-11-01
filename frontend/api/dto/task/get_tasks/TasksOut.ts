@@ -1,6 +1,6 @@
-import { ExecutorShortOut } from "./ExecutorShortOut";
-import TagShortOut from "./TagShortOut";
-import { TaskOut } from "./TaskOut";
+import { ExecutorShortOut } from './ExecutorShortOut';
+import TagShortOut from './TagShortOut';
+import { TaskOut } from './TaskOut';
 
 export default interface TasksOut {
     items: TaskOut[];
@@ -10,4 +10,4 @@ export default interface TasksOut {
 
     all_executors?: ExecutorShortOut[] | null;
     all_tags?: TagShortOut[] | null;
-}
+};;;;;;;;;;

@@ -1,17 +1,17 @@
 import {
-  DashboardOutlined,
-  TeamOutlined,
-  SettingOutlined,
-  BarChartOutlined,
-  UserAddOutlined,
-  UsergroupAddOutlined,
-  EditOutlined,
-  UnorderedListOutlined,
-  PlusOutlined,
-  FileTextOutlined,
-  ToolOutlined,
-  ProfileOutlined,
-} from "@ant-design/icons";
+	DashboardOutlined,
+	TeamOutlined,
+	SettingOutlined,
+	BarChartOutlined,
+	UserAddOutlined,
+	UsergroupAddOutlined,
+	EditOutlined,
+	UnorderedListOutlined,
+	PlusOutlined,
+	FileTextOutlined,
+	ToolOutlined,
+	ProfileOutlined
+} from '@ant-design/icons';
 
 export type NavItem = {
   id: string;
@@ -28,95 +28,95 @@ export type NavItem = {
 
 // TODO: добавить tenant_id в пути
 export const NAV_ITEMS: NavItem[] = [
-  {
-    id: "project",
-    label: "Проекты",
-    href: "/projects",
-    icon: <DashboardOutlined />,
-    children: [
-      {
-        id: "projects-list",
-        label: "Просмотр",
-        href: "/projects",
-        icon: <ProfileOutlined />,
-      },
-      {
-        id: "projects-add",
-        label: "Добавить",
-        href: "/projects/new",
-        icon: <PlusOutlined />,
-      }
-    ],
-  },
-  {
-    id: "users",
-    label: "Пользователи",
-    icon: <TeamOutlined />,
-    href: "/users",
-    children: [
-      {
-        id: "users-list",
-        label: "Просмотр",
-        href: "/users",
-        icon: <ProfileOutlined />,
-      },
-      {
-        id: "user-add",
-        label: "Добавить",
-        href: '/users/new',
-        icon: <PlusOutlined />,
-      }
-    ]
-  },
-  {
-    id: "tasks",
-    label: "Задачи",
-    icon: <FileTextOutlined />,
-    children: [
-      {
-        id: "tasks-list",
-        label: "Просмотр",
-        href: "/tasks",
-        icon: <UnorderedListOutlined />,
-      },
-      {
-        id: "task-add",
-        label: "Добавить задачу",
-        href: "/task/new",
-        icon: <PlusOutlined />,
-      },
-    ],
-  },
-  {
-    id: "statistics",
-    label: "Статистика",
-    icon: <BarChartOutlined />,
-    children: [
-      {
-        id: "statistics-dead-tasks",
-        label: "Просроченные задачи",
-        href: "/statistics/deadtasks",
-        icon: <UnorderedListOutlined />,
-      },
-    ],
-  },
-  {
-    id: "settings",
-    label: "Настройки",
-    icon: <SettingOutlined />,
-    children: [
-      {
-        id: "settings-password",
-        label: "Смена пароля",
-        href: "/settings/change_password",
-        icon: <ToolOutlined />,
-      },
-      {
-        id: "settings-hourly-rate",
-        label: "Смена стоимости",
-        href: "/settings/change_hourly_rate",
-        icon: <ToolOutlined />,
-      },
-    ],
-  },
+	{
+		id: 'project',
+		label: 'Проекты',
+		href: '/projects',
+		icon: <DashboardOutlined />,
+		children: [
+			{
+				id: 'projects-list',
+				label: 'Просмотр',
+				href: '/projects',
+				icon: <ProfileOutlined />
+			},
+			{
+				id: 'projects-add',
+				label: 'Добавить',
+				href: '/projects/new',
+				icon: <PlusOutlined />
+			}
+		]
+	},
+	{
+		id: 'users',
+		label: 'Пользователи',
+		icon: <TeamOutlined />,
+		href: '/users',
+		children: [
+			{
+				id: 'users-list',
+				label: 'Просмотр',
+				href: '/users',
+				icon: <ProfileOutlined />
+			},
+			{
+				id: 'user-add',
+				label: 'Добавить',
+				href: '/users/new',
+				icon: <PlusOutlined />
+			}
+		]
+	},
+	{
+		id: 'tasks',
+		label: 'Задачи',
+		icon: <FileTextOutlined />,
+		children: [
+			{
+				id: 'tasks-list',
+				label: 'Просмотр',
+				href: '/tasks',
+				icon: <UnorderedListOutlined />
+			},
+			{
+				id: 'task-add',
+				label: 'Добавить задачу',
+				href: '/task/new',
+				icon: <PlusOutlined />
+			}
+		]
+	},
+	{
+		id: 'statistics',
+		label: 'Статистика',
+		icon: <BarChartOutlined />,
+		children: [
+			{
+				id: 'statistics-dead-tasks',
+				label: 'Просроченные задачи',
+				href: '/statistics/deadtasks',
+				icon: <UnorderedListOutlined />
+			}
+		]
+	},
+	{
+		id: 'settings',
+		label: 'Настройки',
+		icon: <SettingOutlined />,
+		children: [
+			{
+				id: 'settings-password',
+				label: 'Смена пароля',
+				href: '/settings/change_password',
+				icon: <ToolOutlined />
+			},
+			{
+				id: 'settings-hourly-rate',
+				label: 'Смена стоимости',
+				href: '/settings/change_hourly_rate',
+				icon: <ToolOutlined />
+			}
+		]
+	}
 ];

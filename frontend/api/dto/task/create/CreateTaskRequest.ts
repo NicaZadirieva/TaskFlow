@@ -1,6 +1,6 @@
-import { Priority, TaskStatus } from "@/api/types/task.types";
-import CreateTaskExecutor from "./CreateTaskExecutor";
-import TagOut from "./TagOut";
+import { Priority, TaskStatus } from '@/api/types/task.types';
+import CreateTaskExecutor from './CreateTaskExecutor';
+import TagOut from './TagOut';
 
 export interface CreateTaskRequest {
     project_id?: number | null;

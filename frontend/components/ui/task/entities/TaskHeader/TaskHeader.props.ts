@@ -1,5 +1,5 @@
-import { GithubLabel } from "@/entities/githubLabel.interface";
-import { Priority, Status } from "@/entities/task.interface";
+import { GithubLabel } from '@/entities/githubLabel.interface';
+import { Priority, Status } from '@/entities/task.interface';
 
 export default interface TaskHeaderProps {
     id?: number;
@@ -8,4 +8,4 @@ export default interface TaskHeaderProps {
     title: string;
     description?: string;
     tags?: GithubLabel[]
-}
+};;;;;;;;;;

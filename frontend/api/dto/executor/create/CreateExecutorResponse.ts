@@ -8,4 +8,4 @@ export default interface CreateExecutorResponse {
     is_active: boolean;
     login: string;
     email: string;
-}
+};;;;;;;;;;

@@ -5,8 +5,8 @@ import createTaskReqReal from './create.req.real';
 
 
 export default async function createTaskReq(task: CreateTaskRequest) {
-    if (isMockEnabled()) {
-        return await createTaskReqMock(task);
-    }
-    return await createTaskReqReal(task);
+	if (isMockEnabled()) {
+		return await createTaskReqMock(task);
+	}
+	return await createTaskReqReal(task);
 }

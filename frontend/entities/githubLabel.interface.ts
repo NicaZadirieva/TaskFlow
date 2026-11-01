@@ -3,4 +3,4 @@ export type GithubLabel = {
   name: string;
 };
 
-export const GithubLabelDefaultColor = "grey";
+export const GithubLabelDefaultColor = 'grey';

@@ -6,4 +6,4 @@ export default interface CreateExecutorRequest {
     planned?: number;
     hourly_rate?: number;
     version?: number;
-}
+};;;;;;;;;;

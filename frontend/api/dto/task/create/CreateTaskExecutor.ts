@@ -6,4 +6,4 @@ export default interface CreateTaskExecutor {
     hours: number;
     planned: number;
     hourly_rate: number;
-}
+};;;;;;;;;;

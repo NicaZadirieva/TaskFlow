@@ -1,6 +1,6 @@
-import { Priority, TaskStatus } from "@/api/types/task.types";
-import { ExecutorShortOut } from "./ExecutorShortOut";
-import TagShortOut from "./TagShortOut";
+import { Priority, TaskStatus } from '@/api/types/task.types';
+import { ExecutorShortOut } from './ExecutorShortOut';
+import TagShortOut from './TagShortOut';
 
 // Если Decimal приходит как строка — типичный вариант для Pydantic v2 JSON.
 type DecimalString = string;

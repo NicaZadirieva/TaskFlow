@@ -1,24 +1,24 @@
-import { Task } from "@/entities/task.interface";
-import TaskRow from "../../entities/TaskRow";
+import { Task } from '@/entities/task.interface';
+import TaskRow from '../../entities/TaskRow';
 
 
 
 
 export default function TasksInRow({ tasks }: { tasks: Task[] }) {
-  return (
-	<>
+	return (
+		<>
 	  <div
-		style={{
-		  display: "grid",
-		  gridTemplateColumns: "1fr",
+				style={{
+		  display: 'grid',
+		  gridTemplateColumns: '1fr',
 		  gap: 20,
 		  maxWidth: 1200,
-		  margin: "0 auto",
-		}}
+		  margin: '0 auto'
+				}}
 	  >
-		{tasks.map((t) => (
+				{tasks.map((t) => (
 		  <TaskRow key={t.id} task={t} />
-		))}
+				))}
 	  </div>
 
 	  <style>{`
@@ -26,6 +26,6 @@ export default function TasksInRow({ tasks }: { tasks: Task[] }) {
 		.assignee-row:hover { background: #f9fafb; }
 		.assignee-row:hover .assignee-actions { opacity: 1; }
 	  `}</style>
-	</>
-  );
+		</>
+	);
 }
