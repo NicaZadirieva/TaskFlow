@@ -4,7 +4,14 @@ from enum import Enum
 from typing import Annotated, Any
 
 from fastapi import Depends, Query
-from pydantic import AliasPath, BaseModel, BeforeValidator, ConfigDict, Field, computed_field
+from pydantic import (
+    AliasPath,
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    computed_field,
+)
 
 from app.task.models import Priority, Status
 
@@ -56,6 +63,7 @@ class TagShortOut(BaseModel):
 
 class ExecutorShortOut(BaseModel):
     """Краткая инфа об исполнителе задачи."""
+
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     id: int
@@ -80,6 +88,7 @@ class ExecutorShortOut(BaseModel):
 
 # ---------- сама задача ----------
 
+
 class TaskOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -99,25 +108,33 @@ class TaskOut(BaseModel):
     created_by: int
 
     estimated_budget: Decimal | None = Field(
-        default=None, max_digits=12, decimal_places=2,
+        default=None, max_digits=12, decimal_places=2
     )
-    actual_budget: Decimal | None = Field(
-        default=None, max_digits=12, decimal_places=2,
-    )
+    actual_budget: Decimal | None = Field(default=None, max_digits=12, decimal_places=2)
     estimated_hours: Decimal | None = Field(
-        default=None, max_digits=5, decimal_places=2,
+        default=None, max_digits=7, decimal_places=2
     )
-    actual_hours: Decimal | None = Field(
-        default=None, max_digits=5, decimal_places=2,
+    actual_hours: Decimal | None = Field(default=None, max_digits=7, decimal_places=2)
+
+    # === новые поля, считаются из исполнителей ===
+    executors_estimated_budget: Decimal | None = Field(
+        default=None, max_digits=12, decimal_places=2
+    )
+    executors_actual_budget: Decimal | None = Field(
+        default=None, max_digits=12, decimal_places=2
+    )
+    executors_estimated_hours: Decimal | None = Field(
+        default=None, max_digits=7, decimal_places=2
+    )
+    executors_actual_hours: Decimal | None = Field(
+        default=None, max_digits=7, decimal_places=2
     )
 
     note: dict[str, Any] | None = None
     task_images: list[str] | None = None
 
     tags: list[TagShortOut] = []
-    executors: list[ExecutorShortOut] = Field(
-        default_factory=list
-    )
+    executors: list[ExecutorShortOut] = Field(default_factory=list)
 
     @computed_field
     @property
@@ -136,17 +153,25 @@ class TaskOut(BaseModel):
             return 0
         return (now - due).days
 
+
 class UserShortOut(BaseModel):
     user_id: int
     login: str
     email: str
     name: str
-    
+
+
 class TasksOut(BaseModel):
     items: list[TaskOut]
     total: int
     limit: int
     offset: int
+
+    # === новые поля: суммы по странице, посчитаны из исполнителей ===
+    total_planned: Decimal = Field(
+        default=Decimal("0"), max_digits=12, decimal_places=2
+    )
+    total_hours: Decimal = Field(default=Decimal("0"), max_digits=12, decimal_places=2)
 
 
 # ---------- DI-фабрика ----------
@@ -167,9 +192,9 @@ def _split_csv(v: Any) -> Any:
 
 
 # элементы массива через ","
-CsvIntList = Annotated[list[int],      BeforeValidator(_split_csv)]
+CsvIntList = Annotated[list[int], BeforeValidator(_split_csv)]
 CsvPriority = Annotated[list[Priority], BeforeValidator(_split_csv)]
-CsvStatus = Annotated[list[Status],   BeforeValidator(_split_csv)]
+CsvStatus = Annotated[list[Status], BeforeValidator(_split_csv)]
 CsvDeadline = Annotated[list[TaskDeadline], BeforeValidator(_split_csv)]
 
 
@@ -190,11 +215,10 @@ async def get_task_filters(
         SortOrder,
         Query(description="Порядок сортировки"),
     ] = SortOrder.desc,
-
     # --- OR-фильтры ---
-    tag_ids:  Annotated[CsvIntList | None, Query(explode=False)] = None,
+    tag_ids: Annotated[CsvIntList | None, Query(explode=False)] = None,
     priority: Annotated[CsvPriority | None, Query(explode=False)] = None,
-    status:   Annotated[CsvStatus | None, Query(explode=False)] = None,
+    status: Annotated[CsvStatus | None, Query(explode=False)] = None,
     deadline: Annotated[CsvDeadline | None, Query(explode=False)] = None,
 ) -> TaskFilters:
     return TaskFilters(

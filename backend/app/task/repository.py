@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import Select, and_, exists, func, or_, select
+from sqlalchemy import Select, and_, cast, exists, func, literal, or_, select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.types import Numeric
 
 from app.shared.db import DbSessionDeps
 from app.executor.models import Executor
@@ -112,10 +114,100 @@ class TaskRepository:
     @staticmethod
     def _apply_sort_and_pagination(stmt: Select, f: TaskFilters) -> Select:
         sort_col = getattr(Task, f.sort_by.value)
-        order = (
-            sort_col.desc() if f.sort_order == SortOrder.desc else sort_col.asc()
-        )
+        order = sort_col.desc() if f.sort_order == SortOrder.desc else sort_col.asc()
         return stmt.order_by(order).limit(f.limit).offset(f.offset)
+
+    # ---------- executors aggregation ----------
+
+    @staticmethod
+    def calculate_executor_totals(
+        executors: list[Executor],
+    ) -> tuple[Decimal, Decimal, Decimal, Decimal]:
+        """In-memory агрегат по уже загруженным исполнителям.
+
+        Возвращает кортеж:
+          (planned_hours, actual_hours, planned_budget, actual_budget)
+
+        Снятые исполнители (removed=True) не учитываются.
+        Если у исполнителя не задан hourly_rate, его часы попадают
+        в *_hours, но вклад в *_budget = 0.
+        """
+        zero = Decimal("0")
+        planned_hours = zero
+        actual_hours = zero
+        planned_budget = zero
+        actual_budget = zero
+
+        for e in executors:
+            if e.removed:
+                continue
+            rate = Decimal(e.hourly_rate or 0)
+            planned = e.planned if e.planned is not None else zero
+            hours = e.hours if e.hours is not None else zero
+
+            planned_hours += planned
+            actual_hours += hours
+            planned_budget += planned * rate
+            actual_budget += hours * rate
+
+        return planned_hours, actual_hours, planned_budget, actual_budget
+
+    async def get_executor_totals_by_task_ids(
+        self, task_ids: list[int], tenant_id: int
+    ) -> dict[int, dict[str, Decimal]]:
+        """Агрегаты по исполнителям на задачу, одним запросом.
+
+        Возвращает:
+          {task_id: {
+              "executors_estimated_hours":  Decimal,
+              "executors_actual_hours":     Decimal,
+              "executors_estimated_budget": Decimal,
+              "executors_actual_budget":    Decimal,
+          }}
+
+        Считаются только не снятые исполнители (removed=False).
+        Задачи без исполнителей в результат не попадают.
+        """
+        if not task_ids:
+            return {}
+
+        zero = literal(Decimal("0"), Numeric(12, 2))
+
+        planned_amount = func.coalesce(Executor.planned, zero) * func.coalesce(
+            cast(Executor.hourly_rate, Numeric(12, 2)), zero
+        )
+        actual_amount = func.coalesce(Executor.hours, zero) * func.coalesce(
+            cast(Executor.hourly_rate, Numeric(12, 2)), zero
+        )
+
+        stmt = (
+            select(
+                Executor.task_id,
+                func.coalesce(func.sum(Executor.planned), zero).label(
+                    "estimated_hours"
+                ),
+                func.coalesce(func.sum(Executor.hours), zero).label("actual_hours"),
+                func.coalesce(func.sum(planned_amount), zero).label("estimated_budget"),
+                func.coalesce(func.sum(actual_amount), zero).label("actual_budget"),
+            )
+            .where(
+                Executor.task_id.in_(task_ids),
+                Executor.tenant_id == tenant_id,
+                Executor.removed.is_(False),
+            )
+            .group_by(Executor.task_id)
+        )
+        rows = (await self.db_session.execute(stmt)).all()
+
+        return {
+            task_id: {
+                "executors_estimated_hours": est_h,
+                "executors_actual_hours": act_h,
+                "executors_estimated_budget": est_b,
+                "executors_actual_budget": act_b,
+            }
+            for task_id, est_h, act_h, est_b, act_b in rows
+        }
 
     # ---------- read ----------
 

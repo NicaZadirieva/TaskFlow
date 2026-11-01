@@ -1,25 +1,36 @@
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends
 
 from app.executor.models import Executor
 from app.executor.repository import ExecutorRepoDeps
-from app.executor.schema import ExecutorOut
+from app.github_label.models import GithubLabel
 from app.github_label.repository import GithubLabelRepoDeps
-from app.github_label.schemas import GithubLabelOut
 from app.task.models import Task
 from app.task.schemas.create_task import CreateTaskRequest
-from app.task.schemas.get_filtered_tasks import ExecutorShortOut, TaskFilters, TasksOut, UserShortOut
-
+from app.task.schemas.get_filtered_tasks import (
+    TaskFilters,
+    TaskOut,
+    TasksOut,
+    UserShortOut,
+)
 
 from .repository import TaskRepoDeps
 
 
 class TaskService:
-    def __init__(self, task_repo: TaskRepoDeps, github_label_repo: GithubLabelRepoDeps, executors_repo: ExecutorRepoDeps):
+    def __init__(
+        self,
+        task_repo: TaskRepoDeps,
+        github_label_repo: GithubLabelRepoDeps,
+        executors_repo: ExecutorRepoDeps,
+    ):
         self.task_repo = task_repo
         self.github_label_repo = github_label_repo
         self.executors_repo = executors_repo
+
+    # ---------- write ----------
 
     async def create_task(
         self,
@@ -42,29 +53,36 @@ class TaskService:
             actual_hours=dto.actual_hours,
             note=dto.note,
             task_images=dto.task_images,
-            executors=[]
+            executors=[],
         )
         new_task = await self.task_repo.save(task)
-        for tag in dto.tags:
-           await self.github_label_repo.attach_or_create(new_task.id, tenant_id, tag.name)
-        executors = [
-            Executor(
-                user_id=e.user_id,
-                task_id=task.id,
-                tenant_id=tenant_id,
-                role_in_task=e.role_in_task,
-                hours=e.hours,
-                planned=e.planned,
-                hourly_rate=e.hourly_rate,
-                assigned_by=user_id,
-                is_active=True,
-                removed=False,
-            )
-            for e in dto.executors
-        ]
-        for executor in executors:
-            await self.executors_repo.save(executor)
+        if dto.tags:
+            for tag in dto.tags:
+                await self.github_label_repo.attach_or_create(
+                    new_task.id, tenant_id, tag.name
+                )
+        if dto.executors:
+            executors = [
+                Executor(
+                    user_id=e.user_id,
+                    task_id=new_task.id,
+                    tenant_id=tenant_id,
+                    role_in_task=e.role_in_task,
+                    hours=e.hours,
+                    planned=e.planned,
+                    hourly_rate=e.hourly_rate,
+                    assigned_by=user_id,
+                    is_active=True,
+                    removed=False,
+                )
+                for e in dto.executors
+            ]
+            for executor in executors:
+                await self.executors_repo.save(executor)
+
         return new_task
+
+    # ---------- read ----------
 
     async def list_tasks(
         self,
@@ -74,11 +92,41 @@ class TaskService:
     ) -> TasksOut:
         items = await self.task_repo.list_tasks(tenant_id, filters, user_ids)
         total = await self.task_repo.count(tenant_id, filters, user_ids)
+
+        zero = Decimal("0")
+        enriched: list[TaskOut] = []
+        total_planned = zero
+        total_hours = zero
+
+        for task in items:
+            (
+                planned_hours,
+                actual_hours,
+                planned_budget,
+                actual_budget,
+            ) = self.task_repo.calculate_executor_totals(task.executors)
+
+            total_planned += planned_hours
+            total_hours += actual_hours
+
+            enriched.append(
+                TaskOut.model_validate(task).model_copy(
+                    update={
+                        "executors_estimated_hours": planned_hours or None,
+                        "executors_actual_hours": actual_hours or None,
+                        "executors_estimated_budget": planned_budget or None,
+                        "executors_actual_budget": actual_budget or None,
+                    }
+                )
+            )
+
         return TasksOut(
-            items=items,
+            items=enriched,
             total=total,
             limit=filters.limit,
-            offset=filters.offset
+            offset=filters.offset,
+            total_planned=total_planned,
+            total_hours=total_hours,
         )
 
     async def list_my_tasks(
@@ -90,9 +138,9 @@ class TaskService:
         return await self.list_tasks(
             tenant_id=tenant_id,
             filters=filters,
-            user_ids=[user_id],   # всегда только текущий
+            user_ids=[user_id],
         )
-        
+
     async def get_filter_assignees(self, tenant_id: int) -> list[UserShortOut]:
         data = await self.executors_repo.get_executors(tenant_id, only_active=True)
         return [
@@ -105,11 +153,15 @@ class TaskService:
             for e in data
         ]
 
-    async def get_filter_tags(self, tenant_id: int) -> list[GithubLabelOut]:
+    async def get_filter_tags(self, tenant_id: int) -> list[GithubLabel]:
         return await self.github_label_repo.get_all(tenant_id)
 
 
-def get_task_service(task_repo: TaskRepoDeps, github_label_repo: GithubLabelRepoDeps, executors_repo: ExecutorRepoDeps) -> TaskService:
+def get_task_service(
+    task_repo: TaskRepoDeps,
+    github_label_repo: GithubLabelRepoDeps,
+    executors_repo: ExecutorRepoDeps,
+) -> TaskService:
     return TaskService(task_repo, github_label_repo, executors_repo)
 
 
