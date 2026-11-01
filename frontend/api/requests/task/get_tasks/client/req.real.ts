@@ -1,23 +1,28 @@
-import TasksOut from '@/api/dto/task/get_tasks/TasksOut';
+import type TasksOut from '@/api/dto/task/get_tasks/TasksOut';
+import RequestError from '@/api/utils/error';
 import getBackendUrl from '@/utils/getBackendUrl';
+import parseErrorMessage from '@/utils/parseErrorMessage';
 
 export async function getTasksClientReal(search?: URLSearchParams): Promise<TasksOut> {
 	const qs = search?.toString();
 	const url = `${getBackendUrl()}/task/all${qs ? `?${qs}` : ''}`;
 
-	const res = await fetch(url, {
-		method: 'GET',
-		// ВАЖНО: не "no-store" — TanStack Query сам управляет кэшем
-		credentials: 'include',   // браузер приложит cookies сам
-		headers: { Accept: 'application/json' }
-		// ETag браузер обработает сам, если сервер вернёт заголовок
-	});
+	let res: Response;
 
-	// 304 — данные не изменились. Браузер отдаст закэшированное тело
-	// (при Cache-Control: no-cache), но fetch вернёт пустой res.body.
-	// Проще: не полагаться на кэш fetch, а на кэш TanStack Query.
+	try {
+		res = await fetch(url, {
+			method: 'GET',
+			credentials: 'include',
+			headers: { Accept: 'application/json' }
+		});
+	} catch (e) {
+		console.error('getTasksClientReal network error:', e);
+		throw new RequestError('Ошибка сети', 'NETWORK');
+	}
+
 	if (!res.ok) {
-		throw new Error(`HTTP ${res.status}`);
+		const message = await parseErrorMessage(res, `HTTP ${res.status}`);
+		throw new RequestError(message, res.status);
 	}
 
 	return (await res.json()) as TasksOut;

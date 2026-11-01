@@ -32,7 +32,6 @@ export function fromTaskOut(src: TaskOut) {
 		created_at: new Date(src.created_at),
 		task_images: src.task_images ?? undefined,
 
-		// === новые агрегаты из исполнителей ===
 		executorsHours: {
 			fact: toNum(src.executors_actual_hours),
 			planned: toNum(src.executors_estimated_hours)

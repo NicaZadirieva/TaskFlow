@@ -30,10 +30,10 @@ import { DividerWithMargins, GithubClickableTag, PriorityBadge, StatusTag, Toolt
 import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import { User } from '@/entities/user.interface';
-import { CreateExecutorResult } from '@/api/requests/executor/create/create.req.real';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
-import createExecutorReq from '@/api/requests/executor/create/create.req';
+import createExecutorReq from '@/api/requests/executor/create/client/create.req';
+import CreateExecutorResponse from '@/api/dto/executor/create/CreateExecutorResponse';
 
 const { Text } = Typography;
 
@@ -83,15 +83,11 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 				version: task.version // ← на бэкенд для оптимистичной блокировки
 			}),
 	
-		onSuccess: (res: CreateExecutorResult) => {
-			if (!res.success) {
-				message.error(res.error);
-				return;
-			}
+		onSuccess: (res: CreateExecutorResponse) => {
 			queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
 				prev.map((t) =>
 					t.id === task.id
-						? { ...t, assignees: [...t.assignees, res.data], version: (t.version ?? 0) + 1 }
+						? { ...t, assignees: [...t.assignees, res], version: (t.version ?? 0) + 1 }
 						: t
 				)
 			);
@@ -289,6 +285,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 							{task.assignees.map((assignee) => {
 								return (
 									<TaskAssignee
+										key={assignee.id}
 										assignee={assignee}
 										onChoose={(assignee) => setRemoving(assignee)}
 										onUndo={(assignee) => undoRemove(assignee)}

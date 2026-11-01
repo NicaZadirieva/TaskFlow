@@ -8,7 +8,8 @@ const mockUsers: User[] = [
 		name: 'Анна Демченко',
 		email: 'anna@taskflow.io',
 		is_active: true,
-		hourly_rate: 1500 // ₽
+		hourly_rate: 1500 ,
+		login: 'login'
 	},
 	{
 		id: 203,
@@ -16,7 +17,8 @@ const mockUsers: User[] = [
 		role: TenantRole.CLIENT,
 		name: 'Иван Петров',
 		email: 'ivan.petrov@client-company.com',
-		is_active: true
+		is_active: true,
+		login: 'login'
 		// hourlyRate отсутствует — клиенты не работают по часам
 	},
 	{
@@ -26,7 +28,8 @@ const mockUsers: User[] = [
 		name: 'Сергей Волков',
 		email: 'sergey@taskflow.io',
 		is_active: true,
-		hourly_rate: 1200
+		hourly_rate: 1200,
+		login: 'login'
 	}
 ];
 

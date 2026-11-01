@@ -1,27 +1,42 @@
-import GetUsersResponse from '@/api/dto/user/get_users/GetUsersResponse';
+import type GetUsersResponse from '@/api/dto/user/get_users/GetUsersResponse';
+import RequestError from '@/api/utils/error';
 import getBackendUrl from '@/utils/getBackendUrl';
+import parseErrorMessage from '@/utils/parseErrorMessage';
 import { cookies } from 'next/headers';
 
 export async function getUsersServerReq(): Promise<GetUsersResponse> {
 	const url = `${getBackendUrl()}/user/users`;
 
-	const cookieStore = await cookies();
+	let res: Response;
 
-	const res = await fetch(url, {
-		method: 'GET',
-		cache: 'no-store',
-		headers: {
-			Accept: 'application/json',
-			Cookie: cookieStore.toString()
-		}
-	});
+	try {
+		const cookieStore = await cookies();
+		const cookieHeader = cookieStore
+			.getAll()
+			.map((c) => `${c.name}=${c.value}`)
+			.join('; ');
 
-	if (!res.ok) {
-		const text = await res.text().catch(() => '');
-		throw new Error(
-			`[getUsersServer] ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`
-		);
+		res = await fetch(url, {
+			method: 'GET',
+			cache: 'no-store',
+			headers: {
+				Accept: 'application/json',
+				...(cookieHeader ? { Cookie: cookieHeader } : {})
+			}
+		});
+	} catch (e) {
+		console.error('getUsersServerReq network error:', e);
+		throw new RequestError('Ошибка сети', 'NETWORK');
 	}
 
-	return (await res.json());
+	if (!res.ok) {
+		const message = await parseErrorMessage(res, `${res.status} ${res.statusText}`);
+		throw new RequestError(message, res.status);
+	}
+
+	const data = await res.json();
+	if (data == null || typeof data !== 'object') {
+		throw new RequestError('Некорректный ответ сервера', 'INVALID_RESPONSE');
+	}
+	return data as GetUsersResponse;
 }

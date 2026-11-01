@@ -20,8 +20,6 @@ import styles from './index.module.css';
 import { useMemo, useState } from 'react';
 
 import Link from 'next/link';
-
-import { CreateExecutorResult } from '@/api/requests/executor/create/create.req.real';
 import { Executor } from '@/entities/executor.interface';
 import { Task } from '@/entities/task.interface';
 import { User } from '@/entities/user.interface';
@@ -43,9 +41,11 @@ import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import ShowMetrics from '../ShowMetrics';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
-import createExecutorReq from '@/api/requests/executor/create/create.req';
-import removeExecutorFromTaskReq from '@/api/requests/executor/remove/remove.req';
-import { DeleteExecutorResult } from '@/api/requests/executor/remove/remove.req.real';
+import createExecutorReq from '@/api/requests/executor/create/client/create.req';
+import removeExecutorFromTaskReq from '@/api/requests/executor/remove/client/remove.req';
+import RemoveUserFromTaskRequest from '@/api/dto/executor/remove/RemoveUserFromTaskRequest';
+import RemoveUserFromTaskResponse from '@/api/dto/executor/remove/RemoveUserFromTaskResponse';
+import CreateExecutorResponse from '@/api/dto/executor/create/CreateExecutorResponse';
 
 const { Text } = Typography;
 
@@ -96,11 +96,7 @@ export default function TaskInKanban({
 				remove_reason: assignee.remove_reason
 			}),
 
-		onSuccess: (res: DeleteExecutorResult) => {
-			if (!res.success) {
-				message.error(res.error);
-				return;
-			}
+		onSuccess: (res: RemoveUserFromTaskResponse) => {
 			queryClient.invalidateQueries({ queryKey: ['tasks'] });
 			message.success('Исполнитель удален');
 		},
@@ -124,17 +120,13 @@ export default function TaskInKanban({
 				version: task.version
 			}),
 
-		onSuccess: (res: CreateExecutorResult) => {
-			if (!res.success) {
-				message.error(res.error);
-				return;
-			}
+		onSuccess: (res: CreateExecutorResponse) => {
 			queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
 				prev.map((t) =>
 					t.id === task.id
 						? {
 							...t,
-							assignees: [...t.assignees, res.data],
+							assignees: [...t.assignees, res],
 							version: (t.version ?? 0) + 1
 						}
 						: t

@@ -11,14 +11,10 @@ export function toCreateTaskRequest(task: TaskWithoutCreatedBy | NewTask): Creat
 		priority: task.priority,
 
 		due_date: task.due_date ? task.due_date.toISOString() : null,
-
-		// В источнике — вложенный budget: { fact, planned }, в DTO — плоские строки.
 		estimated_budget:
             task.budget?.planned != null ? String(task.budget.planned) : null,
 		actual_budget:
             task.budget?.fact != null ? String(task.budget.fact) : null,
-
-		// То же самое с hours.
 		estimated_hours:
             task.hours?.planned != null ? String(task.hours.planned) : null,
 		actual_hours:
@@ -27,8 +23,6 @@ export function toCreateTaskRequest(task: TaskWithoutCreatedBy | NewTask): Creat
 		note: task.note ?? null,
 		task_images: task.task_images ?? null,
 		tags: task.tags ?? null,
-
-		// Ключевое: assignees → executors с маппингом полей.
 		executors: task.assignees?.map(toCreateTaskExecutor) ?? null
 	};
 }

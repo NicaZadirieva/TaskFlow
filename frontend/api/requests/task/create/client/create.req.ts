@@ -1,6 +1,6 @@
 import { CreateTaskRequest } from '@/api/dto/task/create/CreateTaskRequest';
 import isMockEnabled from '@/utils/isMockEnabled';
-import createTaskReqMock from './create.req.mock';
+import createTaskReqMock from '../create.req.mock';
 import createTaskReqReal from './create.req.real';
 
 
