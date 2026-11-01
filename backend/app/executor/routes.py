@@ -18,6 +18,7 @@ from app.executor.schema import (
 )
 from app.executor.service import ExecutorServiceDeps
 from app.user.current_user import CurrentUserDeps
+from app.user.service import UserServiceDeps
 
 router = APIRouter(prefix="/v1/executor", tags=["Executors"])
 logger = logging.getLogger(__name__)  # noqa: F821
@@ -131,18 +132,35 @@ async def create_executor(
     "/remove",
     response_model=RemoveUserFromTaskResponse,
     summary="Снять пользователя с задачи (soft-delete)",
+    status_code=200,
 )
 async def remove_user_from_task(
     dto: RemoveUserFromTaskRequest,
     service: ExecutorServiceDeps,
+    user_service: UserServiceDeps,
     current_user: CurrentUserDeps,
 ) -> RemoveUserFromTaskResponse:
+    user = await user_service.get_user(dto.user_id)
+    if user is None:
+        raise HTTPException(404, "User not exists to delete")
+
     executor = await service.remove_user_from_task(
         tenant_id=current_user.tenant_id,
         dto=dto,
     )
+
     return RemoveUserFromTaskResponse(
-        id=executor.id, user_id=executor.user_id, task_id=executor.task_id
+        id=executor.id,
+        user_id=executor.user_id,
+        task_id=executor.task_id,
+        user_name=user.name,
+        role_in_task=executor.role_in_task,
+        hours=executor.hours,
+        planned=executor.planned,
+        is_active=executor.is_active,
+        login=user.login,
+        email=user.email,
+        version=executor.version,
     )
 
 

@@ -139,8 +139,6 @@ class TaskRepository:
         actual_budget = zero
 
         for e in executors:
-            if e.removed:
-                continue
             rate = Decimal(e.hourly_rate or 0)
             planned = e.planned if e.planned is not None else zero
             hours = e.hours if e.hours is not None else zero

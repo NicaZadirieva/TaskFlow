@@ -46,7 +46,7 @@ export default function RemoveAssigneeModal({
 			message.warning('Укажите причину удаления');
 			return;
 		}
-		const newAssignee = { ...assignee, removed: true, removeReason: reason };
+		const newAssignee = { ...assignee, removed: true, remove_reason: reason };
 		await onRemove(newAssignee);
 
 		message.success(`${newAssignee.user_name} удалён: ${reason}`);

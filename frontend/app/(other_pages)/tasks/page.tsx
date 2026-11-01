@@ -60,7 +60,7 @@ export default async function ListAllTasksPage({
 				</div>
 			</Suspense>
 
-			<TasksInRow
+			<TasksInKanban
 				currentUser={currentUser}
 				initialTasks={mappedTasks}
 				initialUsers={userData.users}

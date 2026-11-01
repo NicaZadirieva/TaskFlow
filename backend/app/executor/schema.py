@@ -80,6 +80,15 @@ class RemoveUserFromTaskResponse(BaseModel):
     id: int
     task_id: int
     user_id: int
+    user_name: str
+    role_in_task: str
+    is_active: bool
+    login: str
+    email: str
+    version: int
+    hours: Decimal | None = None
+    planned: Decimal | None = None
+    hourly_rate: int | None = None
 
 
 # --------- Reassigned User (removed=False) ----------
