@@ -12,9 +12,9 @@ export default function TaskAssignee({
 	onChoose,
 	onUndo
 }: {
-  assignee: Executor;
-  onChoose: (assignee: Executor) => void;
-  onUndo: (assignee: Executor) => void;
+	assignee: Executor;
+	onChoose: (assignee: Executor) => void;
+	onUndo: (assignee: Executor) => void;
 }) {
 	const overdue = assignee.hours > assignee.planned;
 	const removed = !!assignee.removed;
@@ -67,7 +67,7 @@ export default function TaskAssignee({
 								verticalAlign: 'baseline'
 							}}
 						>
-              removed
+							removed
 						</span>
 					)}
 				</div>
@@ -82,7 +82,7 @@ export default function TaskAssignee({
 				>
 					{removed && assignee.remove_reason ? (
 						<span style={{ color: '#dc2626', fontWeight: 600 }}>
-              причина: {assignee.remove_reason}
+							причина: {assignee.remove_reason}
 						</span>
 					) : (
 						assignee.role_in_task
@@ -107,7 +107,7 @@ export default function TaskAssignee({
 				>
 					{assignee.hours}
 				</b>{' '}
-        / {assignee.planned} ч
+				/ {assignee.planned} ч
 			</span>
 
 			<Space

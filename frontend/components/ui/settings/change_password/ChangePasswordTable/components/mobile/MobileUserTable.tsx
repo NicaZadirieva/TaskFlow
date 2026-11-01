@@ -6,9 +6,9 @@ export default function MobileUserTable({
 	selectedUser,
 	selectUser
 }: {
-  dataSource: User[];
-  selectedUser: User | null;
-  selectUser: (user: User) => void;
+	dataSource: User[];
+	selectedUser: User | null;
+	selectUser: (user: User) => void;
 }) {
 	return (
 		<div className="user-table-mobile">

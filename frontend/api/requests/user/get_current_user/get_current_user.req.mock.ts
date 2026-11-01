@@ -7,5 +7,5 @@ export async function getCurrentUserMock(): Promise<GetCurrentUserResponse> {
 		user_id: 0,
 		tenant_id: 0,
 		role: 'OWNER' as TenantRole
-	}
+	};
 }

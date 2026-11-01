@@ -15,10 +15,10 @@ export default function TasksInKanban({
 	initialUsers,
 	search
 }: {
-  currentUser: GetCurrentUserResponse,
-  initialTasks: Task[];
-  initialUsers: User[];
-  search: string;
+	currentUser: GetCurrentUserResponse,
+	initialTasks: Task[];
+	initialUsers: User[];
+	search: string;
 }) {
 	const { data: tasks = [] } = useQuery({
 		queryKey: ['tasks', search],

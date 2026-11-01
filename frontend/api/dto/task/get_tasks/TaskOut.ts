@@ -13,34 +13,34 @@ type ISODateTimeString = string;
 
 
 export interface TaskOut {
-    id: number;
-    tenant_id: number;
-    project_id?: number | null;
+	id: number;
+	tenant_id: number;
+	project_id?: number | null;
 
-    title: string;
-    description?: string | null;
+	title: string;
+	description?: string | null;
 
-    status: TaskStatus;
-    priority: Priority;
+	status: TaskStatus;
+	priority: Priority;
 
-    due_date?: ISODateTimeString | null;
-    created_at: ISODateTimeString;
-    created_by: number;
+	due_date?: ISODateTimeString | null;
+	created_at: ISODateTimeString;
+	created_by: number;
 
-    estimated_budget?: DecimalString | null;
-    actual_budget?: DecimalString | null;
-    estimated_hours?: DecimalString | null;
-    actual_hours?: DecimalString | null;
+	estimated_budget?: DecimalString | null;
+	actual_budget?: DecimalString | null;
+	estimated_hours?: DecimalString | null;
+	actual_hours?: DecimalString | null;
 
-    note?: ITaskNote | null;
-    task_images?: string[] | null;
+	note?: ITaskNote | null;
+	task_images?: string[] | null;
 
-    tags: TagShortOut[];
-    executors: ExecutorShortOut[];
-    overdue_days: number;
+	tags: TagShortOut[];
+	executors: ExecutorShortOut[];
+	overdue_days: number;
 
-    executors_estimated_hours?: string | null;
-    executors_actual_hours?: string | null;
-    executors_estimated_budget?: string | null;
-    executors_actual_budget?: string | null;
+	executors_estimated_hours?: string | null;
+	executors_actual_hours?: string | null;
+	executors_estimated_budget?: string | null;
+	executors_actual_budget?: string | null;
 }

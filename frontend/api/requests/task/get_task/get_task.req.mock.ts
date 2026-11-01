@@ -19,12 +19,12 @@ const TEST_TASK: TaskOut = {
 	created_at: '2026-08-05',
 	overdue_days: 0,
 	note: {
-	  kind: 'info',
-	  label: 'Timebox',
-	  text: 'исследование — оценка нестабильна, ограничено 8 ч'
+		kind: 'info',
+		label: 'Timebox',
+		text: 'исследование — оценка нестабильна, ограничено 8 ч'
 	},
 	executors: [
-	  {
+		{
 			id: 4,
 			user_id: 4,
 			name: 'Дмитрий П.',
@@ -34,8 +34,8 @@ const TEST_TASK: TaskOut = {
 			login: 'login',
 			email: 'email',
 			removed: false
-	  },
-	  {
+		},
+		{
 			id: 5,
 			user_id: 5,
 			name: 'Елена С.',
@@ -45,8 +45,8 @@ const TEST_TASK: TaskOut = {
 			login: 'login',
 			email: 'email',
 			removed: false
-	  },
-	  {
+		},
+		{
 			id: 6,
 			user_id: 6,
 			name: 'Олег Р.',
@@ -56,12 +56,12 @@ const TEST_TASK: TaskOut = {
 			login: 'login',
 			email: 'email',
 			removed: false
-	  }
+		}
 	],
 	tags: [
-	  { id: 9, name: 'research', description: 'Исследование', tenant_id: 1 },
-	  { id: 10, name: 'performance', tenant_id: 1  },
-	  { id: 11, name: 'infra', tenant_id: 1  }
+		{ id: 9, name: 'research', description: 'Исследование', tenant_id: 1 },
+		{ id: 10, name: 'performance', tenant_id: 1  },
+		{ id: 11, name: 'infra', tenant_id: 1  }
 	],
 	priority: 'high' as Priority
 };

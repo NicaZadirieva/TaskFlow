@@ -10,12 +10,12 @@ const { Text } = Typography;
 const fmt = (n: number) => n.toLocaleString('ru-RU');
 
 interface Props {
-  actualHours: number;
-  estimatedHours: number;
-  actualBudget: number;
-  estimatedBudget: number;
-  due_date: string;
-  overdueDays: number;
+	actualHours: number;
+	estimatedHours: number;
+	actualBudget: number;
+	estimatedBudget: number;
+	due_date: string;
+	overdueDays: number;
 }
 
 export default function ShowMetrics({
@@ -48,7 +48,7 @@ export default function ShowMetrics({
 						<span className={styles.metricValue}>
 							<Text strong>{actualHours}</Text>{' '}
 							<Text type="secondary" className={styles.metricValueSecondary}>
-                / {estimatedHours} ч
+								/ {estimatedHours} ч
 							</Text>
 						</span>
 					</div>
@@ -68,7 +68,7 @@ export default function ShowMetrics({
 						<span className={styles.metricValue}>
 							<Text strong>{fmt(actualBudget)}</Text>{' '}
 							<Text type="secondary" className={styles.metricValueSecondary}>
-                / {fmt(estimatedBudget)} ₽
+								/ {fmt(estimatedBudget)} ₽
 							</Text>
 						</span>
 					</div>

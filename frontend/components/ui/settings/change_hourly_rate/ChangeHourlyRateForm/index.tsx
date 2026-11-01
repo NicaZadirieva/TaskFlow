@@ -7,13 +7,13 @@ import { Button, Form, InputNumber, message } from 'antd';
 
 
 interface HourlyRateFormValues {
-  hourlyRate: number;
+	hourlyRate: number;
 }
 
 export default function ChangeHourlyRateForm({
 	currentUser
 }: {
-  currentUser: User | null
+	currentUser: User | null
 }) {
 	const [form] = Form.useForm<HourlyRateFormValues>();
 
@@ -69,7 +69,7 @@ export default function ChangeHourlyRateForm({
 
 			<Form.Item>
 				<Button type="primary" htmlType="submit">
-          Сохранить
+					Сохранить
 				</Button>
 			</Form.Item>
 		</Form>

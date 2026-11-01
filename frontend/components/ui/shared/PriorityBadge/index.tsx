@@ -10,8 +10,8 @@ type PriorityBadgeColor =
   | 'processing';
 
 const PRIORITY_META: Record<
-  Priority,
-  { color: PriorityBadgeColor; label: string }
+	Priority,
+	{ color: PriorityBadgeColor; label: string }
 > = {
 	low: { color: 'default', label: 'low' },
 	high: { color: 'warning', label: 'high' },

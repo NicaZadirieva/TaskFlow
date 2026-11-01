@@ -34,7 +34,7 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
 	);
 
 	const [controlledOpenKeys, setControlledOpenKeys] =
-    useState<string[]>(openKeys);
+		useState<string[]>(openKeys);
 
 	useEffect(() => {
 		setControlledOpenKeys((prev) => {
@@ -71,7 +71,7 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
 					fontSize: 18
 				}}
 			>
-        TaskFlow
+				TaskFlow
 			</div>
 
 			<Menu
@@ -94,7 +94,7 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
 					}}
 				>
 					<Text type="secondary" style={{ fontSize: 12 }}>
-            Компания
+						Компания
 					</Text>
 					<div
 						style={{
@@ -105,10 +105,10 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
 							whiteSpace: 'nowrap'
 						}}
 					>
-            Моя компания
+						Моя компания
 					</div>
 					<Button type="primary" size="small" block icon={<LogoutOutlined />}>
-            Выход
+						Выход
 					</Button>
 				</div>
 			</div>

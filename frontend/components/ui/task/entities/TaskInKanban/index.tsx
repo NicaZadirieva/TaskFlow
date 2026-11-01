@@ -54,9 +54,9 @@ export default function TaskInKanban({
 	users,
 	currentUser
 }: {
-  task: Task;
-  users: User[];
-  currentUser: GetCurrentUserResponse;
+	task: Task;
+	users: User[];
+	currentUser: GetCurrentUserResponse;
 }) {
 	const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
 	const showTimeCostsEditor = () => setShowTimeEditor(true);
@@ -175,7 +175,7 @@ export default function TaskInKanban({
 						data-stop-card-click
 						onClick={showTimeCostsEditor}
 					>
-            Изменить свои часы
+						Изменить свои часы
 					</Button>
 				]}
 			>
@@ -213,7 +213,7 @@ export default function TaskInKanban({
 								onClick={showDescModal}
 							>
 								<FileTextOutlined />
-                Открыть описание
+								Открыть описание
 							</Button>
 						)}
 						<div className={styles.imagesButtonWrapper}>
@@ -227,7 +227,7 @@ export default function TaskInKanban({
 									disabled={!task.task_images || task.task_images?.length === 0}
 								>
 									<PictureOutlined />
-                  Изображения
+									Изображения
 								</Button>
 							</Badge>
 						</div>
@@ -265,7 +265,7 @@ export default function TaskInKanban({
 								}
 							>
 								<Tag className={styles.moreTag}>
-                  +{task.tags.slice(4).length}
+									+{task.tags.slice(4).length}
 								</Tag>
 							</Popover>
 						)}
@@ -302,7 +302,7 @@ export default function TaskInKanban({
 							textTransform: 'uppercase'
 						}}
 					>
-            Исполнители
+						Исполнители
 					</Text>
 					<Space size={6} align="center">
 						<Text strong style={{ fontSize: 12 }}>
@@ -315,7 +315,7 @@ export default function TaskInKanban({
 								visibility: removedCount > 0 ? 'visible' : 'hidden'
 							}}
 						>
-              −{removedCount || 0}
+							−{removedCount || 0}
 						</Text>
 						<Button
 							type="link"
@@ -324,7 +324,7 @@ export default function TaskInKanban({
 							style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
 						>
 							<PlusOutlined style={{ fontSize: 12, lineHeight: 1 }} />
-              добавить
+							добавить
 						</Button>
 					</Space>
 				</div>

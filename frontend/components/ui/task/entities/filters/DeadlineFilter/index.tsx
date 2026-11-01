@@ -28,7 +28,7 @@ const deadlineOptions: { value: TaskDeadline; label: string }[] = [
 	{ value: 'today', label: 'Остался 1 день' },
 	{ value: 'this_week', label: 'Через 2–4 дня' },
 	{ value: 'next_week', label: 'Более чем через неделю' },
-	{ value: 'done', label: 'Сдано' },
+	{ value: 'done', label: 'Сдано' }
 ];
 
 export default function DeadlineFilter() {

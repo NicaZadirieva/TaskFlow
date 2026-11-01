@@ -26,7 +26,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function ListAllTasksPage({
 	searchParams
 }: {
-  searchParams: SearchParams;
+	searchParams: SearchParams;
 }) {
 	const sp = await toURLSearchParams(searchParams);
 	const filters = parseFilters(sp);

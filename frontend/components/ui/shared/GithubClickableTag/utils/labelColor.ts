@@ -1,7 +1,7 @@
 export interface LabelColors {
-  bg: string;
-  text: string;
-  border: string;
+	bg: string;
+	text: string;
+	border: string;
 }
 
 function hexToRgb(hex: string) {
@@ -51,11 +51,11 @@ export function labelColors(rawHex: string): LabelColors {
 	// фон делаем плотнее, чтобы читалось.
 	// Светлый — текст затемняем, фон почти прозрачный.
 	const text =
-    lum > 0.6
-    	? shade(hex, -0.35) // слишком светлый → темнее
-    	: lum < 0.15
-    		? shade(hex, 0.25) // почти чёрный → чуть светлее
-    		: hex;
+		lum > 0.6
+			? shade(hex, -0.35) // слишком светлый → темнее
+			: lum < 0.15
+				? shade(hex, 0.25) // почти чёрный → чуть светлее
+				: hex;
 
 	const bgAlpha = lum < 0.25 ? '33' : '1F';
 	const borderAlpha = lum < 0.25 ? '88' : '66';

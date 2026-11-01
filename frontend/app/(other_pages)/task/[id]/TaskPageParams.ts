@@ -1,5 +1,5 @@
 export default interface TaskPageParams {
 	params: {
-        id: number
-    }
-};;;;;;;;;;
+		id: number
+	}
+}

@@ -15,10 +15,10 @@ export default function TaskAssigneesWidget({
 	showAssigneeAddModal,
 	showAssigneeRemoveModal
 }: {
-  assignees: Executor[];
-  undoRemove: (assignee: Executor) => void;
-  showAssigneeAddModal: () => void;
-  showAssigneeRemoveModal: (assignee: Executor) => void;
+	assignees: Executor[];
+	undoRemove: (assignee: Executor) => void;
+	showAssigneeAddModal: () => void;
+	showAssigneeRemoveModal: (assignee: Executor) => void;
 }) {
 	const activeCount = useMemo(
 		() => assignees.filter((a) => !a.removed).length,
@@ -44,7 +44,7 @@ export default function TaskAssigneesWidget({
 						textTransform: 'uppercase'
 					}}
 				>
-          Исполнители
+					Исполнители
 				</Text>
 				<Space size={6} align="center">
 					<Text strong style={{ fontSize: 12 }}>
@@ -57,7 +57,7 @@ export default function TaskAssigneesWidget({
 							visibility: removedCount > 0 ? 'visible' : 'hidden'
 						}}
 					>
-            −{removedCount || 0}
+						−{removedCount || 0}
 					</Text>
 					<Button
 						type="link"
@@ -70,7 +70,7 @@ export default function TaskAssigneesWidget({
 						}}
 					>
 						<PlusOutlined style={{ fontSize: 12, lineHeight: 1 }} />
-            добавить
+						добавить
 					</Button>
 				</Space>
 			</div>

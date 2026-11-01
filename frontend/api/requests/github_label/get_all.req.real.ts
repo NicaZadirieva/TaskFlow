@@ -5,7 +5,7 @@ import parseErrorMessage from '@/utils/parseErrorMessage';
 import { cookies } from 'next/headers';
 
 interface GithubLabelListOut {
-    items: GithubLabel[];
+	items: GithubLabel[];
 }
 
 function buildCookieHeader(

@@ -44,7 +44,7 @@ export default function ChangePasswordTable({users}: {users: User[]}) {
 					disabled={!selectedUser}
 					onClick={openPasswordModal}
 				>
-          Изменить пароль
+					Изменить пароль
 					{selectedUser ? ` (${selectedUser.name})` : ''}
 				</Button>
 			</div>
