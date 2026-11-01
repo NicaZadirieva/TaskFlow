@@ -59,7 +59,7 @@ export default async function ListAllTasksPage({
 				</div>
 			</Suspense>
 
-			<TasksInRow
+			<TasksInKanban
 				initialTasks={mappedTasks}
 				initialUsers={userData.users}
 				search={sp.toString()}
