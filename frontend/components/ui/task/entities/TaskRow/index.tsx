@@ -32,46 +32,82 @@ import TimeCostsEditor from '../../../assignees/features/UpdateTimeCostModal';
 import { DividerWithMargins, GithubClickableTag, PriorityBadge, StatusTag, TooltipWithText } from '../../../shared';
 import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
+import { User } from '@/entities/user.interface';
+import { CreateExecutorResult } from '@/api/requests/executor/create.req.real';
+import createExecutorReq from '@/api/requests/executor/create.req';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const { Text } = Typography;
 
-export default function TaskRow({ task }: { task: Task }) {
+export default function TaskRow({ task, users }: { task: Task, users: User[] }) {
 	const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
-	const showTimeCostsEditor = () => setShowTimeEditor(true);
-	const hideTimeCostsEditor = () => setShowTimeEditor(false);
-
-	const [showDesc, setShowDesc] = useState(false);
-	const showDescModal = () => setShowDesc(true);
-	const hideDescModal = () => setShowDesc(false);
-
-	const [showImages, setShowImages] = useState(false);
-	const showImagesModal = () => setShowImages(true);
-	const hideImagesModal = () => setShowImages(false);
-
-	const currentUser = assignee;
-	const isDescriptionLong = !!task.description && task.description.length > 180;
-
-	const [removing, setRemoving] = useState<Executor | null>(null);
-	const [adding, setAdding] = useState(false);
-
-	const activeCount = useMemo(
-		() => task.assignees.filter((a) => !a.removed).length,
-		[task.assignees]
-	);
-	const removedCount = task.assignees.length - activeCount;
-
-	/* ---------- Удаление ---------- */
-	const undoRemove = (id: number) => {
-		message.info('Удаление отменено');
-	};
-	const removeAssignee = (updated: Executor) => {
-		message.success('Исполнитель удалён');
-	};
-
-	/* ---------- Добавление ---------- */
-	const addAssignee = (assignee: Executor) => {
-		message.success('Исполнитель добавлен');
-	};
+		const showTimeCostsEditor = () => setShowTimeEditor(true);
+		const hideTimeCostsEditor = () => setShowTimeEditor(false);
+	
+		const [showDesc, setShowDesc] = useState(false);
+		const showDescModal = () => setShowDesc(true);
+		const hideDescModal = () => setShowDesc(false);
+	
+		const [showImages, setShowImages] = useState(false);
+		const showImagesModal = () => setShowImages(true);
+		const hideImagesModal = () => setShowImages(false);
+	
+		const currentUser = assignee;
+		const isDescriptionLong = !!task.description && task.description.length > 180;
+	
+		const [removing, setRemoving] = useState<Executor | null>(null);
+		const [adding, setAdding] = useState(false);
+	
+		const activeCount = useMemo(
+			() => task.assignees.filter((a) => !a.removed).length,
+			[task.assignees]
+		);
+		const removedCount = task.assignees.length - activeCount;
+	
+		/* ---------- Удаление ---------- */
+		const undoRemove = (assignee: Executor) => {
+			message.info('Удаление отменено');
+		};
+		const removeAssignee = (updated: Executor) => {
+			message.success('Исполнитель удалён');
+		};
+	
+		const queryClient = useQueryClient();
+	
+		const addAssigneeMutation = useMutation({
+			mutationFn: (assignee: Executor) =>
+				createExecutorReq({
+					task_id: task.id,
+					login: assignee.login,
+					role_in_task: assignee.role_in_task,
+					hours: assignee.hours,
+					planned: assignee.planned,
+					version: task.version // ← на бэкенд для оптимистичной блокировки
+				}),
+	
+			onSuccess: (res: CreateExecutorResult) => {
+				if (!res.success) {
+					message.error(res.error);
+					return;
+				}
+				queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
+					prev.map((t) =>
+						t.id === task.id
+							? { ...t, assignees: [...t.assignees, res.data], version: (t.version ?? 0) + 1 }
+							: t
+					)
+				);
+				message.success('Исполнитель добавлен');
+			},
+	
+			onError: () => {
+				// 409 конфликт или сетевая ошибка → тянем свежие данные
+				queryClient.invalidateQueries({ queryKey: ['tasks'] });
+				message.error('Не удалось добавить исполнителя — обновите задачу');
+			}
+		});
+	
+		const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
 
 	const timeOver = task.hours.fact && task.hours.planned && task.hours.fact > task.hours.planned;
 	const budgetOver = task.budget.fact && task.budget.planned && task.budget.fact > task.budget.planned;
@@ -257,7 +293,7 @@ export default function TaskRow({ task }: { task: Task }) {
 									<TaskAssignee
 										assignee={assignee}
 										onChoose={(assignee) => setRemoving(assignee)}
-										onUndo={(assignee) => undoRemove(assignee.id)}
+										onUndo={(assignee) => undoRemove(assignee)}
 									/>
 								);
 							})}

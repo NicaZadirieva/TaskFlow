@@ -8,7 +8,8 @@ import {
 	DeadlineFilter,
 	PriorityTaskFilter,
 	StatusTaskFilter,
-	TasksInKanban
+	TasksInKanban,
+	TasksInRow
 } from '@/components/ui/task';
 import AssigneesFilter from '@/components/ui/task/entities/filters/AssigneesFilter';
 import TagsFilter from '@/components/ui/task/entities/filters/TagsFilter';
@@ -58,7 +59,7 @@ export default async function ListAllTasksPage({
 				</div>
 			</Suspense>
 
-			<TasksInKanban
+			<TasksInRow
 				initialTasks={mappedTasks}
 				initialUsers={userData.users}
 				search={sp.toString()}
