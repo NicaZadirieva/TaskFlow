@@ -5,9 +5,9 @@ import TaskRow from '../../entities/TaskRow';
 import { User } from '@/entities/user.interface';
 import { useQuery } from '@tanstack/react-query';
 import getTasksClientReq from '@/api/requests/task/get_tasks/client/req';
-import { fromTaskOut } from '@/api/dto/task/get_tasks/mapper/fromTaskOut';
 import getClientUsersReq from '@/api/requests/user/get_users/client/get_users.req';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
+import { fromTaskDto } from '@/api/mappers';
 
 
 
@@ -24,7 +24,7 @@ export default function TasksInRow({ currentUser, initialTasks,
 				queryKey: ['tasks', search],
 				queryFn: () =>
 					getTasksClientReq(search ? new URLSearchParams(search) : undefined).then(
-						(d) => d.items.map(fromTaskOut)
+						(d) => d.items.map(fromTaskDto)
 					),
 				initialData: initialTasks,
 				refetchInterval: 5_000,

@@ -19,9 +19,6 @@ import { useMemo, useState } from 'react';
 import styles from './index.module.css';
 
 import Link from 'next/link';
-
-
-import { assignee } from '@/app/(other_pages)/tasks/mock-data/assignee';
 import { AddAssigneeForm } from '@/components/ui/assignees';
 import { Executor } from '@/entities/executor.interface';
 import { Task } from '@/entities/task.interface';
@@ -33,10 +30,10 @@ import { DividerWithMargins, GithubClickableTag, PriorityBadge, StatusTag, Toolt
 import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import { User } from '@/entities/user.interface';
-import { CreateExecutorResult } from '@/api/requests/executor/create.req.real';
-import createExecutorReq from '@/api/requests/executor/create.req';
+import { CreateExecutorResult } from '@/api/requests/executor/create/create.req.real';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
+import createExecutorReq from '@/api/requests/executor/create/create.req';
 
 const { Text } = Typography;
 
@@ -137,7 +134,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 				]}
 			>
 				<div className={styles.left}>
-					{isOver && (
+					{isOver == true && (
 						<>
 							<Tag color={'error'}>Просрочка</Tag>
 							<DividerWithMargins />

@@ -1,6 +1,7 @@
 import { Priority, TaskStatus } from '@/api/types/task.types';
 import { ExecutorShortOut } from './ExecutorShortOut';
 import TagShortOut from './TagShortOut';
+import ITaskNote from '@/api/types/note.types';
 
 // Если Decimal приходит как строка — типичный вариант для Pydantic v2 JSON.
 type DecimalString = string;
@@ -31,10 +32,15 @@ export interface TaskOut {
     estimated_hours?: DecimalString | null;
     actual_hours?: DecimalString | null;
 
-    note?: Record<string, unknown> | null;
+    note?: ITaskNote | null;
     task_images?: string[] | null;
 
     tags: TagShortOut[];
     executors: ExecutorShortOut[];
     overdue_days: number;
+
+    executors_estimated_hours?: string | null;
+    executors_actual_hours?: string | null;
+    executors_estimated_budget?: string | null;
+    executors_actual_budget?: string | null;
 }

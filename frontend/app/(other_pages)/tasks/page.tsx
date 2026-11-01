@@ -1,6 +1,4 @@
 import { Suspense } from 'react';
-
-import { fromTaskOut } from '@/api/dto/task/get_tasks/mapper/fromTaskOut';
 import getTasksServerReq from '@/api/requests/task/get_tasks/server/req';
 
 
@@ -21,6 +19,7 @@ import { filtersToSearchParams, parseFilters } from '@/lib/taskFiltersUrl';
 import { toURLSearchParams } from '@/lib/toUrlSearchParams';
 import styles from './page.module.css';
 import getCurrentUserServerReq from '@/api/requests/user/get_current_user/server/get_current_user.req';
+import { fromTaskDto } from '@/api/mappers';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -45,7 +44,7 @@ export default async function ListAllTasksPage({
 	]);
 
 	if (!tasks) return null;
-	const mappedTasks = tasks.items.map(fromTaskOut);
+	const mappedTasks = tasks.items.map(fromTaskDto);
 	const currentUser = await getCurrentUserServerReq();
 
 

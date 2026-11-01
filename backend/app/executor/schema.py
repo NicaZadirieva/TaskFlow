@@ -7,13 +7,14 @@ from pydantic import BaseModel, ConfigDict, Field
 # --------- CREATE -----------
 class CreateExecutorRequest(BaseModel):
     task_id: int
-    login: str 
+    login: str
     role_in_task: str
     version: int | None = None
-    hours: int | None = None
-    planned: int | None = None
+    hours: Decimal | None = None
+    planned: Decimal | None = None
     hourly_rate: int | None = None
-    
+
+
 class CreateExecutorResponse(BaseModel):
     id: int
     user_id: int
@@ -23,12 +24,11 @@ class CreateExecutorResponse(BaseModel):
     login: str
     email: str
     version: int
-    hours: int | None = None
-    planned: int | None = None
+    hours: Decimal | None = None
+    planned: Decimal | None = None
     hourly_rate: int | None = None
-    
-    
-    
+
+
 # --------- UPDATE -----------
 
 
@@ -41,63 +41,74 @@ class AddHoursToExecutorRequest(BaseModel):
 
 class AddHoursToExecutorResponse(BaseModel):
     id: int
-    hourly_rate: int
     user_id: int
-    user_hours: int
-    user_planned: int
-    all_hours: int
-    all_planned: int
-    
+    hourly_rate: int | None = None
+    user_hours: Decimal | None = None
+    user_planned: Decimal | None = None
+    all_hours: Decimal | None = None
+    all_planned: Decimal | None = None
+
+
 # -------- Change Assignee Hours ---------
 # TODO: только для админов
 class OwnerChangeAssigneeHoursRequest(BaseModel):
     id: int
-    hours: int
-    planned: int | None = None
+    hours: Decimal
+    planned: Decimal | None = None
     task_id: int
     user_id: int
-    
-    
-    
+
+
 class OwnerChangeAssigneeHoursResponse(BaseModel):
     id: int
-    hourly_rate: int
     user_id: int
-    user_hours: int
-    user_planned: int
-    all_hours: int
-    all_planned: int
-    
-    
+    hourly_rate: int | None = None
+    user_hours: Decimal | None = None
+    user_planned: Decimal | None = None
+    all_hours: Decimal | None = None
+    all_planned: Decimal | None = None
+
+
 # -------- Soft Delete User (removed=True) ------------
 class RemoveUserFromTaskRequest(BaseModel):
     task_id: int
     user_id: int
     remove_reason: str | None = None
 
+
 class RemoveUserFromTaskResponse(BaseModel):
     id: int
     task_id: int
     user_id: int
-     
+    user_name: str
+    role_in_task: str
+    is_active: bool
+    login: str
+    email: str
+    version: int
+    hours: Decimal | None = None
+    planned: Decimal | None = None
+    hourly_rate: int | None = None
+
+
 # --------- Reassigned User (removed=False) ----------
 class ReassignedUserTaskRequest(BaseModel):
     task_id: int
     user_id: int
     reassigned_reason: str | None = None
-    
+
 
 class ReassignedUserTaskResponse(BaseModel):
     id: int
     task_id: int
     user_id: int
 
+
 # ---------- GET -------------
 
 
+# ----------Получение задач, у которых есть исполнитель (вместе с фильтрами)-------------
 
-
-#----------Получение задач, у которых есть исполнитель (вместе с фильтрами)-------------
 
 class TaskStatus(str, Enum):
     OPEN = "OPEN"
@@ -147,6 +158,7 @@ class TaskShortOut(BaseModel):
 
 # ----------Получение всех исполнителей --------
 
+
 class ExecutorOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -174,7 +186,3 @@ class ExecutorOut(BaseModel):
 
 class ExecutorListOut(BaseModel):
     items: list[ExecutorOut]
-
-
-
-

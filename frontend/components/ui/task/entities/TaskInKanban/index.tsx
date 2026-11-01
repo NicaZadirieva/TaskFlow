@@ -21,10 +21,7 @@ import { useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
-
-import createExecutorReq from '@/api/requests/executor/create.req';
-import { CreateExecutorResult } from '@/api/requests/executor/create.req.real';
-import { assignee } from '@/app/(other_pages)/tasks/mock-data/assignee';
+import { CreateExecutorResult } from '@/api/requests/executor/create/create.req.real';
 import { Executor } from '@/entities/executor.interface';
 import { Task } from '@/entities/task.interface';
 import { User } from '@/entities/user.interface';
@@ -33,16 +30,34 @@ import TaskAssignee from '../../../assignees/entities/TaskAssignee';
 import AddAssigneeForm from '../../../assignees/features/AddAssigneeForm';
 import AssigneeRemoval from '../../../assignees/features/RemoveAssigneeModal';
 import TimeCostsEditor from '../../../assignees/features/UpdateTimeCostModal';
-import { DefaultTaskNote, DividerWithMargins, GithubClickableTag, PriorityBadge, StatusTag, TaskNote, TooltipWithText } from '../../../shared';
+import {
+	DefaultTaskNote,
+	DividerWithMargins,
+	GithubClickableTag,
+	PriorityBadge,
+	StatusTag,
+	TaskNote,
+	TooltipWithText
+} from '../../../shared';
 import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import ShowMetrics from '../ShowMetrics';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
-
+import createExecutorReq from '@/api/requests/executor/create/create.req';
+import removeExecutorFromTaskReq from '@/api/requests/executor/remove/remove.req';
+import { DeleteExecutorResult } from '@/api/requests/executor/remove/remove.req.real';
 
 const { Text } = Typography;
 
-export default function TaskInKanban({ task, users, currentUser }: { task: Task, users: User[], currentUser: GetCurrentUserResponse}) {
+export default function TaskInKanban({
+	task,
+	users,
+	currentUser
+}: {
+  task: Task;
+  users: User[];
+  currentUser: GetCurrentUserResponse;
+}) {
 	const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
 	const showTimeCostsEditor = () => setShowTimeEditor(true);
 	const hideTimeCostsEditor = () => setShowTimeEditor(false);
@@ -55,7 +70,9 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 	const showImagesModal = () => setShowImages(true);
 	const hideImagesModal = () => setShowImages(false);
 
-	const currentAssignee = task.assignees.filter((a) => a.user_id == currentUser.user_id)[0];
+	const currentAssignee = task.assignees.filter(
+		(a) => a.user_id == currentUser.user_id
+	)[0];
 	const isDescriptionLong = !!task.description && task.description.length > 180;
 
 	const [removing, setRemoving] = useState<Executor | null>(null);
@@ -71,10 +88,29 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 	const undoRemove = (assignee: Executor) => {
 		message.info('Удаление отменено');
 	};
-	const removeAssignee = (updated: Executor) => {
-		message.success('Исполнитель удалён');
-	};
+	const removeAssigneeMutation = useMutation({
+		mutationFn: (assignee: Executor) =>
+			removeExecutorFromTaskReq({
+				task_id: task.id,
+				user_id: assignee.user_id,
+				remove_reason: assignee.remove_reason
+			}),
 
+		onSuccess: (res: DeleteExecutorResult) => {
+			if (!res.success) {
+				message.error(res.error);
+				return;
+			}
+			queryClient.invalidateQueries({ queryKey: ['tasks'] });
+			message.success('Исполнитель удален');
+		},
+
+		onError: () => {
+			// 409 конфликт или сетевая ошибка → тянем свежие данные
+			queryClient.invalidateQueries({ queryKey: ['tasks'] });
+			message.error('Не удалось удалить исполнителя — обновите задачу');
+		}
+	});
 	const queryClient = useQueryClient();
 
 	const addAssigneeMutation = useMutation({
@@ -85,7 +121,7 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 				role_in_task: assignee.role_in_task,
 				hours: assignee.hours,
 				planned: assignee.planned,
-				version: task.version // ← на бэкенд для оптимистичной блокировки
+				version: task.version
 			}),
 
 		onSuccess: (res: CreateExecutorResult) => {
@@ -96,7 +132,11 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 			queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
 				prev.map((t) =>
 					t.id === task.id
-						? { ...t, assignees: [...t.assignees, res.data], version: (t.version ?? 0) + 1 }
+						? {
+							...t,
+							assignees: [...t.assignees, res.data],
+							version: (t.version ?? 0) + 1
+						}
 						: t
 				)
 			);
@@ -111,6 +151,7 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 	});
 
 	const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
+	const removeAssignee = (a: Executor) => removeAssigneeMutation.mutate(a);
 
 	return (
 		<>
@@ -128,8 +169,13 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 					}
 				}}
 				actions={[
-					<Button key="log" type="link" data-stop-card-click onClick={showTimeCostsEditor}>
-          Изменить свои часы
+					<Button
+						key="log"
+						type="link"
+						data-stop-card-click
+						onClick={showTimeCostsEditor}
+					>
+            Изменить свои часы
 					</Button>
 				]}
 			>
@@ -147,7 +193,7 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 					>
 						<TooltipWithText text={task.title} />
 						{task.project_id && (
-							<Link href={`/projects/${  task.project_id}`}>
+							<Link href={`/projects/${task.project_id}`}>
 								<Button type="primary">К проекту</Button>
 							</Link>
 						)}
@@ -226,10 +272,14 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 					</div>
 				)}
 				<ShowMetrics
-					actualBudget={task.budget.fact || 0}
-					actualHours={task.hours.fact || 0}
-					estimatedBudget={task.budget.planned || 0}
-					estimatedHours={task.hours.planned || 0}
+					actualBudget={task.executorsBudget.fact ?? task.budget.fact ?? 0}
+					actualHours={task.executorsHours.fact ?? task.hours.fact ?? 0}
+					estimatedBudget={
+						task.executorsBudget.planned ?? task.budget.planned ?? 0
+					}
+					estimatedHours={
+						task.executorsHours.planned ?? task.hours.planned ?? 0
+					}
 					due_date={new Date(task.due_date).toLocaleDateString('ru-RU')}
 					overdueDays={task.overdueDays}
 				/>
@@ -291,6 +341,7 @@ export default function TaskInKanban({ task, users, currentUser }: { task: Task,
 						{task.assignees.map((assignee) => {
 							return (
 								<TaskAssignee
+									key={assignee.id}
 									assignee={assignee}
 									onChoose={(assignee) => setRemoving(assignee)}
 									onUndo={(assignee) => undoRemove(assignee)}

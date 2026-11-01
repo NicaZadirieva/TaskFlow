@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy import (
     Boolean,
@@ -35,12 +36,13 @@ class Executor(Base):
         String(15), nullable=False
     )
     assigned_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
+        DateTime(timezone=True), server_default=func.now()
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # учёт часов по конкретному исполнителю у задачи
-    hours: Mapped[float | None] = mapped_column(Numeric(6, 2), nullable=True)
-    planned: Mapped[float | None] = mapped_column(Numeric(6, 2), nullable=True)
+    hours: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
+    planned: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
 
     # значение для роли текущего исполнителя этой задачи
     hourly_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -52,36 +54,33 @@ class Executor(Base):
         foreign_keys=[assigned_by],
     )
 
-    user: Mapped["User"] = relationship(back_populates="executors",  foreign_keys=[user_id])  # type: ignore  # noqa: F821
+    user: Mapped["User"] = relationship(
+        back_populates="executors", foreign_keys=[user_id]
+    )  # type: ignore  # noqa: F821
     task: Mapped["Task"] = relationship(back_populates="executors")  # type: ignore  # noqa: F821
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # soft-delete / история переназначений
-    removed: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False)
-    remove_reason: Mapped[str | None] = mapped_column(
-        String(500), nullable=True)
-    reassigned_reason: Mapped[str | None] = mapped_column(
-        String(500), nullable=True)
-    
+    removed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    remove_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    reassigned_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
     def __init__(
         self,
         user_id: int,
         task_id: int,
         tenant_id: int,
         role_in_task: str,
-        hours: float | None = None,
-        planned: float | None = None,
+        hours: Decimal | None = None,
+        planned: Decimal | None = None,
         hourly_rate: int | None = None,
         assigned_by: int | None = None,
         is_active: bool = True,
         removed: bool = False,
         remove_reason: str | None = None,
         reassigned_reason: str | None = None,
-        id: int | None = None,
         assigned_at: datetime | None = None,
     ) -> None:
-        self.id = id
         self.tenant_id = tenant_id
         self.user_id = user_id
         self.task_id = task_id

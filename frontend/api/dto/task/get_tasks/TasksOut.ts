@@ -10,4 +10,4 @@ export default interface TasksOut {
 
     all_executors?: ExecutorShortOut[] | null;
     all_tags?: TagShortOut[] | null;
-};;;;;;;;;;
+};
