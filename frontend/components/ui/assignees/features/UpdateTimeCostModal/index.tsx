@@ -16,10 +16,10 @@ import styles from './index.module.css';
 const { Text } = Typography;
 
 interface Props {
-  open: boolean;
-  assignee: Executor | null;
-  taskTitle?: string;
-  onClose: () => void;
+	open: boolean;
+	assignee: Executor | null;
+	taskTitle?: string;
+	onClose: () => void;
 }
 
 export default function UpdateTimeCostModal({
@@ -72,7 +72,7 @@ export default function UpdateTimeCostModal({
 			<div className={styles.content}>
 				{assignee && (
 					<Text type="secondary" className={styles.assignee}>
-            Executor: {assignee.user_name ?? assignee.id}
+						Executor: {assignee.user_name ?? assignee.id}
 					</Text>
 				)}
 

@@ -1,4 +1,4 @@
 export default interface CreateTaskResponse {
-    id: number;
-    tenant_id: number;
-};;;;;;;;;;
+	id: number;
+	tenant_id: number;
+}

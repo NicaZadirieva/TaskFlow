@@ -6,8 +6,7 @@ import {
 	DeadlineFilter,
 	PriorityTaskFilter,
 	StatusTaskFilter,
-	TasksInKanban,
-	TasksInRow
+	TasksInKanban
 } from '@/components/ui/task';
 import AssigneesFilter from '@/components/ui/task/entities/filters/AssigneesFilter';
 import TagsFilter from '@/components/ui/task/entities/filters/TagsFilter';
@@ -19,14 +18,14 @@ import { filtersToSearchParams, parseFilters } from '@/lib/taskFiltersUrl';
 import { toURLSearchParams } from '@/lib/toUrlSearchParams';
 import styles from './page.module.css';
 import getCurrentUserServerReq from '@/api/requests/user/get_current_user/server/get_current_user.req';
-import { fromTaskDto } from '@/api/mappers';
+import { fromTaskOut } from '@/api/dto/task/get_tasks/mapper/fromTaskOut';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function ListAllTasksPage({
 	searchParams
 }: {
-  searchParams: SearchParams;
+	searchParams: SearchParams;
 }) {
 	const sp = await toURLSearchParams(searchParams);
 	const filters = parseFilters(sp);
@@ -44,7 +43,7 @@ export default async function ListAllTasksPage({
 	]);
 
 	if (!tasks) return null;
-	const mappedTasks = tasks.items.map(fromTaskDto);
+	const mappedTasks = tasks.items.map(fromTaskOut);
 	const currentUser = await getCurrentUserServerReq();
 
 

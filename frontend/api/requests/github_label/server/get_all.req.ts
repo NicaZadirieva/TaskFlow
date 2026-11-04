@@ -1,6 +1,6 @@
 import GithubLabel from '@/api/types/github-label.types';
 import isMockEnabled from '@/utils/isMockEnabled';
-import getAllGithubLabelsReqMock from './get_all.req.mock';
+import getAllGithubLabelsReqMock from '../get_all.req.mock';
 import getAllGithubLabelsReqReal from './get_all.req.real';
 
 

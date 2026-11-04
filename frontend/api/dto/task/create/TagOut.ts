@@ -1,3 +1,3 @@
 export default interface TagOut {
-    name: string;
-};;;;;;;;;;
+	name: string;
+}

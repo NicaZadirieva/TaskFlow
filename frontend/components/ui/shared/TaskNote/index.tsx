@@ -13,7 +13,7 @@ export const DefaultTaskNote = () => (
 export default function TaskNote({
 	note
 }: {
-  note: { kind: 'danger' | 'info'; label: string; text: string };
+	note: { kind: 'danger' | 'info'; label: string; text: string };
 }) {
 	const isDanger = note.kind === 'danger';
 

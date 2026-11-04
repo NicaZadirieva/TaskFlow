@@ -6,8 +6,8 @@ export default function DesktopUserTable({
 	dataSource,
 	onChooseRow
 }: {
-  dataSource: User[];
-  onChooseRow: (row: User) => void;
+	dataSource: User[];
+	onChooseRow: (row: User) => void;
 }) {
 	return (
 		<div className="user-table-desktop">

@@ -9,9 +9,9 @@ export default function ShowDescription({
 	isOpen,
 	onClose
 }: {
-  task: Task;
-  isOpen: boolean;
-  onClose: () => void;
+	task: Task;
+	isOpen: boolean;
+	onClose: () => void;
 }) {
 	return (
 		<Modal

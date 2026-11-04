@@ -1,7 +1,7 @@
 export default class RequestError extends Error {
-	statusCode: number;
+	statusCode: number |  string;
 
-	constructor(message: string, statusCode: number) {
+	constructor(message: string, statusCode: number | string) {
 		super(message);
 		this.statusCode = statusCode;
 	}

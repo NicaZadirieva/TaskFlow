@@ -30,82 +30,46 @@ import { DividerWithMargins, GithubClickableTag, PriorityBadge, StatusTag, Toolt
 import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import { User } from '@/entities/user.interface';
-import { CreateExecutorResult } from '@/api/requests/executor/create/create.req.real';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
-import createExecutorReq from '@/api/requests/executor/create/create.req';
+import { useRemoveAssignee } from '@/hooks/useRemoveAssignee';
+import { useAddAssignee } from '@/hooks/useAddAssignee';
+import { useReassignAssignee } from '@/hooks/useReassignAssignee';
 
 const { Text } = Typography;
 
 export default function TaskRow({ task, users, currentUser }: { task: Task, users: User[], currentUser: GetCurrentUserResponse }) {
 	const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
-		const showTimeCostsEditor = () => setShowTimeEditor(true);
-		const hideTimeCostsEditor = () => setShowTimeEditor(false);
+	const showTimeCostsEditor = () => setShowTimeEditor(true);
+	const hideTimeCostsEditor = () => setShowTimeEditor(false);
 	
-		const [showDesc, setShowDesc] = useState(false);
-		const showDescModal = () => setShowDesc(true);
-		const hideDescModal = () => setShowDesc(false);
+	const [showDesc, setShowDesc] = useState(false);
+	const showDescModal = () => setShowDesc(true);
+	const hideDescModal = () => setShowDesc(false);
 	
-		const [showImages, setShowImages] = useState(false);
-		const showImagesModal = () => setShowImages(true);
-		const hideImagesModal = () => setShowImages(false);
+	const [showImages, setShowImages] = useState(false);
+	const showImagesModal = () => setShowImages(true);
+	const hideImagesModal = () => setShowImages(false);
 	
-		const currentAssignee = task.assignees.filter((a) => a.user_id == currentUser.user_id)[0];
-		const isDescriptionLong = !!task.description && task.description.length > 180;
+	const currentAssignee = task.assignees.filter((a) => a.user_id == currentUser.user_id)[0];
+	const isDescriptionLong = !!task.description && task.description.length > 180;
 	
-		const [removing, setRemoving] = useState<Executor | null>(null);
-		const [adding, setAdding] = useState(false);
+	const [removing, setRemoving] = useState<Executor | null>(null);
+	const [adding, setAdding] = useState(false);
 	
-		const activeCount = useMemo(
-			() => task.assignees.filter((a) => !a.removed).length,
-			[task.assignees]
-		);
-		const removedCount = task.assignees.length - activeCount;
+	const activeCount = useMemo(
+		() => task.assignees.filter((a) => !a.removed).length,
+		[task.assignees]
+	);
+	const removedCount = task.assignees.length - activeCount;
 	
-		/* ---------- Удаление ---------- */
-		const undoRemove = (assignee: Executor) => {
-			message.info('Удаление отменено');
-		};
-		const removeAssignee = (updated: Executor) => {
-			message.success('Исполнитель удалён');
-		};
+
+	const removeAssigneeMutation = useRemoveAssignee({ taskId: task.id });
+	const addAssigneeMutation = useAddAssignee({ taskId: task.id, version: task.version });
+	const reassignAssigneeMutation = useReassignAssignee({ taskId: task.id });
 	
-		const queryClient = useQueryClient();
-	
-		const addAssigneeMutation = useMutation({
-			mutationFn: (assignee: Executor) =>
-				createExecutorReq({
-					task_id: task.id,
-					login: assignee.login,
-					role_in_task: assignee.role_in_task,
-					hours: assignee.hours,
-					planned: assignee.planned,
-					version: task.version // ← на бэкенд для оптимистичной блокировки
-				}),
-	
-			onSuccess: (res: CreateExecutorResult) => {
-				if (!res.success) {
-					message.error(res.error);
-					return;
-				}
-				queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
-					prev.map((t) =>
-						t.id === task.id
-							? { ...t, assignees: [...t.assignees, res.data], version: (t.version ?? 0) + 1 }
-							: t
-					)
-				);
-				message.success('Исполнитель добавлен');
-			},
-	
-			onError: () => {
-				// 409 конфликт или сетевая ошибка → тянем свежие данные
-				queryClient.invalidateQueries({ queryKey: ['tasks'] });
-				message.error('Не удалось добавить исполнителя — обновите задачу');
-			}
-		});
-	
-		const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
+	const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
+	const removeAssignee = (a: Executor) => removeAssigneeMutation.mutate(a);
+	const undoRemove = (a: Executor) => reassignAssigneeMutation.mutate(a);
 
 	const timeOver = task.hours.fact && task.hours.planned && task.hours.fact > task.hours.planned;
 	const budgetOver = task.budget.fact && task.budget.planned && task.budget.fact > task.budget.planned;
@@ -129,7 +93,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 				}}
 				actions={[
 					<Button key="log" type="link" data-stop-card-click onClick={showTimeCostsEditor}>
-            Изменить свои часы
+						Изменить свои часы
 					</Button>
 				]}
 			>
@@ -173,7 +137,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 									onClick={showDescModal}
 								>
 									<FileTextOutlined />
-                  Открыть описание
+									Открыть описание
 								</Button>
 							)}
 							<div className={styles.imagesButtonWrapper}>
@@ -189,7 +153,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 										}
 									>
 										<PictureOutlined />
-                    Изображения
+										Изображения
 									</Button>
 								</Badge>
 							</div>
@@ -226,7 +190,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 									}
 								>
 									<Tag className={styles.moreTag}>
-                    +{task.tags.slice(4).length}
+										+{task.tags.slice(4).length}
 									</Tag>
 								</Popover>
 							)}
@@ -250,7 +214,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 								textTransform: 'uppercase'
 							}}
 						>
-              Исполнители
+							Исполнители
 						</Text>
 						<Space size={6} align="center">
 							<Text strong style={{ fontSize: 12 }}>
@@ -263,7 +227,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 									visibility: removedCount > 0 ? 'visible' : 'hidden'
 								}}
 							>
-                −{removedCount || 0}
+								−{removedCount || 0}
 							</Text>
 							<Button
 								type="link"
@@ -272,7 +236,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 								style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
 							>
 								<PlusOutlined style={{ fontSize: 12, lineHeight: 1 }} />
-                добавить
+								добавить
 							</Button>
 						</Space>
 					</div>
@@ -289,6 +253,7 @@ export default function TaskRow({ task, users, currentUser }: { task: Task, user
 							{task.assignees.map((assignee) => {
 								return (
 									<TaskAssignee
+										key={assignee.id}
 										assignee={assignee}
 										onChoose={(assignee) => setRemoving(assignee)}
 										onUndo={(assignee) => undoRemove(assignee)}

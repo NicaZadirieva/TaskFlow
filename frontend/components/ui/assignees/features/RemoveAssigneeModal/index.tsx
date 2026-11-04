@@ -26,10 +26,10 @@ export default function RemoveAssigneeModal({
 	onRemove,
 	assignee
 }: {
-  assignee: Executor;
-  onRemove: (newAssignee: Executor) => void;
-  isOpen: boolean;
-  onClose: () => void;
+	assignee: Executor;
+	onRemove: (newAssignee: Executor) => void;
+	isOpen: boolean;
+	onClose: () => void;
 }) {
 	const [removeReason, setRemoveReason] = useState<string>('');
 	const [customReason, setCustomReason] = useState<string>('');
@@ -41,7 +41,7 @@ export default function RemoveAssigneeModal({
 
 	const confirmRemove = async () => {
 		const reason =
-      removeReason === '__custom' ? customReason.trim() : removeReason;
+			removeReason === '__custom' ? customReason.trim() : removeReason;
 		if (!reason) {
 			message.warning('Укажите причину удаления');
 			return;
@@ -54,9 +54,9 @@ export default function RemoveAssigneeModal({
 	};
 
 	const canConfirm =
-    removeReason === '__custom'
-    	? customReason.trim().length > 0
-    	: removeReason.length > 0;
+		removeReason === '__custom'
+			? customReason.trim().length > 0
+			: removeReason.length > 0;
 	return (
 		<Modal
 			open={isOpen}

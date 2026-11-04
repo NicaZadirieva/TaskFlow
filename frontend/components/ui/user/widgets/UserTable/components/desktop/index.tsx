@@ -14,8 +14,8 @@ export default function DesktopUserTable({
 	onEdit,
 	dataSource
 }: {
-  onEdit: (record: User) => void;
-  dataSource: User[]
+	onEdit: (record: User) => void;
+	dataSource: User[]
 }) {
 	return (
 		<div className="user-table-desktop">
@@ -44,7 +44,7 @@ export default function DesktopUserTable({
 					key="edit"
 					render={(_, record: User) => (
 						<Button type="link" onClick={() => onEdit(record)}>
-              Изменить
+							Изменить
 						</Button>
 					)}
 				/>

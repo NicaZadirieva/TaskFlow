@@ -10,8 +10,8 @@ export default function MobileUserTable({
 	dataSource,
 	onEdit
 }: {
-  dataSource: User[];
-  onEdit: (item: User) => void;
+	dataSource: User[];
+	onEdit: (item: User) => void;
 }) {
 	return (
 		<div className="user-table-mobile">
@@ -69,7 +69,7 @@ export default function MobileUserTable({
 							style={{ padding: 0, alignSelf: 'flex-start', marginTop: 4 }}
 							onClick={() => onEdit(item)}
 						>
-              Редактировать
+							Редактировать
 						</Button>
 					</div>
 				</Card>

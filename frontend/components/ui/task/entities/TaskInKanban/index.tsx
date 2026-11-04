@@ -20,12 +20,9 @@ import styles from './index.module.css';
 import { useMemo, useState } from 'react';
 
 import Link from 'next/link';
-
-import { CreateExecutorResult } from '@/api/requests/executor/create/create.req.real';
 import { Executor } from '@/entities/executor.interface';
 import { Task } from '@/entities/task.interface';
 import { User } from '@/entities/user.interface';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import TaskAssignee from '../../../assignees/entities/TaskAssignee';
 import AddAssigneeForm from '../../../assignees/features/AddAssigneeForm';
 import AssigneeRemoval from '../../../assignees/features/RemoveAssigneeModal';
@@ -43,9 +40,9 @@ import ShowDescription from '../ShowDescription';
 import ShowImages from '../ShowImages';
 import ShowMetrics from '../ShowMetrics';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
-import createExecutorReq from '@/api/requests/executor/create/create.req';
-import removeExecutorFromTaskReq from '@/api/requests/executor/remove/remove.req';
-import { DeleteExecutorResult } from '@/api/requests/executor/remove/remove.req.real';
+import { useRemoveAssignee } from '@/hooks/useRemoveAssignee';
+import { useAddAssignee } from '@/hooks/useAddAssignee';
+import { useReassignAssignee } from '@/hooks/useReassignAssignee';
 
 const { Text } = Typography;
 
@@ -54,9 +51,9 @@ export default function TaskInKanban({
 	users,
 	currentUser
 }: {
-  task: Task;
-  users: User[];
-  currentUser: GetCurrentUserResponse;
+	task: Task;
+	users: User[];
+	currentUser: GetCurrentUserResponse;
 }) {
 	const [showTimeEditor, setShowTimeEditor] = useState<boolean>(false);
 	const showTimeCostsEditor = () => setShowTimeEditor(true);
@@ -84,74 +81,16 @@ export default function TaskInKanban({
 	);
 	const removedCount = task.assignees.length - activeCount;
 
-	/* ---------- Удаление ---------- */
-	const undoRemove = (assignee: Executor) => {
-		message.info('Удаление отменено');
-	};
-	const removeAssigneeMutation = useMutation({
-		mutationFn: (assignee: Executor) =>
-			removeExecutorFromTaskReq({
-				task_id: task.id,
-				user_id: assignee.user_id,
-				remove_reason: assignee.remove_reason
-			}),
 
-		onSuccess: (res: DeleteExecutorResult) => {
-			if (!res.success) {
-				message.error(res.error);
-				return;
-			}
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			message.success('Исполнитель удален');
-		},
+	const removeAssigneeMutation = useRemoveAssignee({ taskId: task.id });
+	const addAssigneeMutation = useAddAssignee({ taskId: task.id, version: task.version });
+	const reassignAssigneeMutation = useReassignAssignee({ taskId: task.id });
 
-		onError: () => {
-			// 409 конфликт или сетевая ошибка → тянем свежие данные
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			message.error('Не удалось удалить исполнителя — обновите задачу');
-		}
-	});
-	const queryClient = useQueryClient();
-
-	const addAssigneeMutation = useMutation({
-		mutationFn: (assignee: Executor) =>
-			createExecutorReq({
-				task_id: task.id,
-				login: assignee.login,
-				role_in_task: assignee.role_in_task,
-				hours: assignee.hours,
-				planned: assignee.planned,
-				version: task.version
-			}),
-
-		onSuccess: (res: CreateExecutorResult) => {
-			if (!res.success) {
-				message.error(res.error);
-				return;
-			}
-			queryClient.setQueryData<Task[]>(['tasks'], (prev = []) =>
-				prev.map((t) =>
-					t.id === task.id
-						? {
-							...t,
-							assignees: [...t.assignees, res.data],
-							version: (t.version ?? 0) + 1
-						}
-						: t
-				)
-			);
-			message.success('Исполнитель добавлен');
-		},
-
-		onError: () => {
-			// 409 конфликт или сетевая ошибка → тянем свежие данные
-			queryClient.invalidateQueries({ queryKey: ['tasks'] });
-			message.error('Не удалось добавить исполнителя — обновите задачу');
-		}
-	});
+	
 
 	const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
 	const removeAssignee = (a: Executor) => removeAssigneeMutation.mutate(a);
+	const undoRemove = (a: Executor) => reassignAssigneeMutation.mutate(a);
 
 	return (
 		<>
@@ -175,7 +114,7 @@ export default function TaskInKanban({
 						data-stop-card-click
 						onClick={showTimeCostsEditor}
 					>
-            Изменить свои часы
+						Изменить свои часы
 					</Button>
 				]}
 			>
@@ -213,7 +152,7 @@ export default function TaskInKanban({
 								onClick={showDescModal}
 							>
 								<FileTextOutlined />
-                Открыть описание
+								Открыть описание
 							</Button>
 						)}
 						<div className={styles.imagesButtonWrapper}>
@@ -227,7 +166,7 @@ export default function TaskInKanban({
 									disabled={!task.task_images || task.task_images?.length === 0}
 								>
 									<PictureOutlined />
-                  Изображения
+									Изображения
 								</Button>
 							</Badge>
 						</div>
@@ -265,7 +204,7 @@ export default function TaskInKanban({
 								}
 							>
 								<Tag className={styles.moreTag}>
-                  +{task.tags.slice(4).length}
+									+{task.tags.slice(4).length}
 								</Tag>
 							</Popover>
 						)}
@@ -302,7 +241,7 @@ export default function TaskInKanban({
 							textTransform: 'uppercase'
 						}}
 					>
-            Исполнители
+						Исполнители
 					</Text>
 					<Space size={6} align="center">
 						<Text strong style={{ fontSize: 12 }}>
@@ -315,7 +254,7 @@ export default function TaskInKanban({
 								visibility: removedCount > 0 ? 'visible' : 'hidden'
 							}}
 						>
-              −{removedCount || 0}
+							−{removedCount || 0}
 						</Text>
 						<Button
 							type="link"
@@ -324,7 +263,7 @@ export default function TaskInKanban({
 							style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
 						>
 							<PlusOutlined style={{ fontSize: 12, lineHeight: 1 }} />
-              добавить
+							добавить
 						</Button>
 					</Space>
 				</div>

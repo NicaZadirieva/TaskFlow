@@ -12,8 +12,8 @@ export default function GithubClickableTag({
 	githubLabel,
 	onSelect
 }: {
-  githubLabel: GithubLabel;
-  onSelect: (githubLabel: GithubLabel) => void;
+	githubLabel: GithubLabel;
+	onSelect: (githubLabel: GithubLabel) => void;
 }) {
 
 	return (

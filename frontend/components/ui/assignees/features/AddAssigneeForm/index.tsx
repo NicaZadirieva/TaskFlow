@@ -9,12 +9,12 @@ import { User } from '@/entities/user.interface';
 import styles from './index.module.css';
 
 interface AddFormValues {
-  userId: User['id'];
-  role: string;
-  customRole?: string;
-  hours?: number;
-  planned?: number;
-  hourly_rate_from_admin: number;
+	userId: User['id'];
+	role: string;
+	customRole?: string;
+	hours?: number;
+	planned?: number;
+	hourly_rate_from_admin: number;
 }
 
 const ROLE_OPTIONS = [
@@ -40,10 +40,10 @@ export default function AddAssigneeForm({
 	onClose,
 	users
 }: {
-  onClose: () => void;
-  isOpen: boolean;
-  save: (assignee: Executor) => void;
-  users?: User[];
+	onClose: () => void;
+	isOpen: boolean;
+	save: (assignee: Executor) => void;
+	users?: User[];
 }) {
 	const [form] = Form.useForm<AddFormValues>();
 	const role = Form.useWatch('role', form);
@@ -70,7 +70,7 @@ export default function AddAssigneeForm({
 			const userLabel = getUserLabel(user);
 
 			const finalRole =
-        values.role === OTHER_ROLE ? values.customRole!.trim() : values.role;
+				values.role === OTHER_ROLE ? values.customRole!.trim() : values.role;
 
 			const newExecutor: Executor = {
 				user_id: values.userId,

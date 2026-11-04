@@ -16,9 +16,9 @@ export default function UserCreator() {
 	}, []);
 	const onCreate = async (user: Omit<User, 'id'>) => {
 		const normalized =
-      user.role === TenantRole.CLIENT
-      	? { ...user, hourly_rate: undefined }
-      	: user;
+			user.role === TenantRole.CLIENT
+				? { ...user, hourly_rate: undefined }
+				: user;
 
 		try {
 			await createUserReq(createNewUserDto(normalized));

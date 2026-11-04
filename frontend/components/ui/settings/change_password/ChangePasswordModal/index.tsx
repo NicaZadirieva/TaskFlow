@@ -6,17 +6,17 @@ import changePasswordReq from '@/api/requests/settings/change_password/change_pa
 
 
 interface PasswordFormValues {
-  password: string;
-  confirm: string;
+	password: string;
+	confirm: string;
 }
 export default function ChangePasswordModal({
 	selectedUser,
 	hideModal,
 	isOpen = false
 }: {
-  selectedUser: User | null;
-  hideModal: () => void;
-  isOpen: boolean;
+	selectedUser: User | null;
+	hideModal: () => void;
+	isOpen: boolean;
 }) {
 	const [form] = Form.useForm<PasswordFormValues>();
 

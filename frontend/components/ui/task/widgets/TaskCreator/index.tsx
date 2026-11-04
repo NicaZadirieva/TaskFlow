@@ -43,8 +43,8 @@ export default function TaskCreator({
 	tagsOptions,
 	initialUsers
 }: {
-  tagsOptions: { value: string; label: string }[];
-  initialUsers?: User[];
+	tagsOptions: { value: string; label: string }[];
+	initialUsers?: User[];
 }) {
 	const queryClient = useQueryClient();
 	const router = useRouter();
@@ -69,9 +69,9 @@ export default function TaskCreator({
 
 	/** Последнее удаление — для отката */
 	const [lastRemoved, setLastRemoved] = useState<{
-    assignee: Executor;
-    index: number;
-  } | null>(null);
+		assignee: Executor;
+		index: number;
+	} | null>(null);
 
 	/* ---------- Сохранение задачи ---------- */
 	const saveTaskMutation = useMutation({
@@ -103,7 +103,7 @@ export default function TaskCreator({
 	});
 
 	const saveTask = useCallback(
-		(patch: TaskWithoutCreatedBy | NewTask) => { saveTaskMutation.mutateAsync(patch); },
+		(patch: TaskWithoutCreatedBy | NewTask) => { saveTaskMutation.mutateAsync(patch) },
 		[saveTaskMutation]
 	);
 

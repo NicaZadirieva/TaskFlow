@@ -71,7 +71,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 		hours: data.hours,
 		budget: data.budget,
 		note: data.note,
-		tags: data.tags?.map((tag) => { return {name: tag };}),
+		tags: data.tags?.map((tag) => { return {name: tag }}),
 		task_images: data.task_images
 	});
 
@@ -95,10 +95,10 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 		>
 			<div className={styles.header}>
 				<Title level={4} className={styles.title}>
-          Редактирование задачи
+					Редактирование задачи
 				</Title>
 				<Text type="secondary" className={styles.subtitle}>
-          Обновите информацию и сохраните изменения
+					Обновите информацию и сохраните изменения
 				</Text>
 			</div>
 
@@ -222,7 +222,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 					<div className={styles.grid2}>
 						<div className={styles.group}>
 							<Text type="secondary" className={styles.groupLabel}>
-                Часы
+								Часы
 							</Text>
 							<div className={styles.row}>
 								<Controller
@@ -262,7 +262,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 
 						<div className={styles.group}>
 							<Text type="secondary" className={styles.groupLabel}>
-                Бюджет
+								Бюджет
 							</Text>
 							<div className={styles.row}>
 								<Controller
@@ -347,7 +347,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 									multiple
 								>
 									<Button icon={<UploadOutlined />} type="text">
-                    Загрузить
+										Загрузить
 									</Button>
 								</Upload>
 							</Form.Item>
@@ -409,7 +409,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 
 				<Space className={styles.actions}>
 					<Button size="large" type="primary" htmlType="submit">
-            Сохранить
+						Сохранить
 					</Button>
 					<Button size="large">Отмена</Button>
 				</Space>

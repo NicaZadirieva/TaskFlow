@@ -1,6 +1,9 @@
 import RemoveUserFromTaskRequest from '@/api/dto/executor/remove/RemoveUserFromTaskRequest';
-import { DeleteExecutorResult } from './remove.req.real';
+import RemoveUserFromTaskResponse from '@/api/dto/executor/remove/RemoveUserFromTaskResponse';
 
-export default async function removeExecutorFromTaskReqMock(dto: RemoveUserFromTaskRequest): Promise<DeleteExecutorResult> {
+// TODO: дописать
+export default async function removeExecutorFromTaskReqMock(
+	dto: RemoveUserFromTaskRequest
+): Promise<RemoveUserFromTaskResponse> {
 	return Promise.reject();
 }

@@ -13,4 +13,4 @@ export default interface EditTaskFormData {
 	tags?: string[];
 	priority: Priority;
 	task_images?: string[];
-};;;;;;;;;;
+}

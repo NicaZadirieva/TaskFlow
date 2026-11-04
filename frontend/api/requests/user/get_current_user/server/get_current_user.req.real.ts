@@ -1,27 +1,42 @@
-import GetCurrentUserResponse from "@/api/dto/user/get_current_user/GetCurrentUserResponse";
-import getBackendUrl from "@/utils/getBackendUrl";
-import { cookies } from "next/headers";
+import type GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
+import RequestError from '@/api/utils/error';
+import getBackendUrl from '@/utils/getBackendUrl';
+import parseErrorMessage from '@/utils/parseErrorMessage';
+import { cookies } from 'next/headers';
 
 export async function getCurrentUserRealServer(): Promise<GetCurrentUserResponse> {
-  const url = `${getBackendUrl()}/user/current`;
+	const url = `${getBackendUrl()}/user/current`;
 
-  const cookieStore = await cookies();
+	let res: Response;
 
-  const res = await fetch(url, {
-    method: "GET",
-    cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieStore.toString(),
-    },
-  });
+	try {
+		const cookieStore = await cookies();
+		const cookieHeader = cookieStore
+			.getAll()
+			.map((c) => `${c.name}=${c.value}`)
+			.join('; ');
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `[getCurrentUserRealServer] ${res.status} ${res.statusText}${text ? ` — ${text}` : ""}`,
-    );
-  }
+		res = await fetch(url, {
+			method: 'GET',
+			cache: 'no-store',
+			headers: {
+				Accept: 'application/json',
+				...(cookieHeader ? { Cookie: cookieHeader } : {})
+			}
+		});
+	} catch (e) {
+		console.error('getCurrentUserRealServer network error:', e);
+		throw new RequestError('Ошибка сети', 'NETWORK');
+	}
 
-  return await res.json();
+	if (!res.ok) {
+		const message = await parseErrorMessage(res, `${res.status} ${res.statusText}`);
+		throw new RequestError(message, res.status);
+	}
+
+	const data = await res.json();
+	if (data == null || typeof data !== 'object') {
+		throw new RequestError('Некорректный ответ сервера', 'INVALID_RESPONSE');
+	}
+	return data as GetCurrentUserResponse;
 }

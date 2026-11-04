@@ -28,9 +28,9 @@ export default function TaskEditor({ task }: { task: Task }) {
 
 	/** Последнее удаление — для отката */
 	const [lastRemoved, setLastRemoved] = useState<{
-    assignee: Executor;
-    index: number;
-  } | null>(null);
+		assignee: Executor;
+		index: number;
+	} | null>(null);
 
 	/* ---------- Обновление задачи из формы ---------- */
 	const updateTask = useCallback((patch: Partial<Task>) => {

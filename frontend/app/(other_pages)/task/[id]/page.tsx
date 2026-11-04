@@ -2,8 +2,9 @@ import { getTaskReq } from '@/api/requests';
 import { TaskEditor } from '@/components/ui/task';
 import { notFound } from 'next/navigation';
 
-import { fromTaskDto } from '@/api/mappers';
+
 import TaskPageParams from './TaskPageParams';
+import { fromTaskOut } from '@/api/dto/task/get_tasks/mapper/fromTaskOut';
 
 export default async function TaskPage({ params }: TaskPageParams) {
 	const { id } = await params;
@@ -11,6 +12,6 @@ export default async function TaskPage({ params }: TaskPageParams) {
 	if (!task) {
 		return notFound();
 	}
-	const mapped = fromTaskDto(task);
+	const mapped = fromTaskOut(task);
 	return <TaskEditor task={mapped}/>;
 }

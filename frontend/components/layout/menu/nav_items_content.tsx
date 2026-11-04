@@ -14,16 +14,16 @@ import {
 } from '@ant-design/icons';
 
 export type NavItem = {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  href?: string;
-  children?: {
-  id: string;
-  label: string;
-  href: string;
-  icon?: React.ReactNode;
-  }[];
+	id: string;
+	label: string;
+	icon: React.ReactNode;
+	href?: string;
+	children?: {
+		id: string;
+		label: string;
+		href: string;
+		icon?: React.ReactNode;
+	}[];
 };
 
 // TODO: добавить tenant_id в пути

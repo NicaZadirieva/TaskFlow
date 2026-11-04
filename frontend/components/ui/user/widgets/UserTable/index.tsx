@@ -20,9 +20,9 @@ export default function UserTable({ users }: { users: User[] }) {
 	const onSave = async (user: User) => {
 		// Если роль — клиент, сбрасываем стоимость часа
 		const normalized: User =
-      user.role === TenantRole.CLIENT
-      	? { ...user, hourly_rate: undefined }
-      	: user;
+			user.role === TenantRole.CLIENT
+				? { ...user, hourly_rate: undefined }
+				: user;
 		try {
 			await changeUserReq(normalized.id, createUserDto(normalized));
 			// TODO: заменить на React.Query или похожие средства next.js
