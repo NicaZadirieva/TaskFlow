@@ -42,6 +42,7 @@ import ShowMetrics from '../ShowMetrics';
 import GetCurrentUserResponse from '@/api/dto/user/get_current_user/GetCurrentUserResponse';
 import { useRemoveAssignee } from '@/hooks/useRemoveAssignee';
 import { useAddAssignee } from '@/hooks/useAddAssignee';
+import { useReassignAssignee } from '@/hooks/useReassignAssignee';
 
 const { Text } = Typography;
 
@@ -80,16 +81,16 @@ export default function TaskInKanban({
 	);
 	const removedCount = task.assignees.length - activeCount;
 
-	/* ---------- Удаление ---------- */
-	const undoRemove = (assignee: Executor) => {
-		message.info('Удаление отменено');
-	};
+
 	const removeAssigneeMutation = useRemoveAssignee({ taskId: task.id });
 	const addAssigneeMutation = useAddAssignee({ taskId: task.id, version: task.version });
+	const reassignAssigneeMutation = useReassignAssignee({ taskId: task.id });
+
 	
 
 	const addAssignee = (a: Executor) => addAssigneeMutation.mutate(a);
 	const removeAssignee = (a: Executor) => removeAssigneeMutation.mutate(a);
+	const undoRemove = (a: Executor) => reassignAssigneeMutation.mutate(a);
 
 	return (
 		<>
