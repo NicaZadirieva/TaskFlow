@@ -1,19 +1,30 @@
 # test/task/test.py
-import pytest
 from datetime import datetime
 from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from app.shared.db import get_session
+from app.task.models import Priority, Status
 from app.task.routes import router
-
 from app.task.schemas.create_task import CreateTaskRequest, CreateTaskResponse
-from app.task.schemas.get_filtered_tasks import ExecutorShortOut, SortOrder, TagShortOut, TaskDeadline, TaskFilters, TaskOut, TaskSortBy, TasksOut, get_task_filters
+from app.task.schemas.get_filtered_tasks import (
+    ExecutorShortOut,
+    SortOrder,
+    TagShortOut,
+    TaskDeadline,
+    TaskFilters,
+    TaskOut,
+    TaskSortBy,
+    TasksOut,
+    get_task_filters,
+)
 from app.task.service import get_task_service
 from app.user.current_user import get_current_user
-from app.task.models import Priority, Status
+from app.user.models import TenantRole
 
 
 # ---------- Фикстуры ----------
@@ -27,6 +38,8 @@ def mock_current_user():
     user = MagicMock()
     user.tenant_id = 1
     user.id = 100
+    user.role = TenantRole.OWNER
+    user.is_active = True
     return user
 
 
@@ -36,6 +49,7 @@ def client(mock_service, mock_current_user):
     app.include_router(router)
     app.dependency_overrides[get_task_service] = lambda: mock_service
     app.dependency_overrides[get_current_user] = lambda: mock_current_user
+    app.dependency_overrides[get_session] = lambda: Mock(scalar=AsyncMock(return_value=5))
     # Для фильтров переопределять не нужно — они идут через Query
     return TestClient(app)
 
@@ -136,6 +150,7 @@ class TestSchemas:
         user = MagicMock()
         user.name = "Alice"
         user.login = "alice"
+        user.email = "alice@example.com"
 
         executor = MagicMock()
         executor.id = 1
@@ -158,8 +173,7 @@ class TestSchemas:
         assert out.hours == 10.0
         assert out.hourly_rate == 100
 
-    def test_task_out_with_executors_alias(self):
-        # Проверяем, что executors берётся из assignees
+    def test_task_out_with_executors(self):
         class Tag:
             id = 1
             tenant_id = 1
@@ -169,6 +183,7 @@ class TestSchemas:
         class Task:
             id = 1
             tenant_id = 1
+            version = 1
             project_id = None
             title = "Task"
             description = None
@@ -275,12 +290,13 @@ class TestListMyTasks:
             "total": 0,
             "limit": 100,
             "offset": 0,
+            "total_hours": "0",
+            "total_planned": "0",
         }
 
         mock_service.list_my_tasks.assert_awaited_once()
         kwargs = mock_service.list_my_tasks.call_args.kwargs
-        assert kwargs["tenant_id"] == mock_current_user.tenant_id
-        assert kwargs["user_id"] == mock_current_user.id
+        assert kwargs["user"] is mock_current_user
         assert isinstance(kwargs["filters"], TaskFilters)
 
     def test_list_my_tasks_with_filters(self, client, mock_service):
@@ -335,7 +351,7 @@ class TestListAllTasks:
 
         mock_service.list_tasks.assert_awaited_once()
         kwargs = mock_service.list_tasks.call_args.kwargs
-        assert kwargs["tenant_id"] == mock_current_user.tenant_id
+        assert kwargs["user"] is mock_current_user
         assert isinstance(kwargs["filters"], TaskFilters)
         assert kwargs["user_ids"] is None
 
@@ -373,6 +389,7 @@ class TestListAllTasks:
         exec_user = MagicMock()
         exec_user.name = "Alice"
         exec_user.login = "alice"
+        exec_user.email = "alice@example.com"
 
         executor = MagicMock()
         executor.id = 1
@@ -390,13 +407,14 @@ class TestListAllTasks:
         task_out = TaskOut(
             id=1,
             tenant_id=1,
+            version=1,
             title="Task",
             status=Status.OPEN,
             priority=Priority.HIGH,
             created_at=datetime(2025, 1, 1),
             created_by=1,
             tags=[tag],
-            assignees=[ExecutorShortOut.model_validate(executor)]
+            executors=[ExecutorShortOut.model_validate(executor)]
         )
         mock_service.list_tasks.return_value = TasksOut(
             items=[task_out], total=1, limit=100, offset=0

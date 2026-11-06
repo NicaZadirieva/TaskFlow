@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
 from app.executor.models import Executor
 from app.executor.repository import ExecutorRepoDeps
@@ -11,6 +11,7 @@ from app.executor.schema import (
     ReassignedUserTaskRequest,
     RemoveUserFromTaskRequest,
 )
+from app.user.models import TenantRole, User
 from app.user.repository import UserRepoDeps
 
 
@@ -38,8 +39,9 @@ class ExecutorService:
             task_id=dto.task_id,
             user_id=dto.user_id,
             tenant_id=tenant_id,
+            for_update=True,
         )
-        if existing is None or existing.removed:
+        if existing is None or existing.id != dto.id or existing.removed:
             return None
         existing.hours = dto.hours
         existing.planned = dto.planned if dto.planned is not None else existing.planned
@@ -56,9 +58,10 @@ class ExecutorService:
             task_id=dto.task_id,
             user_id=dto.user_id,
             tenant_id=tenant_id,
+            for_update=True,
         )
-        if existing is None or existing.removed:
-            raise ValueError("User cannot have rules to update already removed task")
+        if existing is None or existing.id != dto.id or existing.removed or not existing.is_active:
+            raise HTTPException(404, "Active assignment not found")
         existing.hours = (existing.hours or 0) + dto.today_hours_to_add
         return await self.executor_repo.save(existing)
 
@@ -66,22 +69,27 @@ class ExecutorService:
         self, user_id: int, tenant_id: int, dto: CreateExecutorRequest
     ):
         existing_user = await self.user_repo.get_by_login(dto.login, tenant_id)
-        if existing_user is None:
-            raise ValueError("User not exists")
+        if (
+            existing_user is None
+            or not existing_user.is_active
+            or existing_user.role not in (TenantRole.OWNER, TenantRole.TEAM)
+        ):
+            raise HTTPException(404, "Assignee not found")
         existing = await self.executor_repo.get_by_task_and_user(
             task_id=dto.task_id,
             user_id=existing_user.id,
             tenant_id=tenant_id,
+            for_update=True,
         )
         if existing is not None and not existing.removed:
-            raise ValueError("User is already assigned to this task")
+            raise HTTPException(409, "User is already assigned to this task")
         # TODO: добавить проверку на version только если edit_task
         if (
             dto.version is not None
             and existing is not None
             and existing.version != dto.version
         ):
-            raise ValueError("Dto has got not actual version for executor data")
+            raise HTTPException(409, "Assignment version is out of date")
         # Если была soft-deleted запись — реактивируем её, а не создаём дубль
         if existing is not None and existing.removed:
             existing.removed = False
@@ -121,9 +129,10 @@ class ExecutorService:
             task_id=dto.task_id,
             user_id=dto.user_id,
             tenant_id=tenant_id,
+            for_update=True,
         )
         if executor is None or executor.removed:
-            raise ValueError("Active assignment not found")
+            raise HTTPException(404, "Active assignment not found")
 
         executor.removed = True
         executor.remove_reason = dto.remove_reason
@@ -139,19 +148,28 @@ class ExecutorService:
             task_id=dto.task_id,
             user_id=dto.user_id,
             tenant_id=tenant_id,
+            for_update=True,
         )
         if executor is None:
-            raise ValueError("Assignment not found")
+            raise HTTPException(404, "Assignment not found")
         if not executor.removed:
-            raise ValueError("User is already active on this task")
+            raise HTTPException(409, "User is already active on this task")
+
+        user = await self.user_repo.get_by_id(dto.user_id)
+        if (
+            user is None
+            or not user.is_active
+            or user.tenant_id != tenant_id
+            or user.role not in (TenantRole.OWNER, TenantRole.TEAM)
+        ):
+            raise HTTPException(404, "Assignee not found")
 
         executor.removed = False
         executor.reassigned_reason = dto.reassigned_reason
         return await self.executor_repo.save(executor)
 
-    async def get_executors(self, tenant_id: int, only_active=True):
-        executors = await self.executor_repo.get_executors(tenant_id, only_active)
-        return executors
+    async def get_executors(self, user: User, only_active=True):
+        return await self.executor_repo.get_all_executors(user, only_active)
 
 
 def get_executor_service(executor_repo: ExecutorRepoDeps, user_repo: UserRepoDeps):

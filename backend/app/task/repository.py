@@ -4,14 +4,16 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy import Select, and_, cast, exists, func, literal, or_, select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, with_loader_criteria
 from sqlalchemy.types import Numeric
 
-from app.shared.db import DbSessionDeps
 from app.executor.models import Executor
 from app.github_label.models import GithubLabel
+from app.shared.db import DbSessionDeps
+from app.task.access import task_scope
 from app.task.models import Status, Task
 from app.task.schemas.get_filtered_tasks import SortOrder, TaskDeadline, TaskFilters
+from app.user.models import TenantRole, User
 
 
 class TaskRepository:
@@ -20,12 +22,15 @@ class TaskRepository:
 
     # ---------- write ----------
 
-    async def save(self, task: Task) -> Task:
+    async def save(self, task: Task, *, commit: bool = True) -> Task:
         if task.version:
             task.version += 1
         self.db_session.add(task)
-        await self.db_session.commit()
-        await self.db_session.refresh(task)
+        if commit:
+            await self.db_session.commit()
+            await self.db_session.refresh(task)
+        else:
+            await self.db_session.flush()
         return task
 
     # ---------- helpers ----------
@@ -103,6 +108,7 @@ class TaskRepository:
             stmt = stmt.where(
                 exists().where(
                     Executor.task_id == Task.id,
+                    Executor.tenant_id == Task.tenant_id,
                     Executor.user_id.in_(user_ids),
                     Executor.removed.is_(False),
                     Executor.is_active.is_(True),
@@ -211,32 +217,62 @@ class TaskRepository:
 
     async def list_tasks(
         self,
-        tenant_id: int,
+        user: User,
         filters: TaskFilters,
         user_ids: list[int] | None = None,
     ) -> list[Task]:
-        stmt = select(Task).where(Task.tenant_id == tenant_id)
+        tenant_id = user.tenant_id
+        stmt = select(Task).where(task_scope(user))
         stmt = self._apply_filters(stmt, filters, user_ids)
         stmt = self._apply_sort_and_pagination(stmt, filters).options(
             selectinload(Task.tags),
-            selectinload(Task.executors),
+            selectinload(Task.executors).selectinload(Executor.user),
+            with_loader_criteria(
+                Executor,
+                and_(Executor.tenant_id == tenant_id, Executor.user.has(User.tenant_id == tenant_id)),
+                loader_only=True,
+            ),
+            with_loader_criteria(GithubLabel, GithubLabel.tenant_id == tenant_id),
         )
         result = await self.db_session.execute(stmt)
         return list(result.scalars().unique().all())
 
     async def count(
         self,
-        tenant_id: int,
+        user: User,
         filters: TaskFilters,
         user_ids: list[int] | None = None,
     ) -> int:
         stmt = (
             select(func.count(Task.id))
             .select_from(Task)
-            .where(Task.tenant_id == tenant_id)
+            .where(task_scope(user))
         )
         stmt = self._apply_filters(stmt, filters, user_ids)
         return (await self.db_session.execute(stmt)).scalar_one()
+
+    async def get_filter_assignees(self, user: User) -> list[User]:
+        stmt = (
+            select(User)
+            .join(Executor, Executor.user_id == User.id)
+            .join(Task, Task.id == Executor.task_id)
+            .where(
+                task_scope(user),
+                User.tenant_id == user.tenant_id,
+                Executor.tenant_id == user.tenant_id,
+                Executor.removed.is_(False),
+                Executor.is_active.is_(True),
+            )
+            .distinct()
+            .order_by(User.name)
+        )
+        return list(await self.db_session.scalars(stmt))
+
+    async def get_filter_tags(self, user: User) -> list[GithubLabel]:
+        stmt = select(GithubLabel).where(GithubLabel.tenant_id == user.tenant_id)
+        if user.role != TenantRole.OWNER:
+            stmt = stmt.where(GithubLabel.tasks.any(task_scope(user)))
+        return list(await self.db_session.scalars(stmt))
 
     async def get_by_id(self, task_id: int, tenant_id: int) -> Task | None:
         stmt = (

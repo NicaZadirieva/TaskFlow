@@ -4,7 +4,6 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.executor.models import Executor
-from app.executor.repository import ExecutorRepoDeps
 from app.github_label.models import GithubLabel
 from app.github_label.repository import GithubLabelRepoDeps
 from app.task.models import Task
@@ -15,6 +14,7 @@ from app.task.schemas.get_filtered_tasks import (
     TasksOut,
     UserShortOut,
 )
+from app.user.models import User
 
 from .repository import TaskRepoDeps
 
@@ -24,11 +24,9 @@ class TaskService:
         self,
         task_repo: TaskRepoDeps,
         github_label_repo: GithubLabelRepoDeps,
-        executors_repo: ExecutorRepoDeps,
     ):
         self.task_repo = task_repo
         self.github_label_repo = github_label_repo
-        self.executors_repo = executors_repo
 
     # ---------- write ----------
 
@@ -55,11 +53,11 @@ class TaskService:
             task_images=dto.task_images,
             executors=[],
         )
-        new_task = await self.task_repo.save(task)
+        new_task = await self.task_repo.save(task, commit=False)
         if dto.tags:
             for tag in dto.tags:
                 await self.github_label_repo.attach_or_create(
-                    new_task.id, tenant_id, tag.name
+                    new_task.id, tenant_id, tag.name, commit=False
                 )
         if dto.executors:
             executors = [
@@ -77,21 +75,21 @@ class TaskService:
                 )
                 for e in dto.executors
             ]
-            for executor in executors:
-                await self.executors_repo.save(executor)
+            self.task_repo.db_session.add_all(executors)
 
+        await self.task_repo.db_session.commit()
         return new_task
 
     # ---------- read ----------
 
     async def list_tasks(
         self,
-        tenant_id: int,
+        user: User,
         filters: TaskFilters,
         user_ids: list[int] | None = None,
     ) -> TasksOut:
-        items = await self.task_repo.list_tasks(tenant_id, filters, user_ids)
-        total = await self.task_repo.count(tenant_id, filters, user_ids)
+        items = await self.task_repo.list_tasks(user, filters, user_ids)
+        total = await self.task_repo.count(user, filters, user_ids)
 
         zero = Decimal("0")
         enriched: list[TaskOut] = []
@@ -131,18 +129,17 @@ class TaskService:
 
     async def list_my_tasks(
         self,
-        tenant_id: int,
-        user_id: int,
+        user: User,
         filters: TaskFilters,
     ) -> TasksOut:
         return await self.list_tasks(
-            tenant_id=tenant_id,
+            user=user,
             filters=filters,
-            user_ids=[user_id],
+            user_ids=[user.id],
         )
 
-    async def get_filter_assignees(self, tenant_id: int) -> list[UserShortOut]:
-        data = await self.executors_repo.get_executors(tenant_id, only_active=True)
+    async def get_filter_assignees(self, user: User) -> list[UserShortOut]:
+        data = await self.task_repo.get_filter_assignees(user)
         return [
             UserShortOut(
                 user_id=e.id,
@@ -153,16 +150,15 @@ class TaskService:
             for e in data
         ]
 
-    async def get_filter_tags(self, tenant_id: int) -> list[GithubLabel]:
-        return await self.github_label_repo.get_all(tenant_id)
+    async def get_filter_tags(self, user: User) -> list[GithubLabel]:
+        return await self.task_repo.get_filter_tags(user)
 
 
 def get_task_service(
     task_repo: TaskRepoDeps,
     github_label_repo: GithubLabelRepoDeps,
-    executors_repo: ExecutorRepoDeps,
 ) -> TaskService:
-    return TaskService(task_repo, github_label_repo, executors_repo)
+    return TaskService(task_repo, github_label_repo)
 
 
 TaskServiceDeps = Annotated[TaskService, Depends(get_task_service)]

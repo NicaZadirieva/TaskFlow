@@ -1,7 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, Field
+
+from pydantic import AliasChoices, AliasPath, BaseModel, ConfigDict, Field
 
 
 # --------- CREATE -----------
@@ -50,7 +51,6 @@ class AddHoursToExecutorResponse(BaseModel):
 
 
 # -------- Change Assignee Hours ---------
-# TODO: только для админов
 class OwnerChangeAssigneeHoursRequest(BaseModel):
     id: int
     hours: Decimal
@@ -125,6 +125,8 @@ class TaskPriority(str, Enum):
 
 
 class TagShortOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     tenant_id: int
     name: str
@@ -162,8 +164,8 @@ class TaskShortOut(BaseModel):
 class ExecutorOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    name: str
-    login: str
+    name: str = Field(validation_alias=AliasChoices("name", AliasPath("user", "name")))
+    login: str = Field(validation_alias=AliasChoices("login", AliasPath("user", "login")))
 
     id: int
     tenant_id: int

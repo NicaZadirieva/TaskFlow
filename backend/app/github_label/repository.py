@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import IntegrityError
 
 from app.github_label.models import GithubLabel, task_github_label
 from app.shared.db import DbSessionDeps
@@ -37,6 +37,8 @@ class GithubLabelRepo:
         task_id: int,
         tenant_id: int,
         name: str,
+        *,
+        commit: bool = True,
     ) -> GithubLabel:
         """
         Привязывает GithubLabel к задаче по task_id.
@@ -49,14 +51,16 @@ class GithubLabelRepo:
                 tenant_id=tenant_id,
                 name=name,
             )
-            self.db_session.add(label)
             try:
-                await self.db_session.flush()
+                async with self.db_session.begin_nested():
+                    self.db_session.add(label)
+                    await self.db_session.flush()
             except IntegrityError:
                 #  TODO: тест сделать на одновременное добавление
                 # гонка: кто-то успел создать — перечитываем
-                await self.db_session.rollback()
                 label = await self.get(name=name, tenant_id=tenant_id)
+                if label is None:
+                    raise
 
         insert_stmt = (
             insert(task_github_label)
@@ -66,7 +70,8 @@ class GithubLabelRepo:
             )
         )
         await self.db_session.execute(insert_stmt)
-        await self.db_session.commit()
+        if commit:
+            await self.db_session.commit()
 
         return label
 
