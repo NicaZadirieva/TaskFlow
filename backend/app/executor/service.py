@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
+from sqlalchemy import select
 
 from app.executor.models import Executor
 from app.executor.repository import ExecutorRepoDeps
@@ -11,6 +12,7 @@ from app.executor.schema import (
     ReassignedUserTaskRequest,
     RemoveUserFromTaskRequest,
 )
+from app.task.models import Task
 from app.user.models import TenantRole, User
 from app.user.repository import UserRepoDeps
 
@@ -68,6 +70,14 @@ class ExecutorService:
     async def create_executor(
         self, user_id: int, tenant_id: int, dto: CreateExecutorRequest
     ):
+        stmt = (
+            select(Task.id)
+            .where(Task.id == dto.task_id, Task.tenant_id == tenant_id)
+            .with_for_update()
+        )
+        if await self.executor_repo.db_session.scalar(stmt) is None:
+            raise HTTPException(404, "Task not found")
+
         existing_user = await self.user_repo.get_by_login(dto.login, tenant_id)
         if (
             existing_user is None
