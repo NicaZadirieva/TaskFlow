@@ -1,16 +1,24 @@
-import pytest
+import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
-from fastapi import FastAPI
+import pytest
+from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
+from app.shared import models  # noqa: F401
+from app.tenant.models import Tenant
+from app.tenant.repository import TenantRepository
 from app.tenant.routes import router
 from app.tenant.schemas import (
     CreateTenantRequest,
     CreateTenantResponse,
     GetTenantResponse,
 )
-from app.tenant.service import get_tenant_service  # ← проверьте имя
+from app.tenant.service import TenantService, get_tenant_service
+from app.user.models import TenantRole, User
+from app.user.security import verify_password
 
 
 # ---------- Фикстуры ----------
@@ -30,7 +38,10 @@ def client(mock_service):
 # ---------- Тесты схем ----------
 class TestSchemas:
     def test_create_tenant_request(self):
-        req = CreateTenantRequest(name="Acme", slug="acme")
+        req = CreateTenantRequest(
+            name="Acme", slug="acme", admin_email="owner@example.com",
+            admin_password="secret",
+        )
         assert req.name == "Acme"
         assert req.slug == "acme"
 
@@ -66,7 +77,10 @@ class TestCreateTenant:
 
         response = client.post(
             "/v1/tenant/create",
-            json={"name": "Acme", "slug": "acme"},
+            json={
+                "name": "Acme", "slug": "acme",
+                "admin_email": "owner@example.com", "admin_password": "secret",
+            },
         )
         assert response.status_code == 201, response.json()
         assert response.json() == {"tenant_id": 42}
@@ -80,6 +94,11 @@ class TestCreateTenant:
     def test_create_tenant_missing_field(self, client):
         response = client.post("/v1/tenant/create", json={"name": "Acme"})
         assert response.status_code == 422
+
+    def test_create_tenant_requires_owner_credentials(self, client, mock_service):
+        response = client.post("/v1/tenant/create", json={"name": "Acme", "slug": "acme"})
+        assert response.status_code == 422
+        mock_service.create.assert_not_awaited()
 
     def test_create_tenant_empty_body(self, client):
         response = client.post("/v1/tenant/create", json={})
@@ -125,3 +144,36 @@ class TestGetTenantBySlug:
         response = client.get("/v1/tenant/slug")
         assert response.status_code == 422
         mock_service.get_tenant.assert_not_awaited()
+
+
+def test_tenant_and_owner_are_saved_together():
+    engine = create_engine("sqlite://")
+    Tenant.__table__.create(engine)
+    User.__table__.create(engine)
+    with Session(engine, expire_on_commit=False) as session:
+        async_session = MagicMock()
+        async_session.add = session.add
+        async_session.execute = AsyncMock(side_effect=session.execute)
+        async_session.commit = AsyncMock(side_effect=session.commit)
+        async_session.rollback = AsyncMock(side_effect=session.rollback)
+        async_session.refresh = AsyncMock(side_effect=session.refresh)
+        service = TenantService(TenantRepository(async_session))
+        credentials = {"admin_email": "owner@example.com", "admin_password": "secret"}
+
+        tenant_id = asyncio.run(
+            service.create(CreateTenantRequest(name="Acme", slug="acme", **credentials))
+        )
+        owner = session.scalar(select(User).where(User.tenant_id == tenant_id))
+        assert owner is not None
+        assert owner.role == TenantRole.OWNER
+        assert owner.login == "acme"
+        assert verify_password("secret", owner.password_hash)
+
+        with pytest.raises(HTTPException) as error:
+            asyncio.run(
+                service.create(
+                    CreateTenantRequest(name="Other", slug="other", **credentials)
+                )
+            )
+        assert error.value.status_code == 409
+        assert session.scalar(select(Tenant).where(Tenant.slug == "other")) is None

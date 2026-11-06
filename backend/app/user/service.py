@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
-from sqlalchemy import select
 
 from app.user.models import TenantRole, User
 from app.tenant.repository import TenantRepoDeps, TenantRepository
@@ -16,21 +15,21 @@ class UserService:
     def __init__(self, user_repo: UserRepository, tenant_repo: TenantRepository):
         self.user_repo = user_repo
         self.tenant_repo = tenant_repo
-        
 
-    async def create(self, data: CreateUserRequest):
+    async def create(self, data: CreateUserRequest, current_user: User):
+        if not current_user.is_active or current_user.role != TenantRole.OWNER:
+            raise HTTPException(403, "User not allowed to create users")
+        if data.tenant_id != current_user.tenant_id:
+            raise HTTPException(403, "User not allowed to create users in this tenant")
         user = await self.user_repo.get_by_email(data.email)
         if user:
             raise HTTPException(400, "User already exists")
-        tenant = await self.tenant_repo.get_by_id(data.tenant_id)
-        if tenant is None:
-            raise HTTPException(403, "Tenant not exists. Forbidden")
         new_user = User(
             login=data.login,
             name=data.name,
             email=data.email,
             password_hash=get_hashed_password(data.password),
-            tenant_id=data.tenant_id,
+            tenant_id=current_user.tenant_id,
             hourly_rate=data.hourly_rate,
             is_active=data.is_active,
             role=TenantRole[data.role.value],

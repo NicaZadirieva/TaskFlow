@@ -4,6 +4,10 @@ from pydantic import BaseModel
 class CreateTenantRequest(BaseModel):
     name: str
     slug: str
+    admin_email: str
+    admin_password: str
+    admin_login: str | None = None
+    admin_name: str = "Owner"
 
 
 class CreateTenantResponse(BaseModel):

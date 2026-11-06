@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from app.shared.db import DbSessionDeps
 from sqlalchemy.orm import selectinload
@@ -17,7 +18,11 @@ class TenantRepository:
 
     async def save(self, tenant: Tenant):
         self.db_session.add(tenant)
-        await self.db_session.commit()
+        try:
+            await self.db_session.commit()
+        except IntegrityError:
+            await self.db_session.rollback()
+            raise
         await self.db_session.refresh(tenant)
         return tenant
 

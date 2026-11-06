@@ -9,7 +9,7 @@ class TenantRole(Enum):
     TEAM = "TEAM"  # твои помощники (если будут)
 
 
-# При создании tenant'а -> создаем OWNER'а
+# Добавление пользователя в существующий tenant.
 class CreateUserRequest(BaseModel):
     login: str
     email: str
