@@ -6,6 +6,7 @@ from fastapi import Depends
 from app.executor.models import Executor
 from app.github_label.models import GithubLabel
 from app.github_label.repository import GithubLabelRepoDeps
+from app.task.access import require_assignees_in_tenant, require_project_in_tenant
 from app.task.models import Task
 from app.task.schemas.create_task import CreateTaskRequest
 from app.task.schemas.get_filtered_tasks import (
@@ -36,6 +37,13 @@ class TaskService:
         user_id: int,
         dto: CreateTaskRequest,
     ) -> Task:
+        session = self.task_repo.db_session
+        if dto.project_id is not None:
+            await require_project_in_tenant(session, dto.project_id, tenant_id)
+        if dto.executors:
+            assignee_ids = {executor.user_id for executor in dto.executors}
+            await require_assignees_in_tenant(session, assignee_ids, tenant_id)
+
         task = Task(
             tenant_id=tenant_id,
             created_by=user_id,
@@ -75,9 +83,9 @@ class TaskService:
                 )
                 for e in dto.executors
             ]
-            self.task_repo.db_session.add_all(executors)
+            session.add_all(executors)
 
-        await self.task_repo.db_session.commit()
+        await session.commit()
         return new_task
 
     # ---------- read ----------

@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import and_, exists, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.executor.models import Executor
 from app.project.models import Project
@@ -59,6 +60,35 @@ def require_active_user(user: CurrentUserDeps) -> User:
 ActiveUserDeps = Annotated[User, Depends(require_active_user)]
 
 
+async def require_project_in_tenant(
+    session: AsyncSession, project_id: int, tenant_id: int
+) -> None:
+    stmt = (
+        select(Project.id)
+        .where(Project.id == project_id, Project.tenant_id == tenant_id)
+        .with_for_update(read=True)
+    )
+    if await session.scalar(stmt) is None:
+        raise HTTPException(404, "Project not found")
+
+
+async def require_assignees_in_tenant(
+    session: AsyncSession, assignee_ids: set[int], tenant_id: int
+) -> None:
+    stmt = (
+        select(User.id)
+        .where(
+            User.id.in_(assignee_ids),
+            User.tenant_id == tenant_id,
+            User.role.in_([TenantRole.OWNER, TenantRole.TEAM]),
+            User.is_active.is_(True),
+        )
+        .with_for_update(read=True)
+    )
+    if set(await session.scalars(stmt)) != assignee_ids:
+        raise HTTPException(404, "Assignee not found")
+
+
 class TaskAccess:
     def __init__(self, session: DbSessionDeps, user: ActiveUserDeps):
         self.session = session
@@ -86,12 +116,9 @@ class TaskAccess:
             self.require_owner()
 
         if project_id is not None:
-            stmt = select(Project.id).where(
-                Project.id == project_id,
-                Project.tenant_id == self.user.tenant_id,
+            await require_project_in_tenant(
+                self.session, project_id, self.user.tenant_id
             )
-            if await self.session.scalar(stmt) is None:
-                raise HTTPException(404, "Project not found")
         if self.user.role == TenantRole.TEAM:
             assigned = (
                 select(Task.id)
@@ -105,14 +132,9 @@ class TaskAccess:
                 raise HTTPException(403, "Project assignment required")
 
         if assignee_ids:
-            stmt = select(User.id).where(
-                User.id.in_(assignee_ids),
-                User.tenant_id == self.user.tenant_id,
-                User.role.in_([TenantRole.OWNER, TenantRole.TEAM]),
-                User.is_active.is_(True),
+            await require_assignees_in_tenant(
+                self.session, assignee_ids, self.user.tenant_id
             )
-            if set(await self.session.scalars(stmt)) != assignee_ids:
-                raise HTTPException(404, "Assignee not found")
 
 
 TaskAccessDeps = Annotated[TaskAccess, Depends(TaskAccess)]

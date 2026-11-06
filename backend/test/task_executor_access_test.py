@@ -1,29 +1,45 @@
+from asyncio import run
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.executor.models import Executor
+from app.executor.repository import ExecutorRepository
 from app.executor.routes import router as executor_router
+from app.executor.schema import CreateExecutorRequest
+from app.executor.service import ExecutorService
 from app.github_label.models import GithubLabel
+from app.github_label.repository import GithubLabelRepo
 from app.project.models import Project
 from app.shared.db import Base, get_session
 from app.task.models import Status, Task
+from app.task.repository import TaskRepository
 from app.task.routes import router as task_router
+from app.task.schemas.create_task import CreateTaskRequest
+from app.task.service import TaskService
 from app.tenant.models import Tenant
 from app.user.current_user import get_current_user
 from app.user.models import TenantRole, User
+from app.user.repository import UserRepository
 
 
 @compiles(JSONB, "sqlite")
 def compile_jsonb_for_sqlite(element, compiler, **kwargs):
     return "JSON"
+
+
+def async_session_adapter(session):
+    adapter = Mock(wraps=session)
+    for method in ("execute", "scalar", "scalars", "get", "flush", "commit", "refresh"):
+        setattr(adapter, method, AsyncMock(wraps=getattr(session, method)))
+    return adapter
 
 
 @pytest.fixture
@@ -112,18 +128,7 @@ def api():
 
     async def database():
         with Session(engine, expire_on_commit=False) as session:
-            adapter = Mock(wraps=session)
-            for method in (
-                "execute",
-                "scalar",
-                "scalars",
-                "get",
-                "flush",
-                "commit",
-                "refresh",
-            ):
-                setattr(adapter, method, AsyncMock(wraps=getattr(session, method)))
-            yield adapter
+            yield async_session_adapter(session)
 
     async def current_user():
         with Session(engine) as session:
@@ -134,6 +139,91 @@ def api():
     with TestClient(app) as client:
         yield client, actor, engine
     engine.dispose()
+
+
+@pytest.mark.parametrize(
+    ("project_id", "assignee_ids", "error"),
+    [
+        (3, [5], "Project not found"),
+        (1, [5, 6], "Assignee not found"),
+        (1, [5], None),
+    ],
+)
+def test_create_task_service_validates_tenant_before_writing(
+    api, project_id, assignee_ids, error
+):
+    _, _, engine = api
+    dto = CreateTaskRequest(
+        title="New task",
+        project_id=project_id,
+        executors=[
+            {
+                "user_id": user_id,
+                "login": f"user{user_id}",
+                "role_in_task": "executor",
+                "is_active": True,
+                "hours": 0,
+                "planned": 1,
+                "hourly_rate": 1,
+            }
+            for user_id in assignee_ids
+        ],
+    )
+    with Session(engine, expire_on_commit=False) as session:
+        adapter = async_session_adapter(session)
+        service = TaskService(TaskRepository(adapter), GithubLabelRepo(adapter))
+        task_count = session.scalar(select(func.count()).select_from(Task))
+        executor_count = session.scalar(select(func.count()).select_from(Executor))
+        if error:
+            with pytest.raises(HTTPException) as exc:
+                run(service.create_task(tenant_id=1, user_id=1, dto=dto))
+            assert (exc.value.status_code, exc.value.detail) == (404, error)
+            assert session.scalar(select(func.count()).select_from(Task)) == task_count
+            assert (
+                session.scalar(select(func.count()).select_from(Executor))
+                == executor_count
+            )
+            return
+        task_id = run(service.create_task(tenant_id=1, user_id=1, dto=dto)).id
+
+    with Session(engine) as session:
+        task = session.get(Task, task_id)
+        assert (task.tenant_id, task.project_id) == (1, project_id)
+        assert [(e.tenant_id, e.user_id) for e in task.executors] == [(1, 5)]
+
+
+@pytest.mark.parametrize(
+    ("task_id", "login", "error"),
+    [
+        (4, "user5", "Task not found"),
+        (2, "user6", "Assignee not found"),
+        (2, "user5", None),
+    ],
+)
+def test_create_executor_service_validates_tenant_before_writing(
+    api, task_id, login, error
+):
+    _, _, engine = api
+    dto = CreateExecutorRequest(task_id=task_id, login=login, role_in_task="executor")
+    with Session(engine, expire_on_commit=False) as session:
+        adapter = async_session_adapter(session)
+        service = ExecutorService(ExecutorRepository(adapter), UserRepository(adapter))
+        executor_count = session.scalar(select(func.count()).select_from(Executor))
+        if error:
+            with pytest.raises(HTTPException) as exc:
+                run(service.create_executor(tenant_id=1, user_id=1, dto=dto))
+            assert (exc.value.status_code, exc.value.detail) == (404, error)
+            assert (
+                session.scalar(select(func.count()).select_from(Executor))
+                == executor_count
+            )
+            return
+        executor, _ = run(service.create_executor(tenant_id=1, user_id=1, dto=dto))
+        executor_id = executor.id
+
+    with Session(engine) as session:
+        executor = session.get(Executor, executor_id)
+        assert (executor.tenant_id, executor.task_id, executor.user_id) == (1, task_id, 5)
 
 
 @pytest.mark.parametrize(

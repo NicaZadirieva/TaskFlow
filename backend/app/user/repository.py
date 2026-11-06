@@ -26,8 +26,11 @@ class UserRepository:
         return user.scalar_one_or_none()
     
     async def get_by_login(self, login: str, tenant_id: int):
-        query = select(User).where(User.login == login,
-                                   User.tenant_id == tenant_id)
+        query = (
+            select(User)
+            .where(User.login == login, User.tenant_id == tenant_id)
+            .with_for_update(read=True)
+        )
         user = await self.db_session.execute(query)
         return user.scalar_one_or_none()
 
