@@ -43,7 +43,7 @@ class User(Base):
     def __init__(
         self,
         login: str,
-        tenant_id: int,
+        tenant_id: int | None,
         role: TenantRole,
         name: str,
         email: str,
@@ -51,7 +51,8 @@ class User(Base):
         is_active: bool = True,
         hourly_rate: int | None = None,
     ):
-        self.tenant_id = tenant_id
+        if tenant_id is not None:
+            self.tenant_id = tenant_id
         self.login = login
         self.role = role
         self.name = name

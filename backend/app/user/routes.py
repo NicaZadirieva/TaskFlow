@@ -25,8 +25,10 @@ logger = logging.getLogger(__name__)
     summary="Создает юзера",
     description="""Создает юзера""",
 )
-async def create_user(data: CreateUserRequest, service: UserServiceDeps):
-    jwt = await service.create(data)
+async def create_user(
+    data: CreateUserRequest, current_user: CurrentUserDeps, service: UserServiceDeps
+):
+    jwt = await service.create(data, current_user)
     return JWTResponse(jwt=jwt)
 
 
