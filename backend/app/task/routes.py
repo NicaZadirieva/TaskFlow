@@ -1,13 +1,17 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
-
+from fastapi import APIRouter, HTTPException, Query
 
 from app.github_label.schemas import GithubLabelOut
+from app.task.access import ActiveUserDeps, TaskAccessDeps
 from app.task.schemas.create_task import CreateTaskRequest, CreateTaskResponse
+from app.task.schemas.get_filtered_tasks import (
+    CsvIntList,
+    TaskFiltersDeps,
+    TasksOut,
+    UserShortOut,
+)
 from app.task.service import TaskServiceDeps
-from app.task.schemas.get_filtered_tasks import CsvIntList, TaskFiltersDeps, TasksOut, UserShortOut
-from app.user.current_user import CurrentUserDeps
 
 router = APIRouter(prefix="/v1/task", tags=["Tasks"])
 
@@ -21,8 +25,14 @@ router = APIRouter(prefix="/v1/task", tags=["Tasks"])
 async def create_task(
     dto: CreateTaskRequest,
     service: TaskServiceDeps,
-    user: CurrentUserDeps,
+    user: ActiveUserDeps,
+    access: TaskAccessDeps,
 ) -> CreateTaskResponse:
+    executors = dto.executors or []
+    assignee_ids = {executor.user_id for executor in executors}
+    await access.require_create(dto.project_id, assignee_ids)
+    if len(assignee_ids) != len(executors):
+        raise HTTPException(422, "Duplicate assignee")
     task = await service.create_task(
         tenant_id=user.tenant_id,
         user_id=user.id,
@@ -39,11 +49,10 @@ async def create_task(
 async def list_my_tasks(
     filters: TaskFiltersDeps,
     service: TaskServiceDeps,
-    user: CurrentUserDeps,
+    user: ActiveUserDeps,
 ) -> TasksOut:
     return await service.list_my_tasks(
-        tenant_id=user.tenant_id,
-        user_id=user.id,
+        user=user,
         filters=filters,
     )
 
@@ -56,14 +65,14 @@ async def list_my_tasks(
 async def list_all_tasks(
     filters: TaskFiltersDeps,
     service: TaskServiceDeps,
-    user: CurrentUserDeps,
+    user: ActiveUserDeps,
     user_ids: Annotated[
         CsvIntList | None,
         Query(description="ID исполнителей (OR)", explode=False),
     ] = None,
 ) -> TasksOut:
     return await service.list_tasks(
-        tenant_id=user.tenant_id,
+        user=user,
         filters=filters,
         user_ids=user_ids,
     )
@@ -71,15 +80,15 @@ async def list_all_tasks(
 
 @router.get("/filters/assignees", response_model=list[UserShortOut])
 async def list_filter_assignees(
-    user: CurrentUserDeps,
+    user: ActiveUserDeps,
     service: TaskServiceDeps,
 ):
-    return await service.get_filter_assignees(user.tenant_id)
+    return await service.get_filter_assignees(user)
 
 
 @router.get("/filters/tags", response_model=list[GithubLabelOut])
 async def list_filter_tags(
-    user: CurrentUserDeps,
+    user: ActiveUserDeps,
     service: TaskServiceDeps,
 ):
-    return await service.get_filter_tags(user.tenant_id)
+    return await service.get_filter_tags(user)

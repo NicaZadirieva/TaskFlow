@@ -1,24 +1,27 @@
-import pytest
 from datetime import datetime, timezone
 from decimal import Decimal
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.executor.routes import router
 from app.executor.schema import (
-    CreateExecutorRequest,
     AddHoursToExecutorRequest,
-    OwnerChangeAssigneeHoursRequest,
-    RemoveUserFromTaskRequest,
-    ReassignedUserTaskRequest,
+    CreateExecutorRequest,
     ExecutorOut,
+    OwnerChangeAssigneeHoursRequest,
+    ReassignedUserTaskRequest,
+    RemoveUserFromTaskRequest,
     TaskShortOut,
 )
 from app.executor.service import get_executor_service
+from app.shared.db import get_session
 from app.user.current_user import get_current_user
+from app.user.models import TenantRole
+from app.user.service import get_user_service
 
 
 # ---------- Хелперы: реальные данные вместо AsyncMock ----------
@@ -60,6 +63,8 @@ def _executor(**kw) -> SimpleNamespace:
         reassigned_reason=None,
         name="Test User",
         login="test_user",
+        email="test@example.com",
+        version=1,
         task=_task(),
     )
     base.update(kw)
@@ -74,7 +79,7 @@ def mock_service():
 
 @pytest.fixture
 def mock_current_user():
-    return SimpleNamespace(tenant_id=1, id=100)
+    return SimpleNamespace(tenant_id=1, id=100, role=TenantRole.OWNER, is_active=True)
 
 
 @pytest.fixture
@@ -83,6 +88,10 @@ def client(mock_service, mock_current_user):
     app.include_router(router)
     app.dependency_overrides[get_executor_service] = lambda: mock_service
     app.dependency_overrides[get_current_user] = lambda: mock_current_user
+    app.dependency_overrides[get_session] = lambda: Mock(scalar=AsyncMock(return_value=1))
+    app.dependency_overrides[get_user_service] = lambda: Mock(
+        get_user=AsyncMock(return_value=_executor()),
+    )
     return TestClient(app)
 
 
@@ -91,16 +100,15 @@ class TestSchemas:
     def test_create_executor_request(self):
         data = {
             "task_id": 1,
-            "user_id": 2,
+            "login": "test_user",
             "role_in_task": "executor",
-            "assigned_at": "2023-01-01T00:00:00",
             "hours": 10,
             "planned": 5,
             "hourly_rate": 100,
         }
         req = CreateExecutorRequest(**data)
         assert req.task_id == 1
-        assert req.user_id == 2
+        assert req.login == "test_user"
         assert req.role_in_task == "executor"
         assert req.hours == 10
         assert req.planned == 5
@@ -109,9 +117,8 @@ class TestSchemas:
         # Опциональные поля
         req2 = CreateExecutorRequest(
             task_id=1,
-            user_id=2,
+            login="test_user",
             role_in_task="executor",
-            assigned_at=datetime.now(),
         )
         assert req2.hours is None
         assert req2.planned is None
@@ -276,10 +283,10 @@ class TestRoutes:
             "id": 1,
             "hourly_rate": 100,
             "user_id": 2,
-            "user_hours": 10.0,
-            "user_planned": 5.0,
-            "all_hours": 50,
-            "all_planned": 40,
+            "user_hours": "10.0",
+            "user_planned": "5.0",
+            "all_hours": "50",
+            "all_planned": "40",
         }
 
         mock_service.add_hours_to_task.assert_awaited_once()
@@ -338,10 +345,10 @@ class TestRoutes:
             "id": 1,
             "hourly_rate": 100,
             "user_id": 2,
-            "user_hours": 8.0,
-            "user_planned": 4.0,
-            "all_hours": 40,
-            "all_planned": 20,
+            "user_hours": "8.0",
+            "user_planned": "4.0",
+            "all_hours": "40",
+            "all_planned": "20",
         }
 
         mock_service.change_hours_to_task.assert_awaited_once()
@@ -353,13 +360,13 @@ class TestRoutes:
 
     # POST /v1/executor/create
     def test_create_executor(self, client, mock_service, mock_current_user):
-        mock_service.create_executor.return_value = 123
+        executor = _executor(id=123)
+        mock_service.create_executor.return_value = (executor, executor)
 
         payload = {
             "task_id": 1,
-            "user_id": 2,
+            "login": "test_user",
             "role_in_task": "executor",
-            "assigned_at": "2023-01-01T00:00:00",
             "hours": 10,
             "planned": 5,
             "hourly_rate": 100,
@@ -367,7 +374,8 @@ class TestRoutes:
         response = client.post("/v1/executor/create", json=payload)
         assert response.status_code == 201
         data = response.json()
-        assert data == {"id": 123}
+        assert data["id"] == 123
+        assert data["login"] == "test_user"
 
         mock_service.create_executor.assert_awaited_once_with(
             user_id=mock_current_user.id,
@@ -379,8 +387,7 @@ class TestRoutes:
         # Отсутствует обязательное поле role_in_task
         payload = {
             "task_id": 1,
-            "user_id": 2,
-            "assigned_at": "2023-01-01T00:00:00",
+            "login": "test_user",
         }
         response = client.post("/v1/executor/create", json=payload)
         assert response.status_code == 422
@@ -394,7 +401,8 @@ class TestRoutes:
         response = client.post("/v1/executor/remove", json=payload)
         assert response.status_code == 200
         data = response.json()
-        assert data == {"id": 1, "user_id": 2, "task_id": 10}
+        assert (data["id"], data["user_id"], data["task_id"]) == (1, 2, 10)
+        assert data["login"] == "test_user"
 
         mock_service.remove_user_from_task.assert_awaited_once_with(
             tenant_id=mock_current_user.tenant_id,
@@ -447,7 +455,7 @@ class TestRoutes:
         assert data["items"][1]["login"] == "executor2"
 
         mock_service.get_executors.assert_awaited_once_with(
-            mock_current_user.tenant_id, only_active=True
+            mock_current_user, only_active=True
         )
 
     def test_get_executors_only_active_false(self, client, mock_service, mock_current_user):
@@ -457,5 +465,5 @@ class TestRoutes:
         data = response.json()
         assert data == {"items": []}
         mock_service.get_executors.assert_awaited_once_with(
-            mock_current_user.tenant_id, only_active=False
+            mock_current_user, only_active=False
         )

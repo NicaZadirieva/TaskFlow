@@ -36,8 +36,8 @@ class UserRepository:
         return user
     
     async def get_default_hourly_rate(self, user_id: int, tenant_id: int):
-        user = await self.user_repo.get_by_id(user_id)
-        if user.tenant_id == tenant_id:
+        user = await self.get_by_id(user_id)
+        if user is not None and user.tenant_id == tenant_id:
             return user.hourly_rate
         return None
 

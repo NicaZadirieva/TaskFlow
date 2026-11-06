@@ -17,7 +17,8 @@ from app.executor.schema import (
     RemoveUserFromTaskResponse,
 )
 from app.executor.service import ExecutorServiceDeps
-from app.user.current_user import CurrentUserDeps
+from app.task.access import ActiveUserDeps, TaskAccessDeps
+from app.user.models import TenantRole
 from app.user.service import UserServiceDeps
 
 router = APIRouter(prefix="/v1/executor", tags=["Executors"])
@@ -35,8 +36,14 @@ logger = logging.getLogger(__name__)  # noqa: F821
 async def add_hours_to_executor(
     dto: AddHoursToExecutorRequest,
     service: ExecutorServiceDeps,
-    current_user: CurrentUserDeps,
+    current_user: ActiveUserDeps,
+    access: TaskAccessDeps,
 ):
+    if current_user.role != TenantRole.OWNER and (
+        current_user.role != TenantRole.TEAM or dto.user_id != current_user.id
+    ):
+        raise HTTPException(403, "Cannot add hours for this assignee")
+    await access.require_task(dto.task_id)
     executor = await service.add_hours_to_task(current_user.tenant_id, dto)
     hourly_rate = await service.get_user_hourly_rate(
         dto.task_id, dto.user_id, current_user.tenant_id
@@ -67,8 +74,11 @@ async def add_hours_to_executor(
 async def change_hours_to_executor(
     dto: OwnerChangeAssigneeHoursRequest,
     service: ExecutorServiceDeps,
-    current_user: CurrentUserDeps,
+    current_user: ActiveUserDeps,
+    access: TaskAccessDeps,
 ):
+    access.require_owner()
+    await access.require_task(dto.task_id)
     executor = await service.change_hours_to_task(current_user.tenant_id, dto)
     if executor is None:
         raise HTTPException(404, "Executor not exists")
@@ -104,8 +114,11 @@ async def change_hours_to_executor(
 async def create_executor(
     dto: CreateExecutorRequest,
     service: ExecutorServiceDeps,
-    current_user: CurrentUserDeps,
+    current_user: ActiveUserDeps,
+    access: TaskAccessDeps,
 ) -> CreateExecutorResponse:
+    access.require_owner()
+    await access.require_task(dto.task_id)
     executor, user = await service.create_executor(
         user_id=current_user.id,
         tenant_id=current_user.tenant_id,
@@ -138,16 +151,16 @@ async def remove_user_from_task(
     dto: RemoveUserFromTaskRequest,
     service: ExecutorServiceDeps,
     user_service: UserServiceDeps,
-    current_user: CurrentUserDeps,
+    current_user: ActiveUserDeps,
+    access: TaskAccessDeps,
 ) -> RemoveUserFromTaskResponse:
-    user = await user_service.get_user(dto.user_id)
-    if user is None:
-        raise HTTPException(404, "User not exists to delete")
-
+    access.require_owner()
+    await access.require_task(dto.task_id)
     executor = await service.remove_user_from_task(
         tenant_id=current_user.tenant_id,
         dto=dto,
     )
+    user = await user_service.get_user(executor.user_id)
 
     return RemoveUserFromTaskResponse(
         id=executor.id,
@@ -173,8 +186,11 @@ async def remove_user_from_task(
 async def reassign_user_to_task(
     dto: ReassignedUserTaskRequest,
     service: ExecutorServiceDeps,
-    current_user: CurrentUserDeps,
+    current_user: ActiveUserDeps,
+    access: TaskAccessDeps,
 ) -> ReassignedUserTaskResponse:
+    access.require_owner()
+    await access.require_task(dto.task_id)
     executor = await service.reassign_user_to_task(
         tenant_id=current_user.tenant_id,
         dto=dto,
@@ -191,10 +207,10 @@ async def reassign_user_to_task(
 )
 async def get_executors(
     service: ExecutorServiceDeps,
-    current_user: CurrentUserDeps,
+    current_user: ActiveUserDeps,
     only_active: bool = Query(True),
 ) -> ExecutorListOut:
-    users = await service.get_executors(current_user.tenant_id, only_active=only_active)
+    users = await service.get_executors(current_user, only_active=only_active)
     return ExecutorListOut(
         items=[ExecutorOut.model_validate(u) for u in users],
     )

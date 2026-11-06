@@ -2,10 +2,13 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy import func, select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, with_loader_criteria
 
-from app.shared.db import DbSessionDeps
 from app.executor.models import Executor
+from app.github_label.models import GithubLabel
+from app.shared.db import DbSessionDeps
+from app.task.access import task_scope
+from app.task.models import Task
 from app.user.models import User
 
 
@@ -26,12 +29,17 @@ class ExecutorRepository:
         task_id: int,
         user_id: int,
         tenant_id: int,
+        *,
+        for_update: bool = False,
     ) -> Executor | None:
-        stmt = select(Executor).where(
+        stmt = select(Executor).join(Executor.user).where(
             Executor.task_id == task_id,
             Executor.user_id == user_id,
             Executor.tenant_id == tenant_id,
+            User.tenant_id == tenant_id,
         )
+        if for_update:
+            stmt = stmt.with_for_update(of=Executor)
         result = await self.db_session.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -78,14 +86,24 @@ class ExecutorRepository:
 
     async def get_all_executors(
         self,
-        tenant_id: int,
+        user: User,
         only_active: bool = True,
     ) -> list[Executor]:
         """Все назначения тенанта из таблицы executor (со связанным User)."""
         stmt = (
             select(Executor)
-            .where(Executor.tenant_id == tenant_id)
-            .options(selectinload(Executor.user))
+            .join(Executor.task)
+            .join(Executor.user)
+            .where(
+                task_scope(user),
+                Executor.tenant_id == user.tenant_id,
+                User.tenant_id == user.tenant_id,
+            )
+            .options(
+                selectinload(Executor.user),
+                selectinload(Executor.task).selectinload(Task.tags),
+                with_loader_criteria(GithubLabel, GithubLabel.tenant_id == user.tenant_id),
+            )
             .order_by(Executor.task_id, Executor.id)
         )
         if only_active:
