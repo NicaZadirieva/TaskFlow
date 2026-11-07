@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
+from app.user.access import UserActionAccess
 from app.user.current_user import CurrentUserDeps
 from app.user.schemas import (
     CreateUserRequest,
@@ -85,4 +86,5 @@ async def get_current_user(current_user: CurrentUserDeps, service: UserServiceDe
         user_id=current_user.id,
         role=TenantRole[current_user.role.value],
         tenant_id=current_user.tenant_id,
+        actions=UserActionAccess.get_all_role_actions(current_user),
     )

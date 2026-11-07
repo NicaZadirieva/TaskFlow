@@ -2,6 +2,8 @@ from enum import Enum
 
 from pydantic import BaseModel
 
+from app.user.access import Action
+
 
 class TenantRole(Enum):
     OWNER = "OWNER"  # ты (фрилансер)
@@ -53,3 +55,4 @@ class GetCurrentUserResponse(BaseModel):
     user_id: int
     role: TenantRole
     tenant_id: int
+    actions: list[Action]
