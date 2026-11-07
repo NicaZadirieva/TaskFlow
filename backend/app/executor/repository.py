@@ -78,17 +78,18 @@ class ExecutorRepository:
 
     # ---------- helpers ----------
 
-    async def get_hours_by_all_users(self, id: int, tenant_id: int):
+    # Preserve every executor's contribution, including removed/inactive assignments.
+    async def get_hours_by_all_users(self, task_id: int, tenant_id: int):
         stmt = select(func.sum(Executor.hours)).where(
-            Executor.id == id,
+            Executor.task_id == task_id,
             Executor.tenant_id == tenant_id,
         )
         res = await self.db_session.execute(stmt)
         return res.scalar_one_or_none()
 
-    async def get_planned_by_all_users(self, id: int, tenant_id: int):
+    async def get_planned_by_all_users(self, task_id: int, tenant_id: int):
         stmt = select(func.sum(Executor.planned)).where(
-            Executor.id == id,
+            Executor.task_id == task_id,
             Executor.tenant_id == tenant_id,
         )
         res = await self.db_session.execute(stmt)

@@ -49,10 +49,10 @@ async def add_hours_to_executor(
         dto.task_id, dto.user_id, current_user.tenant_id
     )
     all_hours = await service.get_all_hours(
-        executor.id, tenant_id=current_user.tenant_id
+        executor.task_id, tenant_id=current_user.tenant_id
     )
     all_planned = await service.get_all_planned_hours(
-        executor.id, tenant_id=current_user.tenant_id
+        executor.task_id, tenant_id=current_user.tenant_id
     )
     return AddHoursToExecutorResponse(
         id=executor.id,
@@ -86,10 +86,10 @@ async def change_hours_to_executor(
         dto.task_id, dto.user_id, current_user.tenant_id
     )
     all_hours = await service.get_all_hours(
-        executor.id, tenant_id=current_user.tenant_id
+        executor.task_id, tenant_id=current_user.tenant_id
     )
     all_planned = await service.get_all_planned_hours(
-        executor.id, tenant_id=current_user.tenant_id
+        executor.task_id, tenant_id=current_user.tenant_id
     )
     return OwnerChangeAssigneeHoursResponse(
         id=executor.id,
