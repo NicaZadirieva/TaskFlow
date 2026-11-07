@@ -134,7 +134,7 @@ class TaskRepository:
         Возвращает кортеж:
           (planned_hours, actual_hours, planned_budget, actual_budget)
 
-        Снятые исполнители (removed=True) не учитываются.
+        Снятые и неактивные исполнители сохраняют вклад в план и факт.
         Если у исполнителя не задан hourly_rate, его часы попадают
         в *_hours, но вклад в *_budget = 0.
         """
@@ -169,7 +169,7 @@ class TaskRepository:
               "executors_actual_budget":    Decimal,
           }}
 
-        Считаются только не снятые исполнители (removed=False).
+        Снятые и неактивные исполнители сохраняют вклад в план и факт.
         Задачи без исполнителей в результат не попадают.
         """
         if not task_ids:
@@ -197,7 +197,6 @@ class TaskRepository:
             .where(
                 Executor.task_id.in_(task_ids),
                 Executor.tenant_id == tenant_id,
-                Executor.removed.is_(False),
             )
             .group_by(Executor.task_id)
         )

@@ -78,7 +78,7 @@ export default function TaskCreator({
 	/* ---------- Сохранение задачи ---------- */
 	const saveTaskMutation = useMutation({
 		mutationFn: (patch: TaskWithoutCreatedBy | NewTask) => {
-			const nextTask: TaskWithoutCreatedBy | NewTask = { ...task, ...patch, assignees };
+			const nextTask: TaskWithoutCreatedBy | NewTask = { ...task, ...patch };
 			return createTaskReq(toCreateTaskRequest(nextTask));
 		},
 
@@ -112,11 +112,11 @@ export default function TaskCreator({
 	/* ---------- Удаление ---------- */
 	const removeAssignee = (removed: Executor) => {
 		setAssignees((prev) => {
-			const index = prev.findIndex((a) => a.id === removed.id);
+			const index = prev.findIndex((a) => a.user_id === removed.user_id);
 			if (index === -1) return prev;
 
 			setLastRemoved({ assignee: removed, index });
-			return prev.filter((a) => a.id !== removed.id);
+			return prev.filter((a) => a.user_id !== removed.user_id);
 		});
 
 		setRemoving(null);
@@ -139,7 +139,7 @@ export default function TaskCreator({
 	/* ---------- Добавление ---------- */
 	const addAssignee = (assignee: Executor) => {
 		setAssignees((prev) => {
-			const exists = prev.some((a) => a.id === assignee.id);
+			const exists = prev.some((a) => a.user_id === assignee.user_id);
 			if (exists) return prev;
 			return [...prev, assignee];
 		});
@@ -203,7 +203,7 @@ export default function TaskCreator({
 						/>
 					</Card>
 
-					<Card className={styles.card} title={'Запланированные значения'}>
+					<Card className={styles.card} title={'Запланированные значения (без сохранения)'}>
 						<ShowMetrics
 							due_date={task.due_date?.toLocaleDateString('ru-RU')}
 							overdueDays={overdueDays}

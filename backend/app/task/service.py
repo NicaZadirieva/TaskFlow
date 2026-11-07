@@ -98,15 +98,12 @@ class TaskService:
         task = await self.task_repo.get_by_id(task_id, user)
         if task is None:
             raise HTTPException(404, "Task not found")
-        planned, hours, planned_budget, actual_budget = (
-            self.task_repo.calculate_executor_totals(task.executors)
+        totals = await self.task_repo.get_executor_totals_by_task_ids(
+            [task.id], user.tenant_id
         )
-        return TaskOut.model_validate(task).model_copy(update={
-            "executors_estimated_hours": planned or None,
-            "executors_actual_hours": hours or None,
-            "executors_estimated_budget": planned_budget or None,
-            "executors_actual_budget": actual_budget or None,
-        })
+        return TaskOut.model_validate(task).model_copy(
+            update={key: value or None for key, value in totals.get(task.id, {}).items()}
+        )
 
     async def list_tasks(
         self,
@@ -116,6 +113,9 @@ class TaskService:
     ) -> TasksOut:
         items = await self.task_repo.list_tasks(user, filters, user_ids)
         total = await self.task_repo.count(user, filters, user_ids)
+        totals = await self.task_repo.get_executor_totals_by_task_ids(
+            [task.id for task in items], user.tenant_id
+        )
 
         zero = Decimal("0")
         enriched: list[TaskOut] = []
@@ -123,24 +123,13 @@ class TaskService:
         total_hours = zero
 
         for task in items:
-            (
-                planned_hours,
-                actual_hours,
-                planned_budget,
-                actual_budget,
-            ) = self.task_repo.calculate_executor_totals(task.executors)
-
-            total_planned += planned_hours
-            total_hours += actual_hours
+            task_totals = totals.get(task.id, {})
+            total_planned += task_totals.get("executors_estimated_hours", zero)
+            total_hours += task_totals.get("executors_actual_hours", zero)
 
             enriched.append(
                 TaskOut.model_validate(task).model_copy(
-                    update={
-                        "executors_estimated_hours": planned_hours or None,
-                        "executors_actual_hours": actual_hours or None,
-                        "executors_estimated_budget": planned_budget or None,
-                        "executors_actual_budget": actual_budget or None,
-                    }
+                    update={key: value or None for key, value in task_totals.items()}
                 )
             )
 
