@@ -20,7 +20,7 @@ import ShowMetrics from '../../entities/ShowMetrics';
 import TaskHeader from '../../entities/TaskHeader';
 import EditTaskForm from '../../features/EditTaskForm';
 
-export default function TaskEditor({ task }: { task: Task }) {
+export default function TaskEditor({ task, saveTask }: { task: Task; saveTask?: (task: Task) => void | Promise<void> }) {
 	const [removing, setRemoving] = useState<Executor | null>(null);
 	const [adding, setAdding] = useState(false);
 
@@ -84,19 +84,19 @@ export default function TaskEditor({ task }: { task: Task }) {
 	};
 
 	const computeActualBudget = (assignee: Executor) => {
-		return assignee.hourly_rate ? assignee.hourly_rate * assignee.hours: 0;
+		return assignee.hourly_rate ? assignee.hourly_rate * (assignee.hours ?? 0): 0;
 	};
 
 	const computeEstimatedBudget = (assignee: Executor) => {
-		return assignee.hourly_rate ? assignee.hourly_rate * assignee.planned: 0;
+		return assignee.hourly_rate ? assignee.hourly_rate * (assignee.planned ?? 0): 0;
 	};
 
 	const computeActualHours = (assignee: Executor) => {
-		return assignee.hours;
+		return assignee.hours ?? 0;
 	};
 
 	const computeEstimatedHours = (assignee: Executor) => {
-		return assignee.planned;
+		return assignee.planned ?? 0;
 	};
 
 	/* ---------- Просрочка ---------- */
@@ -126,19 +126,19 @@ export default function TaskEditor({ task }: { task: Task }) {
 
 	return (
 		<>
-			<TaskHeader task={editedTask} />
+			<TaskHeader {...editedTask} />
 			<div className={styles.grid}>
-				<EditTaskForm task={editedTask} updateTask={updateEditedTask}/>
+				<EditTaskForm task={editedTask} updateTask={updateTask} saveTask={saveTask ? (patch) => saveTask({ ...editedTask, ...patch }) : undefined}/>
 				<div className={styles.right}>
 					<Card title={'Эталонные значения для планирования'} className={styles.card}>
             
 						<ShowMetrics
 							due_date={editedTask.due_date?.toLocaleDateString('ru-RU')}
 							overdueDays={overdueDays /**TODO: посчитать на фронтенде */}
-							actualBudget={editedTask.budget.fact}
-							estimatedBudget={editedTask.budget.planned}
-							actualHours={editedTask.hours.fact}
-							estimatedHours={editedTask.hours.planned}
+							actualBudget={editedTask.budget.fact ?? 0}
+							estimatedBudget={editedTask.budget.planned ?? 0}
+							actualHours={editedTask.hours.fact ?? 0}
+							estimatedHours={editedTask.hours.planned ?? 0}
 						/>
 					</Card>
 					<Card className={styles.card} title={'Запланированные значения'}>

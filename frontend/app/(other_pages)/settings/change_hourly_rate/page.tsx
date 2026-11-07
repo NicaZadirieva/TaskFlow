@@ -5,6 +5,7 @@ import { User } from '@/entities/user.interface';
 export default function ChangeHourlyRatePage() {
 	const currentUser: User = {
 		id: 101,
+		login: 'anna',
 		role: TenantRole.OWNER,
 		name: 'Анна Демченко',
 		email: 'anna@taskflow.io',

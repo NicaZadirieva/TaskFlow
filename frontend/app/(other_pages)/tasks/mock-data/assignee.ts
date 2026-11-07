@@ -5,6 +5,8 @@ import { Executor } from '@/entities/executor.interface';
 export const assignee: Executor = {
 	id: 1,
 	user_name: 'Иван',
+	login: 'ivan',
+	email: 'ivan@example.com',
 	user_id: 42,
 	task_id: 100,
 	tenant_id: 7,
@@ -19,6 +21,8 @@ export const reviewer: Executor = {
 	id: 2,
 	user_id: 43,
 	user_name: 'Василиса',
+	login: 'vasilisa',
+	email: 'vasilisa@example.com',
 	task_id: 100,
 	tenant_id: 7,
 	role_in_task: 'REVIEWER',

@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
 from app.executor.models import Executor
 from app.github_label.models import GithubLabel
@@ -38,57 +38,75 @@ class TaskService:
         dto: CreateTaskRequest,
     ) -> Task:
         session = self.task_repo.db_session
-        if dto.project_id is not None:
-            await require_project_in_tenant(session, dto.project_id, tenant_id)
-        if dto.executors:
-            assignee_ids = {executor.user_id for executor in dto.executors}
-            await require_assignees_in_tenant(session, assignee_ids, tenant_id)
+        try:
+            if dto.project_id is not None:
+                await require_project_in_tenant(session, dto.project_id, tenant_id)
+            if dto.executors:
+                assignee_ids = {executor.user_id for executor in dto.executors}
+                await require_assignees_in_tenant(session, assignee_ids, tenant_id)
 
-        task = Task(
-            tenant_id=tenant_id,
-            created_by=user_id,
-            title=dto.title,
-            project_id=dto.project_id,
-            description=dto.description,
-            status=dto.status,
-            priority=dto.priority,
-            due_date=dto.due_date,
-            estimated_budget=dto.estimated_budget,
-            actual_budget=dto.actual_budget,
-            estimated_hours=dto.estimated_hours,
-            actual_hours=dto.actual_hours,
-            note=dto.note,
-            task_images=dto.task_images,
-            executors=[],
-        )
-        new_task = await self.task_repo.save(task, commit=False)
-        if dto.tags:
-            for tag in dto.tags:
-                await self.github_label_repo.attach_or_create(
-                    new_task.id, tenant_id, tag.name, commit=False
-                )
-        if dto.executors:
-            executors = [
-                Executor(
-                    user_id=e.user_id,
-                    task_id=new_task.id,
-                    tenant_id=tenant_id,
-                    role_in_task=e.role_in_task,
-                    hours=e.hours,
-                    planned=e.planned,
-                    hourly_rate=e.hourly_rate,
-                    assigned_by=user_id,
-                    is_active=True,
-                    removed=False,
-                )
-                for e in dto.executors
-            ]
-            session.add_all(executors)
+            task = Task(
+                tenant_id=tenant_id,
+                created_by=user_id,
+                title=dto.title,
+                project_id=dto.project_id,
+                description=dto.description,
+                status=dto.status,
+                priority=dto.priority,
+                due_date=dto.due_date,
+                estimated_budget=dto.estimated_budget,
+                actual_budget=dto.actual_budget,
+                estimated_hours=dto.estimated_hours,
+                actual_hours=dto.actual_hours,
+                note=dto.note,
+                task_images=dto.task_images,
+                executors=[],
+            )
+            new_task = await self.task_repo.save(task, commit=False)
+            if dto.tags:
+                for tag in dto.tags:
+                    await self.github_label_repo.attach_or_create(
+                        new_task.id, tenant_id, tag.name, commit=False
+                    )
+            if dto.executors:
+                executors = [
+                    Executor(
+                        user_id=e.user_id,
+                        task_id=new_task.id,
+                        tenant_id=tenant_id,
+                        role_in_task=e.role_in_task,
+                        hours=e.hours,
+                        planned=e.planned,
+                        hourly_rate=e.hourly_rate,
+                        assigned_by=user_id,
+                        is_active=True,
+                        removed=False,
+                    )
+                    for e in dto.executors
+                ]
+                session.add_all(executors)
 
-        await session.commit()
-        return new_task
+            await session.commit()
+            return new_task
+        except Exception:
+            await session.rollback()
+            raise
 
     # ---------- read ----------
+
+    async def get_task(self, task_id: int, user: User) -> TaskOut:
+        task = await self.task_repo.get_by_id(task_id, user)
+        if task is None:
+            raise HTTPException(404, "Task not found")
+        planned, hours, planned_budget, actual_budget = (
+            self.task_repo.calculate_executor_totals(task.executors)
+        )
+        return TaskOut.model_validate(task).model_copy(update={
+            "executors_estimated_hours": planned or None,
+            "executors_actual_hours": hours or None,
+            "executors_estimated_budget": planned_budget or None,
+            "executors_actual_budget": actual_budget or None,
+        })
 
     async def list_tasks(
         self,

@@ -33,6 +33,8 @@ const createEmptyTask = (): TaskWithoutAssignees => ({
 	overdueDays: 0,
 	hours: { fact: 0, planned: 0 },
 	budget: { fact: 0, planned: 0 },
+	executorsHours: { fact: 0, planned: 0 },
+	executorsBudget: { fact: 0, planned: 0 },
 	tags: [],
 	task_images: [],
 	note: undefined,

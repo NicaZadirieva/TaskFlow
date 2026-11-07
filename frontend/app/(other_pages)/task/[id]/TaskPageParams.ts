@@ -1,5 +1,3 @@
 export default interface TaskPageParams {
-	params: {
-		id: number
-	}
+	params: Promise<{ id: string }>;
 }

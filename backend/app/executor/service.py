@@ -41,7 +41,6 @@ class ExecutorService:
             task_id=dto.task_id,
             user_id=dto.user_id,
             tenant_id=tenant_id,
-            for_update=True,
         )
         if existing is None or existing.id != dto.id or existing.removed:
             return None
@@ -56,16 +55,7 @@ class ExecutorService:
         return await self.executor_repo.get_planned_by_all_users(id, tenant_id)
 
     async def add_hours_to_task(self, tenant_id: int, dto: AddHoursToExecutorRequest):
-        existing = await self.executor_repo.get_by_task_and_user(
-            task_id=dto.task_id,
-            user_id=dto.user_id,
-            tenant_id=tenant_id,
-            for_update=True,
-        )
-        if existing is None or existing.id != dto.id or existing.removed or not existing.is_active:
-            raise HTTPException(404, "Active assignment not found")
-        existing.hours = (existing.hours or 0) + dto.today_hours_to_add
-        return await self.executor_repo.save(existing)
+        return await self.executor_repo.add_hours(tenant_id, dto)
 
     async def create_executor(
         self, user_id: int, tenant_id: int, dto: CreateExecutorRequest

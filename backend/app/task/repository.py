@@ -274,13 +274,22 @@ class TaskRepository:
             stmt = stmt.where(GithubLabel.tasks.any(task_scope(user)))
         return list(await self.db_session.scalars(stmt))
 
-    async def get_by_id(self, task_id: int, tenant_id: int) -> Task | None:
+    async def get_by_id(self, task_id: int, user: User) -> Task | None:
         stmt = (
             select(Task)
-            .where(Task.id == task_id, Task.tenant_id == tenant_id)
+            .where(Task.id == task_id, task_scope(user))
             .options(
                 selectinload(Task.tags),
-                selectinload(Task.executors),
+                selectinload(Task.executors).selectinload(Executor.user),
+                with_loader_criteria(
+                    Executor,
+                    and_(
+                        Executor.tenant_id == user.tenant_id,
+                        Executor.user.has(User.tenant_id == user.tenant_id),
+                    ),
+                    loader_only=True,
+                ),
+                with_loader_criteria(GithubLabel, GithubLabel.tenant_id == user.tenant_id),
             )
         )
         result = await self.db_session.execute(stmt)

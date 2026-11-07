@@ -1,3 +1,5 @@
+'use server';
+
 import isMockEnabled from '@/utils/isMockEnabled';
 import getTaskReqMock from './get_task.req.mock';
 import getTaskReqReal from './get_task.req.real';
