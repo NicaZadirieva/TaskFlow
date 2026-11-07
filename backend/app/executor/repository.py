@@ -1,15 +1,16 @@
 from typing import Annotated
 
-from fastapi import Depends
-from sqlalchemy import func, select
-from sqlalchemy.orm import selectinload, with_loader_criteria
-
 from app.executor.models import Executor
+from app.executor.schema import AddHoursToExecutorRequest
 from app.github_label.models import GithubLabel
 from app.shared.db import DbSessionDeps
 from app.task.access import task_scope
 from app.task.models import Task
 from app.user.models import User
+from fastapi import Depends, HTTPException
+from sqlalchemy import func, select, update
+from sqlalchemy.orm import selectinload, with_loader_criteria
+from sqlalchemy.orm.exc import StaleDataError
 
 
 class ExecutorRepository:
@@ -17,9 +18,41 @@ class ExecutorRepository:
         self.db_session = db_session
 
     async def save(self, assigned: Executor) -> Executor:
-        if assigned.version:
-            assigned.version = assigned.version + 1 # TODO: убрать отсюда бизнес-логику
         self.db_session.add(assigned)
+        try:
+            await self.db_session.commit()
+        except StaleDataError as exc:
+            await self.db_session.rollback()
+            raise HTTPException(409, "Assignment version is out of date") from exc
+        await self.db_session.refresh(assigned)
+        return assigned
+
+    async def add_hours(
+        self, tenant_id: int, dto: AddHoursToExecutorRequest
+    ) -> Executor:
+        stmt = (
+            update(Executor)
+            .where(
+                Executor.id == dto.id,
+                Executor.task_id == dto.task_id,
+                Executor.user_id == dto.user_id,
+                Executor.tenant_id == tenant_id,
+                Executor.removed.is_(False),
+                Executor.is_active.is_(True),
+                Executor.user.has(User.tenant_id == tenant_id),
+            )
+            .values(
+                hours=func.coalesce(Executor.hours, 0) + dto.today_hours_to_add,
+                version=Executor.version + 1,
+            )
+            .returning(Executor)
+            .execution_options(populate_existing=True, synchronize_session=False)
+        )
+        result = await self.db_session.execute(stmt)
+        assigned = result.scalar_one_or_none()
+        if assigned is None:
+            await self.db_session.rollback()
+            raise HTTPException(404, "Active assignment not found")
         await self.db_session.commit()
         await self.db_session.refresh(assigned)
         return assigned

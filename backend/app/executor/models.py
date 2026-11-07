@@ -59,6 +59,7 @@ class Executor(Base):
     )  # type: ignore  # noqa: F821
     task: Mapped["Task"] = relationship(back_populates="executors")  # type: ignore  # noqa: F821
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    __mapper_args__ = {"version_id_col": version}
 
     # soft-delete / история переназначений
     removed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
