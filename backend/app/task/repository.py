@@ -280,7 +280,7 @@ class TaskRepository:
             .where(Task.id == task_id, Task.tenant_id == tenant_id)
             .options(
                 selectinload(Task.tags),
-                selectinload(Task.executors),
+                selectinload(Task.executors).selectinload(Executor.user),
             )
         )
         result = await self.db_session.execute(stmt)
