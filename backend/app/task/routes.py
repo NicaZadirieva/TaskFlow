@@ -9,6 +9,7 @@ from app.task.schemas.get_filtered_tasks import (
     CsvIntList,
     TaskFiltersDeps,
     TasksOut,
+    TaskOut,
     UserShortOut,
 )
 from app.task.service import TaskServiceDeps
@@ -92,3 +93,12 @@ async def list_filter_tags(
     service: TaskServiceDeps,
 ):
     return await service.get_filter_tags(user)
+
+
+@router.get("/{task_id}", response_model=TaskOut, summary="Task details")
+async def get_task(
+    task_id: int,
+    user: ActiveUserDeps,
+    service: TaskServiceDeps,
+) -> TaskOut:
+    return await service.get_task(task_id, user)

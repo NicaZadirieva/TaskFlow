@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
 from app.executor.models import Executor
 from app.github_label.models import GithubLabel
@@ -93,6 +93,20 @@ class TaskService:
             raise
 
     # ---------- read ----------
+
+    async def get_task(self, task_id: int, user: User) -> TaskOut:
+        task = await self.task_repo.get_by_id(task_id, user)
+        if task is None:
+            raise HTTPException(404, "Task not found")
+        planned, hours, planned_budget, actual_budget = (
+            self.task_repo.calculate_executor_totals(task.executors)
+        )
+        return TaskOut.model_validate(task).model_copy(update={
+            "executors_estimated_hours": planned or None,
+            "executors_actual_hours": hours or None,
+            "executors_estimated_budget": planned_budget or None,
+            "executors_actual_budget": actual_budget or None,
+        })
 
     async def list_tasks(
         self,

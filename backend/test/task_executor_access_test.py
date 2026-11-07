@@ -475,3 +475,35 @@ def test_create_task_rolls_back_late_failure(api, monkeypatch, failure):
             assert after == before
     finally:
         event.remove(Executor, "before_insert", insert_executor)
+
+
+@pytest.mark.parametrize(
+    ("actor_id", "task_id", "status"),
+    [
+        (1, 1, 200), (1, 999, 404), (1, 4, 404), (1, 7, 404),
+        (2, 1, 200), (2, 3, 404), (2, 5, 404),
+        (4, 1, 200), (4, 2, 404), (4, 3, 404), (4, 7, 404),
+        (6, 4, 200), (6, 1, 404),
+    ],
+)
+def test_task_detail_access(api, actor_id, task_id, status):
+    client, actor, _ = api
+    actor["id"] = actor_id
+    response = client.get(f"/v1/task/{task_id}")
+    assert response.status_code == status
+    if status == 200:
+        body = response.json()
+        assert body["id"] == task_id
+        assert body["tags"]
+        assert "executors_actual_hours" in body
+        if task_id == 1:
+            assert len(body["executors"]) == 2
+            assert body["executors_actual_hours"] == "2.00"
+
+
+def test_task_detail_inactive_user(api):
+    client, _, engine = api
+    with Session(engine) as session:
+        session.get(User, 1).is_active = False
+        session.commit()
+    assert client.get("/v1/task/1").status_code == 403
