@@ -1,6 +1,5 @@
 import { NewTask, TaskWithoutCreatedBy } from '@/utils/types';
 import { CreateTaskRequest } from '../CreateTaskRequest';
-import toCreateTaskExecutor from './toCreateTaskExecutor';
 
 export function toCreateTaskRequest(task: TaskWithoutCreatedBy | NewTask): CreateTaskRequest {
 	return {
@@ -22,7 +21,6 @@ export function toCreateTaskRequest(task: TaskWithoutCreatedBy | NewTask): Creat
 
 		note: task.note ?? null,
 		task_images: task.task_images ?? null,
-		tags: task.tags ?? null,
-		executors: task.assignees?.map(toCreateTaskExecutor) ?? null
+		tags: task.tags ?? null
 	};
 }

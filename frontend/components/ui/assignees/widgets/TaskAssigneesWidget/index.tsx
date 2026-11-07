@@ -85,6 +85,7 @@ export default function TaskAssigneesWidget({
 					{assignees.map((assignee) => {
 						return (
 							<TaskAssignee
+								key={assignee.id ?? assignee.user_id}
 								assignee={assignee}
 								onChoose={showAssigneeRemoveModal}
 								onUndo={(assignee) => undoRemove(assignee)}
