@@ -84,7 +84,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 
 	const onSubmit = async (data: EditTaskFormData) => {
 		updateTask(toTask(data));
-		await saveTask(toTask(data));
+		await saveTask?.(toTask(data));
 	};
 
 	return (
@@ -408,7 +408,7 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 				<Divider className={styles.divider} />
 
 				<Space className={styles.actions}>
-					<Button size="large" type="primary" htmlType="submit">
+					<Button size="large" type="primary" htmlType="submit" disabled={!saveTask}>
 						Сохранить
 					</Button>
 					<Button size="large">Отмена</Button>

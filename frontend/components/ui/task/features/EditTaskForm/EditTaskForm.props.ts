@@ -7,6 +7,6 @@ export interface TagOption {
 export default interface EditTaskFormProps {
 	tagsOptions?: TagOption[];
 	task?: TaskWithoutCreatedBy | NewTask;
-	saveTask: (task: TaskWithoutCreatedBy | NewTask) => void;
+	saveTask?: (task: TaskWithoutCreatedBy | NewTask) => void | Promise<void>;
 	updateTask: (task: TaskWithoutCreatedBy | NewTask) => void;
 }

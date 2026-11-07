@@ -16,7 +16,7 @@ export default function TaskAssignee({
 	onChoose: (assignee: Executor) => void;
 	onUndo: (assignee: Executor) => void;
 }) {
-	const overdue = assignee.hours > assignee.planned;
+	const overdue = (assignee.hours ?? 0) > (assignee.planned ?? 0);
 	const removed = !!assignee.removed;
 
 	return (
