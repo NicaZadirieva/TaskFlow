@@ -1,10 +1,11 @@
 from asyncio import run
+from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, event, func, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import Session
@@ -15,7 +16,7 @@ from app.executor.repository import ExecutorRepository
 from app.executor.routes import router as executor_router
 from app.executor.schema import CreateExecutorRequest
 from app.executor.service import ExecutorService
-from app.github_label.models import GithubLabel
+from app.github_label.models import GithubLabel, task_github_label
 from app.github_label.repository import GithubLabelRepo
 from app.project.models import Project
 from app.shared.db import Base, get_session
@@ -37,8 +38,14 @@ def compile_jsonb_for_sqlite(element, compiler, **kwargs):
 
 def async_session_adapter(session):
     adapter = Mock(wraps=session)
-    for method in ("execute", "scalar", "scalars", "get", "flush", "commit", "refresh"):
+    for method in ("execute", "scalar", "scalars", "get", "flush", "commit", "refresh", "rollback"):
         setattr(adapter, method, AsyncMock(wraps=getattr(session, method)))
+    @asynccontextmanager
+    async def begin_nested():
+        with session.begin_nested():
+            yield
+
+    adapter.begin_nested = begin_nested
     return adapter
 
 
@@ -413,3 +420,58 @@ def test_owner_can_manage_assignments_in_own_tenant(api):
     assert float(response.json()["user_hours"]) == 3
     assert client.post("/v1/executor/remove", json=payload).status_code == 200
     assert client.post("/v1/executor/reassign", json=payload).status_code == 200
+
+
+@pytest.mark.parametrize("failure", ["tag", "executor"])
+def test_create_task_rolls_back_late_failure(api, monkeypatch, failure):
+    client, _, engine = api
+    original_attach = GithubLabelRepo.attach_or_create
+    attached = []
+    inserted = []
+
+    async def attach(repo, task_id, tenant_id, name, **kwargs):
+        if failure == "tag" and attached:
+            raise HTTPException(422, "Second tag failed")
+        label = await original_attach(repo, task_id, tenant_id, name, **kwargs)
+        attached.append(label.id)
+        return label
+
+    def insert_executor(mapper, connection, target):
+        inserted.append(target.user_id)
+        if failure == "executor" and len(inserted) == 2:
+            raise HTTPException(422, "Second executor failed")
+
+    monkeypatch.setattr(GithubLabelRepo, "attach_or_create", attach)
+    event.listen(Executor, "before_insert", insert_executor)
+    tables = [Task, GithubLabel, Executor, task_github_label]
+    with Session(engine) as session:
+        before = [session.scalar(select(func.count()).select_from(t)) for t in tables]
+    try:
+        response = client.post(
+            "/v1/task/create",
+            json={
+                "title": "Must be rolled back",
+                "tags": [{"name": "new-tag1"}, {"name": "new-tag2"}],
+                "executors": [
+                    {
+                        "user_id": user_id,
+                        "login": f"user{user_id}",
+                        "role_in_task": "executor",
+                        "is_active": True,
+                        "hours": 0,
+                        "planned": 1,
+                        "hourly_rate": 1,
+                    }
+                    for user_id in [4, 5]
+                ],
+            },
+        )
+        assert response.status_code == 422, response.text
+        assert len(attached) == (1 if failure == "tag" else 2)
+        if failure == "executor":
+            assert inserted == [4, 5]
+        with Session(engine) as session:
+            after = [session.scalar(select(func.count()).select_from(t)) for t in tables]
+            assert after == before
+    finally:
+        event.remove(Executor, "before_insert", insert_executor)

@@ -14,7 +14,7 @@ from app.user.schemas import (
     UserLoginRequest,
 )
 from app.user.service import get_user_service
-from app.user.current_user import get_current_user 
+from app.user.current_user import get_current_user
 
 
 # ---------- Фикстуры ----------
@@ -94,16 +94,24 @@ class TestSchemas:
     def test_create_user_request_role_as_string(self):
         # Pydantic v2 умеет конвертить значение enum'а в сам enum
         req = CreateUserRequest(
-            login="x", email="x@x.com", name="X", password="p",
-            tenant_id=1, role="OWNER",
+            login="x",
+            email="x@x.com",
+            name="X",
+            password="p",
+            tenant_id=1,
+            role="OWNER",
         )
         assert req.role == TenantRole.OWNER
 
     def test_create_user_request_invalid_role(self):
         with pytest.raises(ValueError):
             CreateUserRequest(
-                login="x", email="x@x.com", name="X", password="p",
-                tenant_id=1, role="UNKNOWN",
+                login="x",
+                email="x@x.com",
+                name="X",
+                password="p",
+                tenant_id=1,
+                role="UNKNOWN",  # type: ignore
             )
 
     def test_jwt_response(self):
@@ -118,13 +126,18 @@ class TestSchemas:
 
     def test_user_login_request_forbids_extra(self):
         with pytest.raises(ValueError):
-            UserLoginRequest(email="a@a.com", password="p", extra="boom")
+            UserLoginRequest(email="a@a.com", password="p", extra="boom")  # type: ignore
 
     def test_user_dto(self):
         dto = UserDto(
-            id=1, tenant_id=1, role=TenantRole.CLIENT,
-            name="Alice", email="a@a.com",
-            is_active=True, hourly_rate=None,
+            id=1,
+            tenant_id=1,
+            role=TenantRole.CLIENT,
+            name="Alice",
+            email="a@a.com",
+            is_active=True,
+            hourly_rate=None,
+            login="alice",
         )
         assert dto.id == 1
         assert dto.role == TenantRole.CLIENT
@@ -132,9 +145,14 @@ class TestSchemas:
 
     def test_get_users_response(self):
         dto = UserDto(
-            id=1, tenant_id=1, role=TenantRole.OWNER,
-            name="A", email="a@a.com",
-            is_active=True, hourly_rate=100,
+            id=1,
+            tenant_id=1,
+            role=TenantRole.OWNER,
+            name="A",
+            email="a@a.com",
+            is_active=True,
+            hourly_rate=100,
+            login="a",
         )
         out = GetUsersResponse(users=[dto])
         assert len(out.users) == 1
@@ -175,8 +193,12 @@ class TestCreateUser:
         response = client.post(
             "/v1/user/create",
             json={
-                "login": "a", "email": "a@a.com", "name": "A",
-                "password": "p", "tenant_id": 1, "role": "NOPE",
+                "login": "a",
+                "email": "a@a.com",
+                "name": "A",
+                "password": "p",
+                "tenant_id": 1,
+                "role": "NOPE",
             },
         )
         assert response.status_code == 422
@@ -236,15 +258,18 @@ class TestGetUsers:
         # role — ORM-объект со значением .value
         role_enum = MagicMock()
         role_enum.value = kwargs.get("role_value", "OWNER")
+        user.login = kwargs.get("login", "alice")
         user.role = role_enum
         return user
 
     def test_get_users_success(self, client, mock_service, mock_current_user):
         mock_service.get_users_by_tenant_id.return_value = [
-            self._make_user(id=1, name="Alice",
-                            email="a@a.com", role_value="OWNER"),
-            self._make_user(id=2, name="Bob", email="b@b.com",
-                            role_value="TEAM"),
+            self._make_user(
+                id=1, name="Alice", email="a@a.com", role_value="OWNER", login="alice"
+            ),
+            self._make_user(
+                id=2, name="Bob", email="b@b.com", role_value="TEAM", login="bob"
+            ),
         ]
 
         response = client.get("/v1/user/users")
@@ -260,6 +285,7 @@ class TestGetUsers:
             "email": "a@a.com",
             "is_active": True,
             "hourly_rate": 100,
+            "login": "alice",
         }
         assert body["users"][1]["role"] == "TEAM"
         assert body["users"][1]["name"] == "Bob"
@@ -278,9 +304,7 @@ class TestGetUsers:
         assert response.status_code == 403
         assert response.json() == {"detail": "Tenant not exists"}
 
-    def test_get_users_none_returns_403(
-        self, client, mock_service, mock_current_user
-    ):
+    def test_get_users_none_returns_403(self, client, mock_service, mock_current_user):
         mock_service.get_users_by_tenant_id.return_value = None
 
         response = client.get("/v1/user/users")
