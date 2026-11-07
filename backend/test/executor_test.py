@@ -300,10 +300,10 @@ class TestRoutes:
             10, 2, mock_current_user.tenant_id
         )
         mock_service.get_all_hours.assert_awaited_once_with(
-            mock_executor.id, tenant_id=mock_current_user.tenant_id
+            mock_executor.task_id, tenant_id=mock_current_user.tenant_id
         )
         mock_service.get_all_planned_hours.assert_awaited_once_with(
-            mock_executor.id, tenant_id=mock_current_user.tenant_id
+            mock_executor.task_id, tenant_id=mock_current_user.tenant_id
         )
 
     def test_add_hours_validation_error(self, client):

@@ -48,11 +48,11 @@ class ExecutorService:
         existing.planned = dto.planned if dto.planned is not None else existing.planned
         return await self.executor_repo.save(existing)
 
-    async def get_all_hours(self, id: int, tenant_id: int):
-        return await self.executor_repo.get_hours_by_all_users(id, tenant_id)
+    async def get_all_hours(self, task_id: int, tenant_id: int):
+        return await self.executor_repo.get_hours_by_all_users(task_id, tenant_id)
 
-    async def get_all_planned_hours(self, id: int, tenant_id: int):
-        return await self.executor_repo.get_planned_by_all_users(id, tenant_id)
+    async def get_all_planned_hours(self, task_id: int, tenant_id: int):
+        return await self.executor_repo.get_planned_by_all_users(task_id, tenant_id)
 
     async def add_hours_to_task(self, tenant_id: int, dto: AddHoursToExecutorRequest):
         return await self.executor_repo.add_hours(tenant_id, dto)
