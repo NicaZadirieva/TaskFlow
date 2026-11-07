@@ -7,7 +7,7 @@ import { Task } from '@/entities/task.interface';
 
 type AddAssigneeArgs = Pick<
 	Executor,
-  'login' | 'role_in_task' | 'hours' | 'planned'
+  'login' | 'role_in_task' | 'hours' | 'planned' | 'hourly_rate'
 >;
 
 interface UseAddAssigneeOptions {
@@ -40,22 +40,14 @@ export function useAddAssignee({
 				role_in_task: assignee.role_in_task,
 				hours: assignee.hours,
 				planned: assignee.planned,
+				hourly_rate: assignee.hourly_rate,
 				version
 			});
 		},
 
-		onSuccess: (res) => {
-			queryClient.setQueryData<Task[]>(queryKey, (prev = []) =>
-				prev.map((t) =>
-					t.id === taskId
-						? {
-							...t,
-							assignees: [...t.assignees, res],
-							version: (t.version ?? 0) + 1
-						}
-						: t
-				)
-			);
+		onSuccess: async (res) => {
+			// Reload totals and assignments together, including restored assignments.
+			await queryClient.invalidateQueries({ queryKey });
 			message.success('Исполнитель добавлен');
 			onSuccess?.(res);
 		},

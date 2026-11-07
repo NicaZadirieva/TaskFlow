@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from sqlalchemy import select
 from app.executor.models import Executor
 from app.executor.repository import ExecutorRepository
 from app.executor.routes import add_hours_to_executor, change_hours_to_executor
@@ -11,6 +12,7 @@ from app.executor.schema import (
     OwnerChangeAssigneeHoursRequest,
 )
 from app.executor.service import ExecutorService
+from app.task.repository import TaskRepository
 from app.user.models import TenantRole, User
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -27,7 +29,7 @@ def test_hours_response_totals(tmp_path, operation):
                 session.add_all([
                     User(id=i, tenant_id=1, role=TenantRole.TEAM, login=f"u{i}",
                          name=f"User {i}", email=f"u{i}@example.com", password_hash="unused")
-                    for i in range(1, 7)
+                    for i in range(1, 8)
                 ])
                 # Task ID deliberately differs from the assignment ID.
                 for user_id, task_id, tenant_id, hours, removed, active in [
@@ -63,6 +65,38 @@ def test_hours_response_totals(tmp_path, operation):
                 # Other tenants and other tasks must not affect these totals.
                 assert result.all_hours == 60
                 assert result.all_planned == 118
+
+                task_repo = TaskRepository(session)
+                expected = {
+                    "executors_estimated_hours": 118,
+                    "executors_actual_hours": 60,
+                    "executors_estimated_budget": 11800,
+                    "executors_actual_budget": 6000,
+                }
+                assert (await task_repo.get_executor_totals_by_task_ids([10], 1))[10] == expected
+                assignments = list(await session.scalars(
+                    select(Executor).where(
+                        Executor.task_id == 10, Executor.tenant_id == 1,
+                    )
+                ))
+                assert task_repo.calculate_executor_totals(assignments) == (118, 60, 11800, 6000)
+                # Removing and restoring must neither erase nor duplicate work.
+                for removed in (True, False):
+                    assignments[0].removed = removed
+                    await session.commit()
+                    assert (await task_repo.get_executor_totals_by_task_ids([10], 1))[10] == expected
+
+                session.add(Executor(
+                    user_id=7, task_id=10, tenant_id=1, role_in_task="DEV",
+                    hours=2, planned=5, hourly_rate=150, removed=False, is_active=True,
+                ))
+                await session.commit()
+                assert (await task_repo.get_executor_totals_by_task_ids([10], 1))[10] == {
+                    "executors_estimated_hours": 123,
+                    "executors_actual_hours": 62,
+                    "executors_estimated_budget": 12550,
+                    "executors_actual_budget": 6300,
+                }
         finally:
             await engine.dispose()
 

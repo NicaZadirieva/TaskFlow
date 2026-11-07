@@ -131,6 +131,7 @@ async def create_executor(
         role_in_task=executor.role_in_task,
         hours=executor.hours,
         planned=executor.planned,
+        hourly_rate=executor.hourly_rate,
         is_active=executor.is_active,
         login=user.login,
         email=user.email,

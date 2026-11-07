@@ -5,6 +5,7 @@ export default interface CreateExecutorResponse {
 	role_in_task: string;
 	hours?: number;
 	planned?: number;
+	hourly_rate?: number;
 	is_active: boolean;
 	login: string;
 	email: string;
