@@ -6,6 +6,7 @@ from fastapi_offline import FastAPIOffline
 
 from app.executor.routes import router as executor_router
 from app.github_label.routes import router as github_label_router
+from app.project.routes import router as project_router
 from app.shared import models  # noqa: F401 — регистрирует все модели в Base.registry
 from app.shared.settings import Settings
 from app.task.routes import router as tasks_router
@@ -47,6 +48,7 @@ def create_app() -> FastAPI:
     )
     new_app.state.settings = settings
 
+    new_app.include_router(project_router)
     new_app.include_router(tenant_router)
     new_app.include_router(user_router)
     new_app.include_router(executor_router)
