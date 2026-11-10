@@ -88,6 +88,10 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
 				<div
 					style={{
 						padding: 12,
+						display: 'flex',
+						flexDirection: 'column',
+						alignItems: 'stretch',
+						lineHeight: 1.4,
 						borderRadius: borderRadiusLG,
 						background: colorBgContainer,
 						border: '1px solid rgba(5,5,5,0.06)'
@@ -107,7 +111,13 @@ export default function SideMenu({ children }: { children: React.ReactNode }) {
 					>
 						Моя компания
 					</div>
-					<Button type="primary" size="small" block icon={<LogoutOutlined />}>
+					<Button
+						type="primary"
+						size="small"
+						block
+						icon={<LogoutOutlined />}
+						style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+					>
 						Выход
 					</Button>
 				</div>
