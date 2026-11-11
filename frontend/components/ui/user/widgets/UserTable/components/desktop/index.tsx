@@ -14,7 +14,7 @@ export default function DesktopUserTable({
 	onEdit,
 	dataSource
 }: {
-	onEdit: (record: User) => void;
+	onEdit?: (record: User) => void;
 	dataSource: User[]
 }) {
 	return (
@@ -39,7 +39,7 @@ export default function DesktopUserTable({
 						)
 					}
 				/>
-				<Column
+				{onEdit && <Column
 					title="Редактировать"
 					key="edit"
 					render={(_, record: User) => (
@@ -47,7 +47,7 @@ export default function DesktopUserTable({
 							Изменить
 						</Button>
 					)}
-				/>
+				/>}
 			</Table>
 		</div>
 	);

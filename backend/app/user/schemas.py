@@ -53,3 +53,11 @@ class GetCurrentUserResponse(BaseModel):
     user_id: int
     role: TenantRole
     tenant_id: int
+
+
+class UpdateUserRequest(BaseModel):
+    name: str
+    email: str
+    role: TenantRole
+    is_active: bool
+    hourly_rate: int | None = None

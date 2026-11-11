@@ -41,15 +41,16 @@ const PRIORITY_OPTIONS = [  { value: 'low', label: 'Низкий' },
 	{ value: 'high', label: 'Высокий' }
 ];
 
-export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }: EditTaskFormProps) {
+export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions, projectOptions, onCancel, saving }: EditTaskFormProps) {
   
 	const { handleSubmit, control, getValues, watch  } = useForm<EditTaskFormData>({
 		defaultValues: {
+			project_id: task?.project_id ?? null,
 			title: task ? task.title : '',
 			status: task ? task.status : undefined,
 			description: task ? task.description: '',
 			priority: task ? task.priority : 'medium',
-			due_date: task && task.due_date ? dayjs(task.due_date).toDate() : new Date(),
+			due_date: task?.due_date ? (task.due_date.getTime() === 0 ? null : dayjs(task.due_date).toDate()) : null,
 			hours: task && task.hours ? task.hours : { fact: 0, planned: 0 },
 			budget: task && task.budget ? task.budget : { fact: 0, planned: 0 },
 			note: task ? task.note : undefined,
@@ -64,10 +65,11 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 		...(task ?? ({} as Task)),
     
 		title: data.title,
+		project_id: data.project_id ?? undefined,
 		status: data.status,
 		description: data.description,
 		priority: data.priority,
-		due_date: data.due_date,
+		due_date: data.due_date ?? new Date(0),
 		hours: data.hours,
 		budget: data.budget,
 		note: data.note,
@@ -104,10 +106,14 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 
 			<Divider className={styles.divider} />
 
-			<Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+			<Form layout="vertical" disabled={!saveTask} onFinish={handleSubmit(onSubmit)}>
 				{/* --- Основное --- */}
 				<section className={styles.section}>
 					<Text className={styles.sectionTitle}>Основное</Text>
+
+					{projectOptions && <Controller name="project_id" control={control} render={({ field }) => (
+						<Form.Item label="Проект"><Select value={field.value ?? undefined} onChange={(value) => field.onChange(value ?? null)} options={projectOptions} allowClear showSearch optionFilterProp="label" size="large" placeholder="Без проекта" /></Form.Item>
+					)} />}
 
 					<Controller
 						name="title"
@@ -408,10 +414,10 @@ export default function EditTaskForm({ task, updateTask, saveTask, tagsOptions }
 				<Divider className={styles.divider} />
 
 				<Space className={styles.actions}>
-					<Button size="large" type="primary" htmlType="submit" disabled={!saveTask}>
+					<Button size="large" type="primary" htmlType="submit" disabled={!saveTask} loading={saving}>
 						Сохранить
 					</Button>
-					<Button size="large">Отмена</Button>
+					<Button size="large" onClick={onCancel}>Отмена</Button>
 				</Space>
 			</Form>
 		</Card>

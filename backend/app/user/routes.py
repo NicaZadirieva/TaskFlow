@@ -11,6 +11,7 @@ from app.user.schemas import (
     TenantRole,
     UserDto,
     UserLoginRequest,
+    UpdateUserRequest,
 )
 from app.user.service import UserServiceDeps
 
@@ -86,3 +87,10 @@ async def get_current_user(current_user: CurrentUserDeps, service: UserServiceDe
         role=TenantRole[current_user.role.value],
         tenant_id=current_user.tenant_id,
     )
+
+
+@router.put("/{user_id}", status_code=204)
+async def update_user(
+    user_id: int, data: UpdateUserRequest, current_user: CurrentUserDeps, service: UserServiceDeps
+):
+    await service.update(user_id, data, current_user)

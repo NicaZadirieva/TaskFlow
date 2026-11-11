@@ -250,3 +250,9 @@ Tenant (арендатор / организация)
 | **Роли** | `OWNER`, `CLIENT`, `TEAM` |
 
 ---
+
+### Project visibility
+
+`GET /v1/project` lists projects visible to the authenticated user; `GET /v1/project/{id}` returns one visible project or 404. Owners see tenant projects, clients see projects assigned to them, and team members see projects with an active task assignment. Task summaries and completion percentages include only tasks visible to the current user; projects without visible tasks have 0% progress.
+
+Owners can create projects with `POST /v1/project/create`. The server assigns the current tenant and accepts an optional active client from that tenant, a description, a nonnegative hours budget, and a timezone-free deadline. Project creation is unavailable in frontend mock mode.

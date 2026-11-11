@@ -1,0 +1,8 @@
+.page { padding: 32px; background: #f5f6f8; min-height: 100vh; }
+.heading { margin-bottom: 24px; }
+.heading h2 { margin-bottom: 4px; }
+.card { height: 100%; }
+.urgent { background: #fffbe6; border-color: #ffe58f; }
+.content { width: 100%; }
+.back { padding-left: 0; }
+@media (max-width: 576px) { .page { padding: 20px 16px; } }

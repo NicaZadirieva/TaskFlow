@@ -2,13 +2,14 @@ from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
+from sqlalchemy import delete
 
 from app.executor.models import Executor
-from app.github_label.models import GithubLabel
+from app.github_label.models import GithubLabel, task_github_label
 from app.github_label.repository import GithubLabelRepoDeps
 from app.task.access import require_assignees_in_tenant, require_project_in_tenant
 from app.task.models import Task
-from app.task.schemas.create_task import CreateTaskRequest
+from app.task.schemas.create_task import CreateTaskRequest, UpdateTaskRequest
 from app.task.schemas.get_filtered_tasks import (
     TaskFilters,
     TaskOut,
@@ -30,6 +31,36 @@ class TaskService:
         self.github_label_repo = github_label_repo
 
     # ---------- write ----------
+
+    async def update_task(self, task_id: int, user: User, dto: UpdateTaskRequest) -> int:
+        session = self.task_repo.db_session
+        task = await self.task_repo.get_by_id(task_id, user)
+        if task is None:
+            raise HTTPException(404, "Task not found")
+        if task.version != dto.version:
+            raise HTTPException(409, "Task version is out of date")
+        try:
+            for field, value in dto.model_dump(exclude={"version", "tags"}).items():
+                setattr(task, field, value)
+            await session.execute(delete(task_github_label).where(task_github_label.c.task_id == task_id))
+            for name in dict.fromkeys(tag.name for tag in dto.tags):
+                await self.github_label_repo.attach_or_create(task_id, user.tenant_id, name, commit=False)
+            await self.task_repo.save(task, commit=False)
+            version = task.version
+            await session.commit()
+            return version
+        except Exception:
+            await session.rollback()
+            raise
+
+    async def update_project(self, task_id: int, user: User, project_id: int | None) -> None:
+        task = await self.task_repo.get_by_id(task_id, user)
+        if task is None:
+            raise HTTPException(404, "Task not found")
+        if project_id is not None:
+            await require_project_in_tenant(self.task_repo.db_session, project_id, user.tenant_id)
+        task.project_id = project_id
+        await self.task_repo.save(task)
 
     async def create_task(
         self,

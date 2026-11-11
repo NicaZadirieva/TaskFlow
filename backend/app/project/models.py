@@ -21,6 +21,7 @@ class Project(Base):
     budget_hours: Mapped[float | None] = mapped_column(
         Numeric(10, 2), nullable=True
     )  # бюджет в часах
+    budget: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
     deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     tenant: Mapped["Tenant"] = relationship(back_populates="projects")  # type: ignore  # noqa: F821
