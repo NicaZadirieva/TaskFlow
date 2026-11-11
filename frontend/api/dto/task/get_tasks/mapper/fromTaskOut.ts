@@ -9,6 +9,7 @@ import toNum from '@/utils/toNum';
 export function fromTaskOut(src: TaskOut) {
 	return {
 		id: src.id,
+		version: src.version,
 		project_id: src.project_id ?? undefined,
 		title: src.title,
 		status: src.status as Status,

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.project.schema import CreateProjectRequest, CreateProjectResponse, ProjectOut
+from app.project.schema import CreateProjectRequest, CreateProjectResponse, ProjectOut, UpdateProjectBudgetRequest
 from app.project.service import ProjectServiceDeps
 from app.task.access import ActiveUserDeps
 
@@ -27,3 +27,10 @@ async def get_project(
     project_id: int, service: ProjectServiceDeps, user: ActiveUserDeps
 ) -> ProjectOut:
     return await service.get_visible(user, project_id)
+
+
+@router.patch("/{project_id}/budget", status_code=204)
+async def update_project_budget(
+    project_id: int, dto: UpdateProjectBudgetRequest, service: ProjectServiceDeps, user: ActiveUserDeps
+) -> None:
+    await service.update_budget(user, project_id, dto)

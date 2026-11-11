@@ -2,7 +2,10 @@
 
 import Link from 'next/link';
 import { ArrowLeftOutlined, ArrowRightOutlined, CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Empty, List, Progress, Row, Space, Tag, Typography } from 'antd';
+import { Button, Card, Col, Empty, List, Modal, Progress, Row, Space, Tag, Typography } from 'antd';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import TaskCreator from '@/components/ui/task/widgets/TaskCreator';
 import type { ProjectSummary } from '@/api/requests/project/get_projects/types';
 import styles from '../../index.module.css';
 
@@ -25,7 +28,8 @@ export function ProjectsView({ projects, now }: { projects: ProjectSummary[]; no
 				return <Col xs={24} md={12} xl={8} key={project.id}><Card className={`${styles.card} ${urgent ? styles.urgent : ''}`} title={project.name} extra={urgent ? <Tag color="gold">Скоро срок</Tag> : undefined}>
 					<Space orientation="vertical" size="middle" className={styles.content}>
 						<Space orientation="vertical" size={4}>
-							<Typography.Text><ClockCircleOutlined /> Бюджет: {project.budget_hours ?? 'Не указан'}{project.budget_hours != null && ' ч'}</Typography.Text>
+							<Typography.Text>Бюджет: {project.budget ?? 'Не указан'}{project.budget != null && ' ₽'}</Typography.Text>
+							<Typography.Text><ClockCircleOutlined /> Часы работ: {project.budget_hours ?? 'Не указаны'}{project.budget_hours != null && ' ч'}</Typography.Text>
 							<Typography.Text><CalendarOutlined /> Срок: {project.deadline ? new Date(project.deadline).toLocaleDateString('ru-RU') : 'Не указан'}</Typography.Text>
 						</Space>
 						<div><Typography.Text strong>Прогресс</Typography.Text><Progress percent={project.progress} /></div>
@@ -38,11 +42,17 @@ export function ProjectsView({ projects, now }: { projects: ProjectSummary[]; no
 	</main>;
 }
 
-export function ProjectTasksView({ project }: { project: ProjectSummary }) {
+export function ProjectTasksView({ project, canCreate, tagsOptions }: { project: ProjectSummary; canCreate: boolean; tagsOptions: { value: string; label: string }[] }) {
+	const [creating, setCreating] = useState(false);
+	const router = useRouter();
 	return <main className={styles.page}>
 		<Link href="/projects"><Button type="link" icon={<ArrowLeftOutlined />} className={styles.back}>Все проекты</Button></Link>
 		<Typography.Title level={2}>Задачи проекта «{project.name}»</Typography.Title>
+		{canCreate && <Button type="primary" onClick={() => setCreating(true)}>Создать задачу</Button>}
 		<Card><TaskList tasks={project.tasks} /></Card>
+		<Modal title={`Новая задача проекта «${project.name}»`} open={creating} onCancel={() => setCreating(false)} footer={null} width={1100} destroyOnHidden>
+			<TaskCreator fixedProjectId={project.id} projectOptions={[]} tagsOptions={tagsOptions} onCancel={() => setCreating(false)} onCreated={() => { setCreating(false); router.refresh() }} />
+		</Modal>
 	</main>;
 }
 

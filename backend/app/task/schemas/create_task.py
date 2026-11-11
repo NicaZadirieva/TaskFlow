@@ -12,6 +12,10 @@ class TagOut(BaseModel):
     name: str
 
 
+class UpdateTaskProjectRequest(BaseModel):
+    project_id: int | None = Field(gt=0)
+
+
 class CreateTaskExecutor(BaseModel):
     user_id: int
     login: str
@@ -70,3 +74,19 @@ class CreateTaskResponse(BaseModel):
 
     id: int
     tenant_id: int
+
+
+class UpdateTaskRequest(BaseModel):
+    version: int = Field(ge=1)
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None
+    status: Status
+    priority: Priority
+    due_date: datetime | None
+    estimated_budget: Decimal | None = Field(ge=0, max_digits=12, decimal_places=2)
+    actual_budget: Decimal | None = Field(ge=0, max_digits=12, decimal_places=2)
+    estimated_hours: Decimal | None = Field(ge=0, max_digits=5, decimal_places=2)
+    actual_hours: Decimal | None = Field(ge=0, max_digits=5, decimal_places=2)
+    note: dict[str, Any] | None
+    task_images: list[str] | None
+    tags: list[TagOut]

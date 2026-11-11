@@ -27,7 +27,8 @@ export default function ProjectCreator({ clients }: { clients: { value: number; 
 		<Card style={{ maxWidth: 640 }}><Form layout="vertical" onFinish={submit}>
 			<Form.Item label="Название" name="name" rules={[{ required: true, whitespace: true, message: 'Введите название' }, { max: 100, message: 'Не более 100 символов' }]}><Input maxLength={100} /></Form.Item>
 			<Form.Item label="Описание" name="description"><Input.TextArea rows={3} /></Form.Item>
-			<Form.Item label="Бюджет, часы" name="budget_hours"><InputNumber min={0} max={99999999.99} precision={2} style={{ width: '100%' }} /></Form.Item>
+			<Form.Item label="Бюджет, ₽" name="budget"><InputNumber min={0} max={99999999.99} precision={2} style={{ width: '100%' }} /></Form.Item>
+			<Form.Item label="Часы работ" name="budget_hours"><InputNumber min={0} max={99999999.99} precision={2} style={{ width: '100%' }} /></Form.Item>
 			<Form.Item label="Срок" name="deadline"><Input type="date" /></Form.Item>
 			<Form.Item label="Клиент" name="client_id"><Select allowClear placeholder="Не выбран" options={clients} /></Form.Item>
 			<Button type="primary" htmlType="submit" loading={saving}>Создать проект</Button>{' '}

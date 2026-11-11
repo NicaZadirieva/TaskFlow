@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException
 from app.user.models import TenantRole, User
 from app.tenant.repository import TenantRepoDeps, TenantRepository
 from app.user.jwt import create_access_token
-from app.user.schemas import CreateUserRequest, UserLoginRequest
+from app.user.schemas import CreateUserRequest, UpdateUserRequest, UserLoginRequest
 from app.user.security import get_hashed_password, verify_password
 
 from .repository import UserRepoDeps, UserRepository
@@ -36,6 +36,22 @@ class UserService:
         )
         saved_user = await self.user_repo.save(new_user)
         return create_access_token(saved_user.id)
+
+    async def update(self, user_id: int, data: UpdateUserRequest, current_user: User):
+        if not current_user.is_active or current_user.role != TenantRole.OWNER:
+            raise HTTPException(403, "User not allowed to update users")
+        user = await self.user_repo.get_by_id(user_id)
+        if user is None or user.tenant_id != current_user.tenant_id:
+            raise HTTPException(404, "User not found")
+        existing = await self.user_repo.get_by_email(data.email)
+        if existing is not None and existing.id != user.id:
+            raise HTTPException(400, "User already exists")
+        user.name = data.name
+        user.email = data.email
+        user.role = TenantRole[data.role.value]
+        user.is_active = data.is_active
+        user.hourly_rate = None if data.role.value == "CLIENT" else data.hourly_rate
+        await self.user_repo.save(user)
 
     async def get_user(self, user_id: int):
         return await self.user_repo.get_by_id(user_id)

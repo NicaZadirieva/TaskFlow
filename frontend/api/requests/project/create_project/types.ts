@@ -1,6 +1,7 @@
 export type CreateProjectRequest = {
 	name: string;
 	description?: string | null;
+	budget?: number | null;
 	budget_hours?: number | null;
 	deadline?: string | null;
 	client_id?: number | null;

@@ -1,29 +1,24 @@
 'use client';
-import { createNewUserDto } from '@/api/mappers';
-import { TenantRole, User } from '@/entities/user.interface';
+import type { CreateUserRequest } from '@/api/requests/user/create_user/types';
+import { TenantRole } from '@/entities/user.interface';
 import { Form, Input, InputNumber, message, Modal, Select, Switch } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import createUserReq from '../../../../../api/requests/user/create_user/create_user.req';
+import createUserReq from '@/api/requests/user/create_user/client/req';
 
-export default function UserCreator() {
-	const [form] = Form.useForm<Omit<User, 'id'>>();
-	const [isOpen, setIsOpen] = useState<boolean>(false);
+export default function UserCreator({ tenantId }: { tenantId: number }) {
+	const [form] = Form.useForm<CreateUserRequest>();
 	const router = useRouter();
 
-	useEffect(() => {
-		setIsOpen(true);
-	}, []);
-	const onCreate = async (user: Omit<User, 'id'>) => {
+	const onCreate = async (user: CreateUserRequest) => {
 		const normalized =
 			user.role === TenantRole.CLIENT
 				? { ...user, hourly_rate: undefined }
 				: user;
 
 		try {
-			await createUserReq(createNewUserDto(normalized));
+			await createUserReq({ ...normalized, tenant_id: tenantId });
 			router.push('/users');
-			message.success('Обновление данных прошло успешно');
+			message.success('Пользователь создан');
 		} catch (e) {
 			console.error('Ошибка создания', e);
 			message.error('Ошибка создания пользователя');
@@ -33,7 +28,7 @@ export default function UserCreator() {
 	const handleSave = async () => {
 		try {
 			const user = await form.validateFields();
-			onCreate(user);
+			await onCreate(user);
 		} catch {
 			// Валидация не прошла — ничего не делаем
 		}
@@ -42,7 +37,7 @@ export default function UserCreator() {
 	return (
 		<Modal
 			title="Создание пользователя"
-			open={isOpen}
+			open
 			onOk={handleSave}
 			okText="Создать"
 			cancelText="Отмена"
@@ -52,12 +47,17 @@ export default function UserCreator() {
 			<Form
 				form={form}
 				layout="vertical"
-				preserve={false}
 				initialValues={{
 					role: TenantRole.TEAM,
 					is_active: true
 				}}
 			>
+				<Form.Item label="Логин" name="login" rules={[{ required: true, message: 'Введите логин' }]}>
+					<Input autoComplete="off" />
+				</Form.Item>
+				<Form.Item label="Пароль" name="password" rules={[{ required: true, message: 'Введите пароль' }]}>
+					<Input.Password autoComplete="new-password" />
+				</Form.Item>
 				<Form.Item
 					label="Имя"
 					name="name"
@@ -91,14 +91,12 @@ export default function UserCreator() {
 					/>
 				</Form.Item>
 
-				<Form.Item noStyle shouldUpdate>
-					{({ getFieldValue }) =>
-						getFieldValue('role') !== TenantRole.CLIENT ? (
-							<Form.Item label="Стоимость в час ₽/ч" name="hourly_rate">
-								<InputNumber min={0} style={{ width: '100%' }} />
-							</Form.Item>
-						) : null
-					}
+				<Form.Item noStyle shouldUpdate={(previous, current) => previous.role !== current.role}>
+					{({ getFieldValue }) => getFieldValue('role') !== TenantRole.CLIENT ? (
+						<Form.Item label="Стоимость в час ₽/ч" name="hourly_rate" preserve={false}>
+							<InputNumber min={0} style={{ width: '100%' }} />
+						</Form.Item>
+					) : null}
 				</Form.Item>
 
 				<Form.Item label="Активен" name="is_active" valuePropName="checked">

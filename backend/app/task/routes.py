@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from app.github_label.schemas import GithubLabelOut
 from app.task.access import ActiveUserDeps, TaskAccessDeps
-from app.task.schemas.create_task import CreateTaskRequest, CreateTaskResponse
+from app.task.schemas.create_task import CreateTaskRequest, CreateTaskResponse, UpdateTaskProjectRequest, UpdateTaskRequest
 from app.task.schemas.get_filtered_tasks import (
     CsvIntList,
     TaskFiltersDeps,
@@ -15,6 +15,27 @@ from app.task.schemas.get_filtered_tasks import (
 from app.task.service import TaskServiceDeps
 
 router = APIRouter(prefix="/v1/task", tags=["Tasks"])
+
+
+@router.put("/{task_id}")
+async def update_task(
+    task_id: int, dto: UpdateTaskRequest, service: TaskServiceDeps,
+    user: ActiveUserDeps, access: TaskAccessDeps,
+) -> dict[str, int]:
+    access.require_owner()
+    await access.require_task(task_id)
+    version = await service.update_task(task_id, user, dto)
+    return {"version": version}
+
+
+@router.patch("/{task_id}/project", status_code=204)
+async def update_task_project(
+    task_id: int, dto: UpdateTaskProjectRequest, service: TaskServiceDeps,
+    user: ActiveUserDeps, access: TaskAccessDeps,
+) -> None:
+    access.require_owner()
+    await access.require_task(task_id)
+    await service.update_project(task_id, user, dto.project_id)
 
 # TODO: добавить updated_at в редактирование задачи
 @router.post(

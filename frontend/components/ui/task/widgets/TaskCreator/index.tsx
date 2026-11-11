@@ -43,10 +43,18 @@ const createEmptyTask = (): TaskWithoutAssignees => ({
 
 export default function TaskCreator({
 	tagsOptions,
-	initialUsers
+	initialUsers,
+	projectOptions,
+	fixedProjectId,
+	onCreated,
+	onCancel
 }: {
 	tagsOptions: { value: string; label: string }[];
 	initialUsers?: User[];
+	projectOptions: { value: number; label: string }[];
+	fixedProjectId?: number;
+	onCreated?: () => void;
+	onCancel?: () => void;
 }) {
 	const queryClient = useQueryClient();
 	const router = useRouter();
@@ -55,7 +63,7 @@ export default function TaskCreator({
 	const [adding, setAdding] = useState(false);
 
 	// Задача без assignees
-	const [task, updateTask] = useState<TaskWithoutAssignees>(createEmptyTask);
+	const [task, updateTask] = useState<TaskWithoutAssignees>(() => ({ ...createEmptyTask(), project_id: fixedProjectId }));
 
 	// Исполнители — отдельный, независимый стейт
 	const [assignees, setAssignees] = useState<Executor[]>([]);
@@ -78,11 +86,11 @@ export default function TaskCreator({
 	/* ---------- Сохранение задачи ---------- */
 	const saveTaskMutation = useMutation({
 		mutationFn: (patch: TaskWithoutCreatedBy | NewTask) => {
-			const nextTask: TaskWithoutCreatedBy | NewTask = { ...task, ...patch };
+			const nextTask: TaskWithoutCreatedBy | NewTask = { ...task, ...patch, ...(fixedProjectId != null ? { project_id: fixedProjectId } : {}) };
 			return createTaskReq(toCreateTaskRequest(nextTask));
 		},
 
-		onSuccess: (created) => {
+		onSuccess: () => {
 			// 1. Список задач на доске должен увидеть новую задачу
 			queryClient.invalidateQueries({ queryKey: ['tasks'] }); 
 			queryClient.invalidateQueries({ queryKey: ['filter-tags'] });
@@ -95,7 +103,8 @@ export default function TaskCreator({
 			// 3. Уйти с формы создания — например, на страницу задачи или на доску
 			// Зависит от того, что возвращает createTaskReq:
 			// router.push(`/tasks/${created.id}`)
-			router.push('/tasks');
+			if (onCreated) onCreated();
+			else router.push('/tasks');
 		},
 
 		onError: (err) => {
@@ -105,7 +114,7 @@ export default function TaskCreator({
 	});
 
 	const saveTask = useCallback(
-		(patch: TaskWithoutCreatedBy | NewTask) => { saveTaskMutation.mutateAsync(patch) },
+		(patch: TaskWithoutCreatedBy | NewTask) => saveTaskMutation.mutateAsync(patch).then(() => undefined).catch(() => undefined),
 		[saveTaskMutation]
 	);
 
@@ -183,6 +192,8 @@ export default function TaskCreator({
 				tags={task.tags} />
 			<div className={styles.grid}>
 				<EditTaskForm
+					projectOptions={fixedProjectId == null ? projectOptions : undefined}
+					onCancel={onCancel}
 					tagsOptions={tagsOptions}
 					task={{ ...taskForForm }} // форма видит полный снапшот, но менять может только свои поля
 					updateTask={(patch) => updateTask((prev) => ({ ...prev, ...patch }))}

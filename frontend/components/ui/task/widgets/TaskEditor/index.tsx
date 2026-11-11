@@ -11,6 +11,8 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { Executor } from '@/entities/executor.interface';
 import { Task } from '@/entities/task.interface';
+import updateTaskRequest from '@/api/requests/task/update_task/client/req';
+import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import AddAssigneeForm from '../../../assignees/features/AddAssigneeForm';
 import AssigneeRemoval from '../../../assignees/features/RemoveAssigneeModal';
@@ -20,7 +22,21 @@ import ShowMetrics from '../../entities/ShowMetrics';
 import TaskHeader from '../../entities/TaskHeader';
 import EditTaskForm from '../../features/EditTaskForm';
 
-export default function TaskEditor({ task, saveTask }: { task: Task; saveTask?: (task: Task) => void | Promise<void> }) {
+export default function TaskEditor({ task, canEdit }: { task: Task; canEdit: boolean }) {
+	const router = useRouter();
+	const [version, setVersion] = useState(task.version);
+	const [saving, setSaving] = useState(false);
+	const saveTask = async (updated: Task) => {
+		if (version == null) { message.error('Не удалось определить версию задачи'); return }
+		setSaving(true);
+		try {
+			const nextVersion = await updateTaskRequest(updated, version);
+			setVersion(nextVersion);
+			message.success('Задача сохранена');
+			router.refresh();
+		} catch (error) { message.error(error instanceof Error ? error.message : 'Не удалось сохранить задачу') }
+		finally { setSaving(false) }
+	};
 	const [removing, setRemoving] = useState<Executor | null>(null);
 	const [adding, setAdding] = useState(false);
 
@@ -128,7 +144,7 @@ export default function TaskEditor({ task, saveTask }: { task: Task; saveTask?: 
 		<>
 			<TaskHeader {...editedTask} />
 			<div className={styles.grid}>
-				<EditTaskForm task={editedTask} updateTask={updateTask} saveTask={saveTask ? (patch) => saveTask({ ...editedTask, ...patch }) : undefined}/>
+				<EditTaskForm task={editedTask} updateTask={updateTask} saveTask={canEdit ? (patch) => saveTask({ ...editedTask, ...patch }) : undefined} saving={saving}/>
 				<div className={styles.right}>
 					<Card title={'Эталонные значения для планирования'} className={styles.card}>
             

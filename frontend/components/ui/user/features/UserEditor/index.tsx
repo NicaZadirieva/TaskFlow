@@ -5,7 +5,7 @@ import { Form, Input, InputNumber, Modal, Select, Switch } from 'antd';
 import { useEffect } from 'react';
 
 
-export default function UserEditor({onSave, onReset, editingRecord = null}: {onSave: (user: User) => void, editingRecord: User| null, onReset: () => void}) {
+export default function UserEditor({onSave, onReset, editingRecord = null}: {onSave: (user: User) => Promise<boolean>, editingRecord: User| null, onReset: () => void}) {
 	const [form] = Form.useForm<User>();
 
 	useEffect(() => {
@@ -19,7 +19,7 @@ export default function UserEditor({onSave, onReset, editingRecord = null}: {onS
 			});
 		}
 	
-	}, [editingRecord]);
+	}, [editingRecord, form]);
 
 	const closeEdit = () => {
 		onReset();
@@ -31,8 +31,7 @@ export default function UserEditor({onSave, onReset, editingRecord = null}: {onS
 	const handleSave = async () => {
 		try {
 			const user = await form.validateFields();
-			onSave(user);
-			closeEdit();
+			if (editingRecord && await onSave({ ...editingRecord, ...user })) closeEdit();
 		} catch {
 			// Валидация не прошла — ничего не делаем
 		}

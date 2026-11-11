@@ -36,6 +36,45 @@ def compile_jsonb_for_sqlite(element, compiler, **kwargs):
     return "JSON"
 
 
+def test_change_task_project_access_and_persistence(api):
+    client, actor, _ = api
+    actor["id"] = 4
+    assert client.patch("/v1/task/1/project", json={"project_id": 2}).status_code == 403
+    actor["id"] = 1
+    assert client.patch("/v1/task/4/project", json={"project_id": 2}).status_code == 404
+    assert client.patch("/v1/task/1/project", json={"project_id": 3}).status_code == 404
+    assert client.patch("/v1/task/1/project", json={"project_id": 2}).status_code == 204
+    assert client.get("/v1/task/1").json()["project_id"] == 2
+    assert client.patch("/v1/task/1/project", json={"project_id": None}).status_code == 204
+    assert client.get("/v1/task/1").json()["project_id"] is None
+
+
+def test_update_task_fields_authorization_and_conflict(api):
+    client, actor, _ = api
+    actor["id"] = 1
+    original = client.get("/v1/task/1").json()
+    payload = {
+        "version": original["version"], "title": "Updated", "description": "Details",
+        "status": "IN_PROGRESS", "priority": "high", "due_date": None,
+        "estimated_budget": "100.00", "actual_budget": None,
+        "estimated_hours": "3.50", "actual_hours": "0.00",
+        "note": None, "task_images": [], "tags": [{"name": "new tag"}],
+    }
+    actor["id"] = 4
+    assert client.put("/v1/task/1", json=payload).status_code == 403
+    actor["id"] = 1
+    assert client.put("/v1/task/4", json=payload).status_code == 404
+    response = client.put("/v1/task/1", json=payload)
+    assert response.status_code == 200
+    updated = client.get("/v1/task/1").json()
+    assert updated["title"] == "Updated"
+    assert updated["project_id"] == 1
+    assert updated["estimated_hours"] == "3.50"
+    assert [tag["name"] for tag in updated["tags"]] == ["new tag"]
+    assert updated["version"] == original["version"] + 1
+    assert client.put("/v1/task/1", json=payload).status_code == 409
+
+
 def async_session_adapter(session):
     adapter = Mock(wraps=session)
     for method in ("execute", "scalar", "scalars", "get", "flush", "commit", "refresh", "rollback"):

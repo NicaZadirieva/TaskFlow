@@ -1,16 +1,17 @@
 'use client';
 
 import { createUserDto } from '@/api/mappers';
-import changeUserReq from '@/api/requests/user/change_user/change_user.req';
+import changeUserReq from '@/api/requests/user/change_user/client/req';
 import { TenantRole, User } from '@/entities/user.interface';
-import { message } from 'antd';
+import { Button, message } from 'antd';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import UserEditor from '../../features/UserEditor';
 import DesktopUserTable from './components/desktop';
 import MobileUserTable from './components/mobile';
 
-export default function UserTable({ users }: { users: User[] }) {
+export default function UserTable({ users, canEdit }: { users: User[]; canEdit: boolean }) {
 	const [editingRecord, setEditingRecord] = useState<User | null>(null);
 	const router = useRouter();
 	const onEdit = (record: User) => {
@@ -28,9 +29,11 @@ export default function UserTable({ users }: { users: User[] }) {
 			// TODO: заменить на React.Query или похожие средства next.js
 			router.refresh();
 			message.success('Обновление данных прошло успешно');
+			return true;
 		} catch (e) {
 			console.error('Ошибка обновления данных', e);
 			message.error('Ошибка обновления данных');
+			return false;
 		}
 	};
 
@@ -49,9 +52,11 @@ export default function UserTable({ users }: { users: User[] }) {
         }
       `}</style>
 
-			<DesktopUserTable onEdit={onEdit} dataSource={users} />
+			{canEdit && <Link href="/users/new"><Button type="primary">Создать пользователя</Button></Link>}
 
-			<MobileUserTable onEdit={onEdit} dataSource={users} />
+			<DesktopUserTable onEdit={canEdit ? onEdit : undefined} dataSource={users} />
+
+			<MobileUserTable onEdit={canEdit ? onEdit : undefined} dataSource={users} />
 
 			{/* Модальное окно редактирования 
 	  TODO: доступно только OWNER*/}

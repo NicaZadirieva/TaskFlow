@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException
 
 from app.project.models import Project
 from app.project.repository import ProjectRepositoryDeps
-from app.project.schema import CreateProjectRequest, ProjectOut, ProjectTaskOut
+from app.project.schema import CreateProjectRequest, ProjectOut, ProjectTaskOut, UpdateProjectBudgetRequest
 from app.task.models import Status
 from app.user.models import TenantRole, User
 
@@ -26,10 +26,22 @@ class ProjectService:
                 name=dto.name,
                 description=dto.description,
                 budget_hours=dto.budget_hours,
+                budget=dto.budget,
                 deadline=dto.deadline,
                 client_id=dto.client_id,
             )
         )
+
+    async def update_budget(self, user: User, project_id: int, dto: UpdateProjectBudgetRequest) -> None:
+        if user.role != TenantRole.OWNER:
+            raise HTTPException(403, "Owner access required")
+        projects = await self.repository.list_visible(user, project_id)
+        if not projects:
+            raise HTTPException(404, "Project not found")
+        project = projects[0]
+        project.budget = dto.budget
+        project.budget_hours = dto.budget_hours
+        await self.repository.save(project)
 
     async def list_visible(
         self, user: User, project_id: int | None = None
@@ -47,6 +59,7 @@ class ProjectService:
                     id=project.id,
                     name=project.name,
                     budget_hours=project.budget_hours,
+                    budget=project.budget,
                     deadline=project.deadline,
                     tasks=[
                         ProjectTaskOut(id=t.id, title=t.title, status=t.status)

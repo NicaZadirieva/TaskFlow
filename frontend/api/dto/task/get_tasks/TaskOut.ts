@@ -14,6 +14,7 @@ type ISODateTimeString = string;
 
 export interface TaskOut {
 	id: number;
+	version?: number;
 	tenant_id: number;
 	project_id?: number | null;
 

@@ -60,6 +60,7 @@ def test_create_project_restricts_roles_and_validates_client(api):  # noqa: F811
             "description": "Description",
             "client_id": 2,
             "budget_hours": "20.50",
+            "budget": "1200.25",
             "deadline": "2026-12-01T00:00:00",
             "tenant_id": 2,
         },
@@ -73,4 +74,21 @@ def test_create_project_restricts_roles_and_validates_client(api):  # noqa: F811
             2,
         )
         assert str(project.budget_hours) == "20.50"
+        assert str(project.budget) == "1200.25"
+
+
+def test_update_project_budget_permissions_and_values(api):  # noqa: F811
+    client, actor, _ = api
+    client.app.include_router(router)
+    values = {"budget": "1500.25", "budget_hours": "12.50"}
+    actor["id"] = 2
+    assert client.patch("/v1/project/1/budget", json=values).status_code == 403
+    actor["id"] = 1
+    assert client.patch("/v1/project/3/budget", json=values).status_code == 404
+    assert client.patch("/v1/project/1/budget", json={**values, "budget": -1}).status_code == 422
+    assert client.patch("/v1/project/1/budget", json=values).status_code == 204
+    project = client.get("/v1/project/1").json()
+    assert project["budget"] == "1500.25"
+    assert project["budget_hours"] == "12.50"
+    assert client.patch("/v1/project/1/budget", json={"budget": None, "budget_hours": None}).status_code == 204
 
